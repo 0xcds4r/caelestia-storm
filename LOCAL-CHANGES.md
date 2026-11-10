@@ -181,7 +181,9 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
 - `modules/drawers/ContentWindow.qml`, `Panels.qml`, `Interactions.qml` — bar slot placed with explicit
   geometry, panels inset from the bar side (left/right/top/bottom), hover region and popout coordinate
   follow the orientation.
-- `modules/nexus/pages/panels/TaskbarPanel.qml` — `SelectRow` with the four positions.
+- `modules/nexus/pages/panels/TaskbarPanel.qml` — `SelectRow` for the position; only `Left` is
+  exposed (the other three are implemented but not selectable).
+- `modules/drawers/Interactions.qml` — missing `qs.services` import added (`BarPos`).
 
 ## 9. `~/.config/caelestia/shell.json`
 
