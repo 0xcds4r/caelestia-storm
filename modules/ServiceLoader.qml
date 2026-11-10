@@ -13,6 +13,7 @@ Scope {
         Players;
         Brightness;
         Tunnel;
+        BarPos;
         Weather.reload();
 
         if (GlobalConfig.utilities.vpn.enabled)

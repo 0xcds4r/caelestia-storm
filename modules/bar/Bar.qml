@@ -10,7 +10,7 @@ import Caelestia.Config
 import qs.components
 import qs.services
 
-ColumnLayout {
+GridLayout {
     id: root
 
     required property ShellScreen screen
@@ -18,6 +18,10 @@ ColumnLayout {
     required property BarPopouts.Wrapper popouts
     required property bool fullscreen
     readonly property int vPadding: Tokens.padding.large
+    readonly property bool vertical: BarPos.vertical
+
+    columns: root.vertical ? 1 : -1
+    rows: root.vertical ? -1 : 1
 
     function closeTray(): void {
         if (!Config.bar.tray.compact)
@@ -30,8 +34,8 @@ ColumnLayout {
         }
     }
 
-    function checkPopout(y: real): void {
-        const ch = childAt(width / 2, y) as EntryWrapper;
+    function checkPopout(pos: real): void {
+        const ch = childAt(root.vertical ? width / 2 : pos, root.vertical ? pos : height / 2) as EntryWrapper;
 
         if (ch?.entryId !== "tray")
             closeTray();
@@ -42,24 +46,26 @@ ColumnLayout {
         }
 
         const id = ch.entryId;
-        const top = ch.y;
+        const top = root.vertical ? ch.y : ch.x;
 
         if (id === "statusIcons" && Config.bar.popouts.statusIcons) {
             const items = (ch.item as StatusIcons).items;
             const icon = items.childAt(items.width / 2, mapToItem(items, 0, y).y);
             if (icon) {
                 popouts.currentName = icon.name;
-                popouts.currentCenter = Qt.binding(() => icon.mapToItem(root, 0, icon.implicitHeight / 2).y);
+                popouts.currentCenter = Qt.binding(() => root.vertical ? icon.mapToItem(root, 0, icon.implicitHeight / 2).y : icon.mapToItem(root, icon.implicitWidth / 2, 0).x);
                 popouts.hasCurrent = true;
             }
         } else if (id === "tray" && Config.bar.popouts.tray) {
             const tray = ch.item as Tray;
             if (!Config.bar.tray.compact || (tray.expanded && !tray.expandIcon.contains(mapToItem(tray.expandIcon, tray.implicitWidth / 2, y)))) {
-                const index = Math.floor(((y - top - tray.padding * 2 + tray.spacing) / tray.layout.implicitHeight) * tray.items.count);
+                const posInTray = (root.vertical ? pos : pos) - top - tray.padding * 2 + tray.spacing;
+                const traySize = root.vertical ? tray.layout.implicitHeight : tray.layout.implicitWidth;
+                const index = Math.floor((posInTray / traySize) * tray.items.count);
                 const trayItem = tray.items.itemAt(index);
                 if (trayItem) {
                     popouts.currentName = `traymenu${index}`;
-                    popouts.currentCenter = Qt.binding(() => trayItem.mapToItem(root, 0, trayItem.implicitHeight / 2).y);
+                    popouts.currentCenter = Qt.binding(() => root.vertical ? trayItem.mapToItem(root, 0, trayItem.implicitHeight / 2).y : trayItem.mapToItem(root, trayItem.implicitWidth / 2, 0).x);
                     popouts.hasCurrent = true;
                 } else {
                     popouts.hasCurrent = false;
@@ -70,13 +76,13 @@ ColumnLayout {
             }
         } else if (id === "activeWindow" && Config.bar.popouts.activeWindow && Config.bar.activeWindow.showOnHover) {
             popouts.currentName = id.toLowerCase();
-            popouts.currentCenter = (ch.item as Item).mapToItem(root, 0, (ch.item as Item).implicitHeight / 2).y ?? 0;
+            popouts.currentCenter = root.vertical ? ((ch.item as Item).mapToItem(root, 0, (ch.item as Item).implicitHeight / 2).y ?? 0) : ((ch.item as Item).mapToItem(root, (ch.item as Item).implicitWidth / 2, 0).x ?? 0);
             popouts.hasCurrent = true;
         }
     }
 
-    function handleWheel(y: real, angleDelta: point): void {
-        const ch = childAt(width / 2, y) as EntryWrapper;
+    function handleWheel(pos: real, angleDelta: point): void {
+        const ch = childAt(root.vertical ? width / 2 : pos, root.vertical ? pos : height / 2) as EntryWrapper;
         if (ch?.entryId === "workspaces" && Config.bar.scrollActions.workspaces) {
             // Workspace scroll
             const mon = Hypr.monitorFor(screen);
@@ -85,7 +91,7 @@ ColumnLayout {
                 Hypr.dispatch(Hypr.usingLua ? `hl.dsp.workspace.toggle_special("${specialWs.slice(8)}")` : `togglespecialworkspace ${specialWs.slice(8)}`);
             else if (angleDelta.y < 0 || mon.activeWorkspace?.id > 1)
                 Hypr.dispatch(Hypr.usingLua ? `hl.dsp.focus({ workspace = "r${angleDelta.y > 0 ? "-" : "+"}1" })` : `workspace r${angleDelta.y > 0 ? "-" : "+"}1`);
-        } else if (y < screen.height / 2 && Config.bar.scrollActions.volume) {
+        } else if ((root.vertical ? pos < screen.height / 2 : pos < screen.width / 2) && Config.bar.scrollActions.volume) {
             // Volume scroll on top half
             if (angleDelta.y > 0)
                 Audio.incrementVolume();
@@ -101,7 +107,8 @@ ColumnLayout {
         }
     }
 
-    spacing: Tokens.spacing.medium
+    rowSpacing: Tokens.spacing.medium
+    columnSpacing: Tokens.spacing.medium
 
     Repeater {
         id: repeater
@@ -116,7 +123,8 @@ ColumnLayout {
             DelegateChoice {
                 roleValue: "spacer"
                 delegate: EntryWrapper {
-                    Layout.fillHeight: true
+                    Layout.fillHeight: root.vertical
+                    Layout.fillWidth: !root.vertical
                 }
             }
             DelegateChoice {
@@ -189,9 +197,11 @@ ColumnLayout {
         default property Item item
         readonly property string entryId: modelData.id
 
-        Layout.topMargin: index === 0 ? root.vPadding : 0
-        Layout.bottomMargin: index === repeater.count - 1 ? root.vPadding : 0
-        Layout.alignment: Qt.AlignHCenter
+        Layout.topMargin: root.vertical && index === 0 ? root.vPadding : 0
+        Layout.bottomMargin: root.vertical && index === repeater.count - 1 ? root.vPadding : 0
+        Layout.leftMargin: !root.vertical && index === 0 ? root.vPadding : 0
+        Layout.rightMargin: !root.vertical && index === repeater.count - 1 ? root.vPadding : 0
+        Layout.alignment: root.vertical ? Qt.AlignHCenter : Qt.AlignVCenter
 
         implicitWidth: item?.implicitWidth ?? 0
         implicitHeight: item?.implicitHeight ?? 0

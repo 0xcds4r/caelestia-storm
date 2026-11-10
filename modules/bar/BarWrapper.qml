@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Caelestia.Config
 import qs.components
+import qs.services
 import qs.utils
 import qs.modules.bar.popouts as BarPopouts
 
@@ -16,11 +17,12 @@ Item {
     required property bool fullscreen
 
     readonly property bool disabled: Strings.testRegexList(Config.bar.excludedScreens, screen.name)
+    readonly property bool vertical: BarPos.vertical
 
-    readonly property int clampedWidth: Math.max(Config.border.minThickness, implicitWidth)
+    readonly property int clampedWidth: Math.max(Config.border.minThickness, vertical ? implicitWidth : implicitHeight)
     readonly property int padding: Math.max(Tokens.padding.small, Config.border.thickness)
-    readonly property int contentWidth: Tokens.sizes.bar.innerWidth + padding * 2
-    readonly property int exclusiveZone: !disabled && (Config.bar.persistent || screenState.bar) ? contentWidth : Config.border.thickness
+    readonly property int thickness: Tokens.sizes.bar.innerWidth + padding * 2
+    readonly property int exclusiveZone: !disabled && (Config.bar.persistent || screenState.bar) ? thickness : Config.border.thickness
     readonly property bool shouldBeVisible: !fullscreen && !disabled && (Config.bar.persistent || screenState.bar || isHovered)
     property bool isHovered
 
@@ -28,60 +30,38 @@ Item {
         (content.item as Bar)?.closeTray();
     }
 
-    function checkPopout(y: real): void {
-        (content.item as Bar)?.checkPopout(y);
+    function checkPopout(pos: real): void {
+        (content.item as Bar)?.checkPopout(pos);
     }
 
-    function handleWheel(y: real, angleDelta: point): void {
-        (content.item as Bar)?.handleWheel(y, angleDelta);
+    function handleWheel(pos: real, angleDelta: point): void {
+        (content.item as Bar)?.handleWheel(pos, angleDelta);
     }
 
     clip: true
-    visible: width > Config.border.thickness
-    implicitWidth: fullscreen ? 0 : Config.border.thickness
+    visible: root.vertical ? width > Config.border.thickness : height > Config.border.thickness
 
-    states: State {
-        name: "visible"
-        when: root.shouldBeVisible
+    readonly property int hiddenSize: root.fullscreen ? 0 : Config.border.thickness
 
-        PropertyChanges {
-            root.implicitWidth: root.contentWidth
-        }
+    implicitWidth: root.vertical ? (root.shouldBeVisible ? root.thickness : root.hiddenSize) : -1
+    implicitHeight: root.vertical ? -1 : (root.shouldBeVisible ? root.thickness : root.hiddenSize)
+
+    Behavior on implicitWidth {
+        Anim {}
     }
 
-    transitions: [
-        Transition {
-            from: ""
-            to: "visible"
-
-            Anim {
-                target: root
-                property: "implicitWidth"
-            }
-        },
-        Transition {
-            from: "visible"
-            to: ""
-
-            Anim {
-                target: root
-                property: "implicitWidth"
-                type: Anim.Emphasized
-            }
-        }
-    ]
+    Behavior on implicitHeight {
+        Anim {}
+    }
 
     Loader {
         id: content
 
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
+        anchors.fill: parent
 
         active: root.shouldBeVisible
 
         sourceComponent: Bar {
-            width: root.contentWidth
             screen: root.screen
             screenState: root.screenState
             popouts: root.popouts // qmllint disable incompatible-type

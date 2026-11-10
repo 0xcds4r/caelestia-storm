@@ -162,6 +162,21 @@ top of the overview.
 `modules/drawers/Interactions.qml` — while `screenState.launcher` is true, hovering the bar no
 longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind the launcher.
 
+## 8c. Taskbar position — stage 1 (infrastructure)
+
+- `services/BarPos.qml` (new) — `position` (`left`/`right`/`top`/`bottom`), kept in
+  `~/.local/state/caelestia/bar-position` (the C++ config is packaged, so no new key there);
+  derived `vertical`, `onLeft/onRight/onTop/onBottom`. Instantiated in `ServiceLoader`.
+- `modules/bar/BarWrapper.qml` — orientation aware: the thickness animates on the width axis
+  for a vertical bar and on the height axis for a horizontal one; content fills the wrapper.
+- `modules/bar/Bar.qml` — `GridLayout` with `columns: vertical ? 1 : -1` / `rows: vertical ? -1 : 1`,
+  axis-aware padding, spacer fill and entry margins.
+- `modules/drawers/ContentWindow.qml` — the bar slot is placed with explicit
+  `x/y/width/height` bindings (right/bottom aware) instead of anchors.
+
+Still TODO: horizontal variants of the bar entries (workspaces pill, tray, clock,
+active window, status icons) and the drawer/popout geometry flip for `right`/`top`/`bottom`.
+
 ## 9. `~/.config/caelestia/shell.json`
 
 - `bar.workspaces.activeIndicator: false` — the stock filled pill indicator is disabled,
