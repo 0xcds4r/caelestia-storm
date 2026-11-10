@@ -72,7 +72,7 @@ CustomMouseArea {
                 root.panels.osd.hovered = false;
             }
 
-            if (!dashboardShortcutActive)
+            if (!dashboardShortcutActive && Config.dashboard.showOnHover)
                 screenState.dashboard = false;
 
             if (!utilitiesShortcutActive)
@@ -210,12 +210,14 @@ CustomMouseArea {
         // Local patch: dashboard opens only together with the launcher (Super)
         const showDashboard = Config.dashboard.enabled && Config.dashboard.showOnHover && inTopPanel(panels.dashboard, x, y);
 
-        // Always update visibility based on hover if not in shortcut mode
-        if (!dashboardShortcutActive) {
-            screenState.dashboard = showDashboard;
-        } else if (showDashboard) {
-            // If hovering over dashboard area while in shortcut mode, transition to hover control
-            dashboardShortcutActive = false;
+        // Local patch: when showOnHover is off the launcher owns the dashboard state,
+        // otherwise every mouse move would immediately close it again
+        if (Config.dashboard.showOnHover) {
+            if (!dashboardShortcutActive) {
+                screenState.dashboard = showDashboard;
+            } else if (showDashboard) {
+                dashboardShortcutActive = false;
+            }
         }
 
         // Show/hide dashboard on drag (for touchscreen devices)

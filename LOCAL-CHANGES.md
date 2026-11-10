@@ -125,8 +125,11 @@ In `KeepAwakeCard` the `onToggled` handler does not write unless the value actua
 - `shell.json`: `dashboard.showOnHover: false` — the top panel no longer expands on edge hover.
 - `modules/launcher/Wrapper.qml`: a `Connections` block on `screenState` keeps
   `dashboard = launcher`.
-- `modules/drawers/Interactions.qml`: the dashboard hover block only runs when
-  `dashboard.showOnHover` is enabled (otherwise every mouse move would turn the panel off).
+- `modules/drawers/Interactions.qml`: the dashboard hover block *and* the
+  `onContainsMouseChanged` reset only run when `dashboard.showOnHover` is enabled.
+  Previously `screenState.dashboard = showDashboard` ran on every mouse move with
+  `showOnHover: false`, so the panel opened by the launcher was closed again a few
+  milliseconds later — that's why it "sometimes didn't appear".
 
 ## 9. `~/.config/caelestia/shell.json`
 
