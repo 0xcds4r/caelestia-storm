@@ -61,7 +61,10 @@ Navigation (`modules/launcher/Content.qml` + `WorkspaceOverview.qml`):
 - `readonly property bool showOverview: search.text.length === 0`;
 - `WorkspaceOverview` was added to `listWrapper` (visible while the search is empty) and
   `ContentList` is hidden; `listWrapper` sizes switch between grid and list;
-- clicking a workspace closes the launcher (`screenState.launcher = false`).
+- clicking a workspace closes the launcher (`screenState.launcher = false`);
+- the query is cleared when the launcher *opens* (not when it closes): clearing on close made
+  the workspace overview pop up during the close animation while a search was running;
+- the dashboard is hidden while a search is running (`onTextChanged` → `dashboard = launcher && text === ""`).
 
 Result: `SUPER` opens the stock caelestia launcher (search at the bottom); while the query
 is empty the workspace grid is shown above it, and typing switches back to the app list.
