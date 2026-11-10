@@ -94,14 +94,23 @@ StyledRect {
                     roleValue: "microphone"
                     delegate: EntryWrapper {
                         margin: Tokens.spacing.extraSmall / 2
-                        name: "audio" // Mic opens audio popout
 
-                        MaterialIcon {
-                            animate: true
-                            text: Icons.getMicVolumeIcon(Audio.sourceVolume, Audio.sourceMuted)
-                            color: root.colour
-                            fontStyle: Tokens.font.icon.medium
-                            fill: 1
+                        // Local patch: the microphone icon is a mute toggle, not an audio popout
+                        Item {
+                            implicitWidth: micIcon.implicitWidth
+                            implicitHeight: micIcon.implicitHeight
+
+                            MaterialIcon {
+                                id: micIcon
+
+                                anchors.centerIn: parent
+                                animate: true
+                                text: Icons.getMicVolumeIcon(Audio.sourceVolume, Audio.sourceMuted)
+                                color: root.colour
+                                fontStyle: Tokens.font.icon.medium
+                                fill: 1
+                            }
+
                         }
                     }
                 }
@@ -175,6 +184,20 @@ StyledRect {
             Anim {
                 type: Anim.SlowEffects
             }
+        }
+    }
+
+    // Local patch: clicks on the status pill go to the entry under the cursor;
+    // the microphone entry is a mute toggle
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton
+
+        onClicked: mouse => {
+            const p = mapToItem(root.items, mouse.x, mouse.y);
+            const entry = root.items.childAt(p.x, p.y);
+            if (entry && entry.name === "microphone")
+                Audio.toggleMicMute();
         }
     }
 }
