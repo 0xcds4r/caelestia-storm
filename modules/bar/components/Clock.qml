@@ -20,8 +20,10 @@ StyledRect {
         return root.font.width(scale * 100).letterSpacing(scale).build();
     }
 
-    implicitWidth: Tokens.sizes.bar.innerWidth
-    implicitHeight: layout.implicitHeight + root.padding * 2
+    readonly property bool vertical: BarPos.vertical
+
+    implicitWidth: root.vertical ? Tokens.sizes.bar.innerWidth : horizontal.implicitWidth + root.padding * 2
+    implicitHeight: root.vertical ? layout.implicitHeight + root.padding * 2 : Tokens.sizes.bar.innerWidth
 
     color: Qt.alpha(Colours.tPalette.m3surfaceContainer, Config.bar.clock.background ? Colours.tPalette.m3surfaceContainer.a : 0)
     radius: Tokens.rounding.full
@@ -29,6 +31,7 @@ StyledRect {
     ColumnLayout {
         id: layout
 
+        visible: root.vertical
         anchors.centerIn: parent
         spacing: Tokens.spacing.extraSmall
 
@@ -141,6 +144,52 @@ StyledRect {
                 font: Tokens.font.body.builders.small.scale(0.9).build()
                 color: root.colour
             }
+        }
+    }
+
+    RowLayout {
+        id: horizontal
+
+        visible: !root.vertical
+        anchors.centerIn: parent
+        spacing: Tokens.spacing.small
+
+        MaterialIcon {
+            Layout.alignment: Qt.AlignVCenter
+            visible: Config.bar.clock.showIcon
+            text: "calendar_month"
+            color: root.colour
+        }
+
+        StyledText {
+            Layout.alignment: Qt.AlignVCenter
+            visible: Config.bar.clock.showDate
+            text: Time.format("ddd d")
+            font: Tokens.font.body.builders.small.scale(0.95).build()
+            color: root.colour
+        }
+
+        StyledText {
+            Layout.alignment: Qt.AlignVCenter
+            text: `${Time.hourStr}:${Time.minuteStr}`
+            font: root.font.build()
+            color: root.colour
+        }
+
+        StyledText {
+            Layout.alignment: Qt.AlignVCenter
+            visible: Config.bar.clock.showSeconds
+            text: Time.format("ss")
+            font: root.font.build()
+            color: root.colour
+        }
+
+        StyledText {
+            Layout.alignment: Qt.AlignVCenter
+            visible: Units.twelveHourClock
+            text: Time.amPmStr.toLowerCase()
+            font: Tokens.font.body.builders.small.scale(0.9).build()
+            color: root.colour
         }
     }
 }
