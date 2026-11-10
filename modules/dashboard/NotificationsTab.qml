@@ -62,7 +62,9 @@ Item {
         StyledListView {
             id: list
 
+            Layout.preferredWidth: Tokens.sizes.notifs.width
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
             Layout.fillHeight: true
             clip: true
             spacing: Tokens.spacing.medium
@@ -72,7 +74,7 @@ Item {
             }
 
             delegate: Notifications.Notification {
-                width: list.width
+                width: Tokens.sizes.notifs.width
             }
         }
 
