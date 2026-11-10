@@ -24,7 +24,14 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - on the right: a compact *Keep awake* card and *Quick toggles*, where the volume and
   brightness sliders live (click the speaker icon to mute — volume drops to 0 % and back);
 - the stock volume/brightness OSD is disabled — everything happens in the launcher;
-- the dashboard (Dashboard / Media / Performance / Weather) expands only together with the launcher.
+- the dashboard (Dashboard / Media / Performance / Weather / **Notifications**) expands only
+  together with the launcher; the notifications tab has its own cards, a counter, clear-all
+  and an auto-sized pane.
+
+**Clipboard (`Super+V`)**
+- a standalone panel (no search bar, no dashboard) with the `cliphist` history;
+- text entries and real image thumbnails, uniform rows with a hover highlight;
+- click or `Enter` copies the entry, `✕` deletes one, `delete_sweep` wipes the history.
 
 **Other**
 - *Keep awake* survives shell restarts (`~/.local/state/caelestia/idle-inhibited`);
