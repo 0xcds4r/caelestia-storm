@@ -44,6 +44,12 @@ Item {
         function onLauncherChanged(): void {
             if (Config.dashboard.enabled)
                 root.screenState.dashboard = root.screenState.launcher;
+
+            // Local patch: the launcher owns the screen, dismiss any tray popout
+            if (root.screenState.launcher) {
+                root.panels.popouts.hasCurrent = false;
+                root.panels.bar.closeTray();
+            }
         }
 
         target: root.screenState
