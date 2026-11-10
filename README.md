@@ -33,6 +33,26 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 
 Requires `caelestia-shell` 2.5.0 from the AUR (or a compatible version) and `quickshell-git`.
 
+**Quick install**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/0xcds4r/caelestia-storm/main/install.sh | bash
+```
+
+The script checks dependencies, backs up the existing config
+(`~/.local/state/caelestia-storm/backups/`), clones/updates the shell config, installs
+`shell.json` and restarts the shell. Options: `-f` overwrite `shell.json`, `-n` don't restart.
+
+Or from a checkout:
+
+```sh
+git clone https://github.com/0xcds4r/caelestia-storm.git
+cd caelestia-storm
+./install.sh
+```
+
+**Manual install**
+
 ```sh
 git clone https://github.com/0xcds4r/caelestia-storm.git ~/.config/quickshell/caelestia
 mkdir -p ~/.config/caelestia
