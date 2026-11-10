@@ -131,6 +131,12 @@ In `KeepAwakeCard` the `onToggled` handler does not write unless the value actua
   `showOnHover: false`, so the panel opened by the launcher was closed again a few
   milliseconds later — that's why it "sometimes didn't appear".
 
+## 8b. Launcher dismisses tray popouts
+
+`modules/launcher/Wrapper.qml` — when the launcher opens, `panels.popouts.hasCurrent = false`
+and `panels.bar.closeTray()` are called, so an open tray menu (SNI popout) no longer stays on
+top of the overview.
+
 ## 9. `~/.config/caelestia/shell.json`
 
 - `bar.workspaces.activeIndicator: false` — the stock filled pill indicator is disabled,
