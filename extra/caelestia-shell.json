@@ -1,0 +1,81 @@
+{
+    "appearance": {
+        "transparency": {
+            "enabled": false
+        }
+    },
+    "background": {
+        "visualiser": {
+            "autoHide": true,
+            "blur": false,
+            "enabled": true,
+            "rounding": 1,
+            "spacing": 1
+        }
+    },
+    "bar": {
+        "workspaces": {
+            "shown": 10,
+            "activeIndicator": false
+        },
+        "statusIcons": [
+            {
+                "id": "kbLayout",
+                "enabled": true
+            },
+            {
+                "id": "audio",
+                "enabled": false
+            },
+            {
+                "id": "microphone",
+                "enabled": false
+            },
+            {
+                "id": "network",
+                "enabled": true
+            },
+            {
+                "id": "battery",
+                "enabled": true
+            }
+        ]
+    },
+    "utilities": {
+        "toasts": {
+            "kbLayoutChanged": false
+        },
+        "cards": {
+            "keepAwake": false,
+            "recorder": false
+        }
+    },
+    "dashboard": {
+        "showWeather": true
+    },
+    "general": {
+        "apps": {
+            "audio": [
+                "pavucontrol"
+            ],
+            "explorer": [
+                "nautilus",
+                "--new-window"
+            ],
+            "playback": [
+                "vlc"
+            ],
+            "terminal": [
+                "kitty"
+            ]
+        },
+        "idle": {
+            "lockBeforeSleep": true,
+            "timeouts": []
+        },
+        "logo": "/home/alex/.config/caelestia/logo.svg"
+    },
+    "osd": {
+        "enabled": false
+    }
+}
