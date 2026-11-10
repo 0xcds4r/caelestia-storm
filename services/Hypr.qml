@@ -29,8 +29,17 @@ Singleton {
     readonly property bool numLock: keyboard?.numLock ?? false
     readonly property string defaultKbLayout: keyboard?.layout.split(",")[0] ?? "??"
     readonly property string kbLayoutFull: keyboard?.activeKeymap ?? Tr.trCtx("Unknown", "keyboard layout")
-    readonly property string kbLayout: kbMap.get(kbLayoutFull) ?? "??"
+    // Local patch: cache the last known layout, `activeKeymap` is briefly empty
+    // (or the main keyboard disappears) while devices are being reloaded
+    readonly property string kbLayoutRaw: kbMap.get(kbLayoutFull) ?? ""
+    property string kbLayoutLastGood: ""
+    readonly property string kbLayout: kbLayoutRaw !== "" ? kbLayoutRaw : (kbLayoutLastGood !== "" ? kbLayoutLastGood : "??")
     readonly property var kbMap: new Map()
+
+    onKbLayoutRawChanged: {
+        if (kbLayoutRaw !== "")
+            kbLayoutLastGood = kbLayoutRaw;
+    }
 
     readonly property alias extras: extras
     readonly property alias options: extras.options
@@ -171,7 +180,7 @@ Singleton {
                     if (!line.trim() || line.trim().startsWith("!"))
                         continue;
 
-                    const match = line.match(/^\s*([a-z]{2,})\s+([a-zA-Z() ]+)$/);
+                    const match = line.match(/^\s*([a-z]{2,})\s+(.+?)\s*$/);
                     if (match)
                         root.kbMap.set(match[2], match[1]);
                 }

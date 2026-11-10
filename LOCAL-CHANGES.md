@@ -164,6 +164,9 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
 - `bar.workspaces.activeIndicator: false` — the stock filled pill indicator is disabled,
   otherwise it repaints/covers the app icon;
 - `bar.workspaces.shown: 10`, `bar.statusIcons`: `kbLayout` on, `lockStatus`/`bluetooth` removed;
+- `services/Hypr.qml`: `kbLayout` falls back to the last known value — `activeKeymap` is
+  briefly empty while Hyprland reloads devices (caps/num lock, layout switch), which used to
+  show `??`. The layout list parser also accepts descriptions with commas/digits now;
 - `utilities.toasts.kbLayoutChanged: false` — no popup on layout change.
 
 ## How to update (after a package update)
