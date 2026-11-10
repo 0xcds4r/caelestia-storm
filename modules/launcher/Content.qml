@@ -17,11 +17,19 @@ Item {
     required property ScreenState screenState
     required property var panels
     required property real maxHeight
+    property bool clipboardMode: false
+
+    signal clipboardDismissed()
 
     readonly property int padding: Tokens.padding.large
     readonly property int rounding: Tokens.rounding.extraLarge
 
-    readonly property bool showOverview: search.text.length === 0 && GlobalConfig.launcher.enabled
+    onClipboardModeChanged: {
+        if (clipboardMode)
+            Qt.callLater(() => clipboard.forceActiveFocus());
+    }
+
+    readonly property bool showOverview: search.text.length === 0 && GlobalConfig.launcher.enabled && !root.clipboardMode
 
     implicitWidth: listWrapper.width + padding * 2
     implicitHeight: search.height + listWrapper.height + padding + search.anchors.bottomMargin
@@ -29,12 +37,22 @@ Item {
     Item {
         id: listWrapper
 
-        implicitWidth: root.showOverview ? overviewRow.implicitWidth : list.width
-        implicitHeight: root.showOverview ? overviewRow.implicitHeight + root.padding : list.height + root.padding
+        implicitWidth: root.clipboardMode ? clipboard.implicitWidth : root.showOverview ? overviewRow.implicitWidth : list.width
+        implicitHeight: root.clipboardMode ? clipboard.implicitHeight + root.padding : root.showOverview ? overviewRow.implicitHeight + root.padding : list.height + root.padding
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: search.top
         anchors.bottomMargin: root.padding
+
+        ClipboardPanel {
+            id: clipboard
+
+            anchors.centerIn: parent
+            visible: root.clipboardMode
+
+            onActivated: root.screenState.launcher = false
+            onDismissed: root.clipboardDismissed()
+        }
 
         Row {
             id: overviewRow
@@ -67,7 +85,7 @@ Item {
         ContentList {
             id: list
 
-            visible: !root.showOverview
+            visible: !root.showOverview && !root.clipboardMode
 
             content: root
             screenState: root.screenState
@@ -96,6 +114,11 @@ Item {
         placeholderText: Tr.tr("Type \"%1\" for commands").arg(GlobalConfig.launcher.actionPrefix)
 
         onAccepted: {
+            if (root.clipboardMode) {
+                clipboard.copy(clipboard.currentIndex);
+                return;
+            }
+
             if (root.showOverview) {
                 overview.activateSelection();
                 return;
@@ -121,13 +144,17 @@ Item {
         }
 
         Keys.onUpPressed: {
-            if (root.showOverview)
+            if (root.clipboardMode)
+                clipboard.move(-1);
+            else if (root.showOverview)
                 overview.moveVertical(-1);
             else
                 list.currentList?.decrementCurrentIndex();
         }
         Keys.onDownPressed: {
-            if (root.showOverview)
+            if (root.clipboardMode)
+                clipboard.move(1);
+            else if (root.showOverview)
                 overview.moveVertical(1);
             else
                 list.currentList?.incrementCurrentIndex();

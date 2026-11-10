@@ -4,6 +4,7 @@ PersistentProperties {
     required property ShellScreen modelData
 
     // Drawer visibilities
+    property bool clipboardMode
     property bool bar
     property bool osd
     property bool session

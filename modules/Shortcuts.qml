@@ -84,6 +84,28 @@ Scope {
         onPressed: root.launcherInterrupted = true
     }
 
+    // Local patch: Super+V opens the clipboard panel inside the launcher
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "clipboard"
+        description: "Toggle the clipboard panel"
+
+        onPressed: {
+            const st = ShellState.forActive();
+            if (!st)
+                return;
+
+            if (st.launcher && st.clipboardMode) {
+                st.clipboardMode = false;
+                st.launcher = false;
+            } else {
+                st.clipboardMode = true;
+                st.launcher = true;
+            }
+        }
+    }
+
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
