@@ -299,8 +299,10 @@ StyledWindow {
         BarWrapper {
             id: bar
 
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
+            x: BarPos.onRight ? parent.width - width : 0
+            y: BarPos.onBottom ? parent.height - height : 0
+            width: BarPos.vertical ? implicitWidth : parent.width
+            height: BarPos.vertical ? parent.height : implicitHeight
 
             screen: root.screen
             screenState: root.screenState
