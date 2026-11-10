@@ -63,6 +63,11 @@ Singleton {
         setVolume(volume - (amount || GlobalConfig.services.audioIncrement));
     }
 
+    function toggleMicMute(): void {
+        if (source?.audio)
+            source.audio.muted = !source.audio.muted;
+    }
+
     function setSourceVolume(newVolume: real): void {
         if (source?.ready && source?.audio) {
             source.audio.muted = false;
