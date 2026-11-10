@@ -136,6 +136,8 @@ In `KeepAwakeCard` the `onToggled` handler does not write unless the value actua
 `modules/launcher/Wrapper.qml` — when the launcher opens, `panels.popouts.hasCurrent = false`
 and `panels.bar.closeTray()` are called, so an open tray menu (SNI popout) no longer stays on
 top of the overview.
+`modules/drawers/Interactions.qml` — while `screenState.launcher` is true, hovering the bar no
+longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind the launcher.
 
 ## 9. `~/.config/caelestia/shell.json`
 
