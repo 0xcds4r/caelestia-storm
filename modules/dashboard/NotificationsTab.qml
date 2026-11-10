@@ -33,6 +33,7 @@ Item {
 
             StyledText {
                 Layout.fillWidth: true
+                Layout.leftMargin: Tokens.padding.medium
                 text: Tr.tr("Notifications")
             }
 
