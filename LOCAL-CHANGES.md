@@ -162,27 +162,24 @@ top of the overview.
 `modules/drawers/Interactions.qml` — while `screenState.launcher` is true, hovering the bar no
 longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind the launcher.
 
-## 8c. Taskbar position — stage 1 (infrastructure)
+## 8c. Taskbar position (left / right / top / bottom)
 
-- `services/BarPos.qml` (new) — `position` (`left`/`right`/`top`/`bottom`), kept in
-  `~/.local/state/caelestia/bar-position` (the C++ config is packaged, so no new key there);
-  derived `vertical`, `onLeft/onRight/onTop/onBottom`. Instantiated in `ServiceLoader`.
-- `modules/bar/BarWrapper.qml` — orientation aware: the thickness animates on the width axis
-  for a vertical bar and on the height axis for a horizontal one; content fills the wrapper.
-- `modules/bar/Bar.qml` — `GridLayout` with `columns: vertical ? 1 : -1` / `rows: vertical ? -1 : 1`,
-  axis-aware padding, spacer fill and entry margins.
-- `modules/drawers/ContentWindow.qml` — the bar slot is placed with explicit
-  `x/y/width/height` bindings (right/bottom aware) instead of anchors.
-
-Done so far: `Tray`, `Clock`, `ActiveWindow` and `StatusIcons` have horizontal variants
-(`GridLayout`/`RowLayout`, axis-aware sizes and popout anchors).
-
-Still TODO: the workspaces pill is vertical-only (`Workspaces` + `LazyListView`, `OccupiedBg`,
-`ActiveIndicator` all use `layoutY`/`preferredHeight`; a plain `Row` of `Workspace` delegates
-comes out with zero width because the delegate's size comes from the `LazyListView` attached
-properties), the drawer/popout geometry for `right`/`top`/`bottom`, and the Nexus settings row.
-`~/.local/state/caelestia/bar-position` is `left` by default; setting `top` renders a partly
-broken bar until the remaining work is done.
+- `services/BarPos.qml` (new) — `position`, kept in `~/.local/state/caelestia/bar-position`
+  (the C++ config is packaged, so no new key there); derived `vertical`, `onLeft/onRight/onTop/onBottom`.
+  `set()` writes the file and restarts the shell (layout changes are not hot-swappable).
+- `modules/bar/BarWrapper.qml` — orientation aware: the thickness animates on the width axis for a
+  vertical bar and on the height axis for a horizontal one.
+- `modules/bar/Bar.qml` — `GridLayout` (`columns: vertical ? 1 : -1` / `rows: vertical ? -1 : 1`),
+  axis-aware padding, spacer fill, entry margins and popout/wheel coordinates.
+- `modules/bar/components/StatusIcons.qml`, `Tray.qml`, `Clock.qml`, `ActiveWindow.qml` — horizontal
+  variants (`GridLayout`/`RowLayout`, axis-aware sizes, anchors, rotation and popout centres).
+- `modules/bar/components/workspaces/Workspaces.qml` — a `Row` of `Workspace` delegates for the
+  horizontal pill (the delegates get explicit sizes and the `LazyListView`-attached properties are
+  taken from the wrapper).
+- `modules/drawers/ContentWindow.qml`, `Panels.qml`, `Interactions.qml` — bar slot placed with explicit
+  geometry, panels inset from the bar side (left/right/top/bottom), hover region and popout coordinate
+  follow the orientation.
+- `modules/nexus/pages/panels/TaskbarPanel.qml` — `SelectRow` with the four positions.
 
 ## 9. `~/.config/caelestia/shell.json`
 

@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Caelestia.Config
 import qs.components
+import qs.services
 import qs.modules.bar as Bar
 import qs.modules.dashboard as Dashboard
 import qs.modules.launcher as Launcher
@@ -36,7 +37,10 @@ Item {
 
     anchors.fill: parent
     anchors.margins: borderThickness
-    anchors.leftMargin: bar.implicitWidth
+    anchors.leftMargin: BarPos.vertical ? (BarPos.onRight ? 0 : bar.implicitWidth) : 0
+    anchors.rightMargin: BarPos.onRight ? bar.implicitWidth : borderThickness
+    anchors.topMargin: BarPos.vertical ? borderThickness : (BarPos.onTop ? bar.implicitHeight : borderThickness)
+    anchors.bottomMargin: BarPos.onBottom ? bar.implicitHeight : borderThickness
 
     Item {
         id: osdWrapper
