@@ -41,6 +41,12 @@ Item {
                 iconName: "cloud",
                 text: Tr.tr("Weather"),
                 enabled: Config.dashboard.showWeather
+            },
+            {
+                component: notificationsComponent,
+                iconName: "notifications",
+                text: Tr.tr("Notifications"),
+                enabled: true
             }
         ];
         return allTabs.filter(tab => tab.enabled);
@@ -180,6 +186,12 @@ Item {
                 id: weatherComponent
 
                 WeatherTab {}
+            }
+
+            Component {
+                id: notificationsComponent
+
+                NotificationsTab {}
             }
 
             Behavior on contentX {

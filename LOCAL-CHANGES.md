@@ -88,6 +88,13 @@ is empty the workspace grid is shown above it, and typing switches back to the a
   (`screenState.utilities = showUtilities` → no-op); the `caelestia:utilities` shortcut still
   opens the panel standalone.
 
+## 4b. Notifications tab in the dashboard
+
+- `modules/dashboard/NotificationsTab.qml` (new) — a tab with the active notifications
+  (reuses `Notifications.Notification`), a counter and a clear-all button; empty state text.
+- `modules/dashboard/Content.qml` — the tab is added to `dashboardTabs`
+  (icon `notifications`, always enabled).
+
 ## 5. Recorder state does not freeze
 
 `services/Recorder.qml` — the `pidof` poll runs while `refCount > 0 || props.running`, so the
