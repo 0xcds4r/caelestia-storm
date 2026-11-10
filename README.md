@@ -72,6 +72,20 @@ caelestia shell -r -d
 `extra/caelestia-shell.json` is the shell config (volume/brightness inside Quick toggles,
 10 workspaces, `osd.enabled: false`, etc.).
 
+**Hyprland keybinds.** The rice expects a few binds; add them to your Hyprland config if they
+differ. For the lua-style config used by caelestia/end-4:
+
+```lua
+hl.bind("SUPER + SUPER_L", hl.dsp.global("caelestia:launcher"), { release = true }) -- launcher + overview
+hl.bind("SUPER + V", hl.dsp.global("caelestia:clipboard"))                          -- clipboard panel
+```
+
+For a plain `hyprland.conf`:
+
+```
+bind  = SUPER, V, global, caelestia:clipboard
+```
+
 ## Updating from upstream
 
 The fork fully shadows the packaged config in `/etc/xdg/quickshell/caelestia`.
