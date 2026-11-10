@@ -70,6 +70,7 @@ Scope {
                 const screenState = ShellState.forActive();
                 if (!screenState)
                     return;
+                screenState.clipboardMode = false;
                 screenState.launcher = !screenState.launcher;
             }
             root.launcherInterrupted = false;
@@ -97,7 +98,7 @@ Scope {
                 return;
 
             if (st.launcher && st.clipboardMode) {
-                st.clipboardMode = false;
+                // keep clipboardMode until the drawer finished closing (see launcher Wrapper)
                 st.launcher = false;
             } else {
                 st.clipboardMode = true;
