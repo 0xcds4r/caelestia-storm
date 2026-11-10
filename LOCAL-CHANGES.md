@@ -1,137 +1,135 @@
-# Local changes to caelestia shell
+# Local changes to the caelestia shell
 
-Эта папка — форк `/etc/xdg/quickshell/caelestia` (скопирована 2026-11-11).
-Quickshell предпочитает `~/.config/quickshell/<name>`, поэтому пакетный конфиг
-из `/etc/xdg` больше не читается. После `pacman -Syu` (обновление caelestia-shell)
-нужно пересинхронизировать и заново накатить правки ниже.
+This folder is a fork of `/etc/xdg/quickshell/caelestia` (copied 2026-11-11).
+Quickshell prefers `~/.config/quickshell/<name>`, so the packaged config from
+`/etc/xdg` is no longer read. After `pacman -Syu` (a `caelestia-shell` update)
+you have to re-sync and re-apply the patches below.
 
 ## 1. `modules/bar/components/workspaces/Workspace.qml`
 
-- `hasWindows` жёстко `false` — убран второй ряд с иконками окон, ячейка на воркспейс одна.
-- Удалён `Loader { id: windows }` (список иконок окон).
-- Добавлены `iconToplevel` (активное окно воркспейса, иначе последнее) и `appIcon`
-  (`Icons.getAppIcon(class)` — настоящая иконка приложения из .desktop).
-- Добавлен `appIconComponent` (Image) и в `indicator.sourceComponent`:
-  занятый воркспейс → иконка приложения, иначе shape/text/icons по `displayType`.
-- Подсветка активного воркспейса — `MultiEffect` shadow (shadowScale 1.24,
-  shadowColor `m3primary`) на контейнере иконки, включается только при `focused`.
-  То есть обводка повторяет силуэт самой иконки, пилюля/форма её не закрывает.
-- Добавлен `import QtQuick.Effects`.
+- `hasWindows` is hard-coded to `false` — the second row of window icons is gone,
+  one cell per workspace.
+- The `Loader { id: windows }` block (window icon list) was removed.
+- `iconToplevel` (the active window of the workspace, otherwise the last one) and
+  `appIcon` (`Icons.getAppIcon(class)` — the real icon from the `.desktop` entry)
+  were added.
+- `appIconComponent` (an `Image`) was added, and `indicator.sourceComponent` now
+  returns: occupied workspace → app icon, otherwise shape/text/icons per `displayType`.
+- The active workspace is highlighted with a `MultiEffect` shadow (shadowScale 1.24,
+  shadowColor `m3primary`) on the icon container, only while `focused` — the outline
+  follows the icon's own silhouette instead of drawing a pill over it.
+- `import QtQuick.Effects` was added.
 
 ## 2. `modules/bar/components/workspaces/Workspaces.qml`
 
-В `MouseArea.onClicked` убран `Hypr.toggleSpecial("special")` — клик по уже
-активному воркспейсу больше не открывает/закрывает special-воркспейс
-(и не показывает его звезду). Теперь такой клик ничего не делает.
+`Hypr.toggleSpecial("special")` was removed from `MouseArea.onClicked` — clicking the
+already active workspace no longer opens/closes the special workspace (and no longer
+shows its star). Such a click is a no-op now.
 
-## 3. Overview воркспейсов (новый модуль)
+## 3. Workspace overview (new module)
 
-`modules/overview/WorkspaceOverview.qml` — сетка 2×5 воркспейсов с живым превью окон
-(`ScreencopyView` по Wayland-toplevel'ам), перетаскиванием окон между воркспейсами
-(dispatch `hl.dsp.window.move`), кликом по окну (фокус) и по воркспейсу (переход).
-Превью обрезаются по границам своей ячейки (геометрия clamp'ится в cell), скругление
-сделано через `Mask` (`layer.effect`), под превью лежит чёрная подложка (и фон ячейки
-чёрный, если в воркспейсе есть окна). Координаты окна считаются относительно
-*usable*-области монитора (`reserved` из Hyprland), поэтому окно занимает ячейку
-целиком — без выреза под бар.
-Номер воркспейса рисуется только для пустых воркспейсов (`hasWindows(ws)`) — иначе он
-просвечивал сквозь полупрозрачные окна (Hyprland кладёт фон в буфер toplevel'а).
-Подсветка — рамка вокруг активного окна текущего воркспейса (`activeWindowAddress`
-по `focusHistoryID`), радиус рамки, маски превью и подложки одинаковый
-(`Tokens.rounding.large`), без анимаций.
+`modules/overview/WorkspaceOverview.qml` — a 2×5 grid of workspaces with live window
+previews (a `ScreencopyView` per Wayland toplevel), drag & drop of windows between
+workspaces (`hl.dsp.window.move`), click on a window (focus) and on a workspace (jump).
 
-Навигация (`modules/launcher/Content.qml` + `WorkspaceOverview.qml`):
-- `←/→` — предыдущее/следующее окно, `↑/↓` — по колонкам сетки;
-- `Enter` — перейти на выбранный воркспейс: если там есть окно — фокус на нём,
-  иначе просто переключение воркспейса; лаунчер закрывается;
-- колесо мыши — листает страницы воркспейсов (1–10, 11–20, ...);
-- выделение двигается по всем ячейкам, включая пустые;
-- смена воркспейса биндами (`CTRL+SUPER+←/→` и т.п.) при открытом обзоре
-  сбрасывает страницу и переносит выделение на активный воркспейс;
-- фокус окна (`hl.dsp.focus({ window })`) заставляет Hyprland варпить курсор в центр.
-  Поэтому фокус окна и возврат курсора отправляются одним сообщением
-  (`Hypr.extras.batchMessage`: `dispatch focus` + `dispatch cursor.move`) — прыжка
-  не видно. Переход по воркспейсу курсор не двигает, там ничего не нужно;
-- выбранное окно — сплошная рамка 3px, активное — 2px в 55% прозрачности.
+- Previews are clamped into their cell, rounded with `Mask` (`layer.effect`), and sit on
+  an opaque black backdrop (the cell background is black too when the workspace has
+  windows).
+- Window geometry is computed relative to the monitor's *usable* area (`reserved` from
+  Hyprland), so a window fills the whole cell — no bar-shaped cut-out.
+- The workspace number is only drawn for empty workspaces (`hasWindows(ws)`) — otherwise
+  it bled through translucent windows (Hyprland puts the backdrop into the toplevel buffer).
+- The active window of the current workspace gets a bold 3px outline (`activeWindowAddress`
+  via `focusHistoryID`); the mask, backdrop and outline all use `Tokens.rounding.large`.
+
+Navigation (`modules/launcher/Content.qml` + `WorkspaceOverview.qml`):
+
+- `←/→` — previous/next window, `↑/↓` — by grid columns;
+- `Enter` — jump to the selected workspace: focus its window if there is one, otherwise
+  just switch workspace; the launcher closes;
+- mouse wheel — pages through workspace groups (1–10, 11–20, …);
+- the selection moves across all cells, including empty ones;
+- changing the workspace with keybinds (`CTRL+SUPER+←/→`, etc.) while the overview is open
+  resets the page and moves the selection to the active workspace;
+- `hl.dsp.focus({ window })` makes Hyprland warp the cursor to the screen centre, so window
+  focus and the cursor restore are sent in a single message
+  (`Hypr.extras.batchMessage`: `dispatch focus` + `dispatch cursor.move`) — no visible jump.
+  Switching workspace does not warp, so nothing is needed there.
 
 `modules/launcher/Content.qml`:
-- добавлен `readonly property bool showOverview: search.text.length === 0`;
-- в `listWrapper` добавлен `WorkspaceOverview` (виден при пустом поиске), `ContentList`
-  скрывается; размеры `listWrapper` переключаются между сеткой и списком;
-- клик по воркспейсу закрывает лаунчер (`screenState.launcher = false`).
 
-Итог: `SUPER` → обычный лаунчер caelestia (поиск снизу), пока запрос пустой — над ним
-сетка воркспейсов с превью; как только начинаешь печатать — обычный список приложений.
+- `readonly property bool showOverview: search.text.length === 0`;
+- `WorkspaceOverview` was added to `listWrapper` (visible while the search is empty) and
+  `ContentList` is hidden; `listWrapper` sizes switch between grid and list;
+- clicking a workspace closes the launcher (`screenState.launcher = false`).
 
-## 4. Utilities внутри лаунчера
+Result: `SUPER` opens the stock caelestia launcher (search at the bottom); while the query
+is empty the workspace grid is shown above it, and typing switches back to the app list.
 
-- `modules/overview/UtilitiesPanel.qml` (новый) — обёртка над `qs.modules.utilities.Content`
-  (Screen recorder, Quick toggles) с локальными `PersistentProperties`.
-- `modules/overview/KeepAwakeCard.qml` (новый) — своя карточка Keep awake с управляемой
-  высотой: ей передаётся `overview.cellHeight`, чтобы она совпадала по высоте с первым
-  рядом ячеек. Штатная карточка отключена (`utilities.cards.keepAwake: false` в shell.json).
-- `modules/utilities/cards/Toggles.qml` — в карточку Quick toggles добавлены строки
-  громкости и яркости (`StyledSlider`, колесо мыши), монитор берётся через
-  `Brightness.getMonitorForScreen(screenState.modelData)`. Клик по иконке динамика
-  глушит звук: `Audio.toggleMute()` запоминает громкость, ставит её в 0 и mute,
-  повторный клик возвращает прежний уровень (слайдер и `%` показывают 0 %);
-- `services/Audio.qml` — добавлена `toggleMute()`;
-- `modules/launcher/Content.qml` — при пустом запросе `Row` на всю ширину:
-  сетка воркспейсов слева, utilities справа;
-- `shell.json`: `utilities.cards.recorder: false` (карточка Screen recorder убрана),
-  `osd.enabled: false` — всплывающий OSD громкости/яркости отключён,
-  всё управление теперь в лаунчере.
-- `modules/drawers/Interactions.qml` — убрано открытие utilities по наведению в угол
-  (`screenState.utilities = showUtilities` → no-op); бинд `caelestia:utilities`
-  по-прежнему открывает панель отдельно.
+## 4. Utilities inside the launcher
 
-## 5. Состояние utilities/записи не сбрасывается
+- `modules/overview/UtilitiesPanel.qml` (new) — a wrapper over `qs.modules.utilities.cards.Toggles`
+  with its own `PersistentProperties` (`reloadableId: "overviewUtilities"`).
+- `modules/overview/KeepAwakeCard.qml` (new) — an own Keep awake card with a controllable
+  height: it receives `overview.cellHeight` so it matches the first cell row. The stock card
+  is disabled (`utilities.cards.keepAwake: false`).
+- `modules/utilities/cards/Toggles.qml` — volume and brightness rows were added to the
+  Quick toggles card (`StyledSlider`, mouse wheel), the monitor comes from
+  `Brightness.getMonitorForScreen(screenState.modelData)`. Clicking the speaker icon mutes:
+  `Audio.toggleMute()` remembers the volume, sets it to 0 and mutes; a second click restores
+  the previous level (the slider and `%` show 0 %). The card got a `minHeight` property so
+  its bottom edge lines up with the second cell row.
+- `services/Audio.qml` — `toggleMute()` added.
+- `modules/launcher/Content.qml` — on an empty query a full-width `Row` is shown: the
+  workspace grid on the left, utilities on the right.
+- `shell.json`: `utilities.cards.recorder: false` (Screen recorder card removed),
+  `osd.enabled: false` (the volume/brightness OSD is disabled, everything lives in the launcher).
+- `modules/drawers/Interactions.qml` — hovering the corner no longer opens utilities
+  (`screenState.utilities = showUtilities` → no-op); the `caelestia:utilities` shortcut still
+  opens the panel standalone.
 
-- `modules/launcher/Wrapper.qml`: `Loader.active: true` — контент лаунчера больше не
-  уничтожается при закрытии, поэтому наши `UtilitiesPanel`/`ControlsPanel` (и их
-  локальное состояние, `Ref` для `Recorder`) живут постоянно.
-- `modules/overview/WorkspaceOverview.qml`: новый флаг `live`, `ScreencopyView` захватывает
-  окно только когда лаунчер открыт (`live: root.screenState.launcher`) — иначе после
-  постоянной инстанциации превью крутились бы всегда.
-- `services/Recorder.qml`: опрос `pidof` идёт пока `refCount > 0 || props.running`,
-  то есть таймер/состояние записи не замирают, когда панель закрыта.
-- `modules/overview/UtilitiesPanel.qml`: свой `reloadableId` (`overviewUtilities`),
-  чтобы не перетирать `PersistentProperties` штатной utilities-панели.
+## 5. Recorder state does not freeze
 
-## 6. Keep awake переживает рестарт шелла
+`services/Recorder.qml` — the `pidof` poll runs while `refCount > 0 || props.running`, so the
+recording state and timer keep updating when no card is on screen. `start()`/`stop()` are
+guarded against double invocation (the CLI toggles when a recording already exists), and the
+poll never spawns the CLI while `commandProc` is still running.
 
-`PersistentProperties` в этой версии не пишет состояние на диск (файла нет), поэтому
-`IdleInhibitor` сбрасывался при каждом перезапуске шелла. Добавлен `IdleState.qml`
-(инстанс в `shell.qml`): пишет `~/.local/state/caelestia/idle-inhibited` при изменении
-и восстанавливает состояние на старте. В `KeepAwakeCard` обработчик `onToggled`
-не пишет состояние, если оно не изменилось (защита от binding-эха).
+## 6. Keep awake survives a shell restart
 
-## 7. Название в Settings → About
+`PersistentProperties` in this version does not write state to disk (no file exists), so
+`IdleInhibitor` was reset on every shell restart. `IdleState.qml` (instantiated in `shell.qml`)
+writes `~/.local/state/caelestia/idle-inhibited` on change and restores it on startup.
+In `KeepAwakeCard` the `onToggled` handler does not write unless the value actually differs
+(protection against binding echo).
 
-`modules/nexus/pages/AboutPage.qml` — заголовок hero-блока "Caelestia" → "Caelestia Storm",
-`AnimatedLogo` заменён на `Image` (`assets/storm-logo.png`, 128×128, скопирован из
-`~/Downloads/Crisp Thundercloud and Lavender Swirl.png`).
+## 7. Settings → About branding
 
-## 8. Dashboard только вместе с Super
+`modules/nexus/pages/AboutPage.qml` — the hero title is "Caelestia Storm", the version line is
+`v2.5.0 | STORM 1.0`, and `AnimatedLogo` was replaced with an `Image`
+(`assets/storm-logo.png`, 128×128).
 
-- `shell.json`: `dashboard.showOnHover: false` — верхняя панель больше не раскрывается
-  наведением на верхний край.
-- `modules/launcher/Wrapper.qml`: `Connections` на `screenState` — `dashboard`
-  включается/выключается вместе с лаунчером (`dashboard = launcher`).
-- `modules/drawers/Interactions.qml`: hover-блок дашборда работает только при
-  `dashboard.showOnHover` (иначе каждый mousemove гасил панель).
+## 8. Dashboard only together with Super
+
+- `shell.json`: `dashboard.showOnHover: false` — the top panel no longer expands on edge hover.
+- `modules/launcher/Wrapper.qml`: a `Connections` block on `screenState` keeps
+  `dashboard = launcher`.
+- `modules/drawers/Interactions.qml`: the dashboard hover block only runs when
+  `dashboard.showOnHover` is enabled (otherwise every mouse move would turn the panel off).
 
 ## 9. `~/.config/caelestia/shell.json`
 
-`bar.workspaces.activeIndicator: false` — штатный индикатор (залитая пилюля)
-отключён, иначе он перекрашивает/перекрывает иконку.
+- `bar.workspaces.activeIndicator: false` — the stock filled pill indicator is disabled,
+  otherwise it repaints/covers the app icon;
+- `bar.workspaces.shown: 10`, `bar.statusIcons`: `kbLayout` on, `lockStatus`/`bluetooth` removed;
+- `utilities.toasts.kbLayoutChanged: false` — no popup on layout change.
 
-## Как обновить (после обновления пакета)
+## How to update (after a package update)
 
 ```sh
 cp -a /etc/xdg/quickshell/caelestia/. ~/.config/quickshell/caelestia/
-# затем заново применить пункты выше
+# then re-apply the sections above
 ```
 
-Либо удалить форк целиком и вернуться к стоковому виду:
+Or drop the fork entirely and go back to the stock config:
 `rm -rf ~/.config/quickshell/caelestia && caelestia shell -r -d`
