@@ -182,12 +182,13 @@ FocusScope {
                 required property int index
 
                 readonly property bool current: index === root.currentIndex
+                property bool hovered: false
                 readonly property int rowHeight: Tokens.padding.extraLarge + Tokens.padding.medium
 
                 width: list.width
                 implicitHeight: card.rowHeight + Tokens.padding.small * 2
                 radius: Tokens.rounding.medium
-                color: card.current ? Colours.palette.m3secondaryContainer : Colours.tPalette.m3surfaceContainer
+                color: card.current ? Colours.palette.m3secondaryContainer : card.hovered ? Colours.palette.m3surfaceContainerHighest : Colours.tPalette.m3surfaceContainer
 
                 RowLayout {
                     id: row
@@ -268,6 +269,11 @@ FocusScope {
                 MouseArea {
                     anchors.fill: parent
                     anchors.rightMargin: card.rowHeight
+                    hoverEnabled: true
+
+                    onEntered: card.hovered = true
+                    onExited: card.hovered = false
+
                     onClicked: {
                         root.currentIndex = card.index;
                         root.copy(card.index);
