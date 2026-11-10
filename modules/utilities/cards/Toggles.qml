@@ -209,6 +209,8 @@ StyledRect {
                         isToggle: false
                         onClicked: {
                             root.screenState.utilities = false;
+                            if (root.screenState.launcher)
+                                root.screenState.launcher = false;
                             WindowFactory.create();
                         }
                     }
