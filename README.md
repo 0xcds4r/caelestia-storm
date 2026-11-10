@@ -1,35 +1,37 @@
 # Caelestia Storm
 
-Мой рабочий райс на базе [caelestia-dots/shell](https://github.com/caelestia-dots/shell) —
-форк системного конфига Quickshell с переделанной левой панелью и обзором воркспейсов.
+A personal rice built on top of [caelestia-dots/shell](https://github.com/caelestia-dots/shell) —
+a fork of the Quickshell config with a reworked left bar and a workspace overview.
 
 ![Caelestia Storm](./preview.png)
 
-Всё, что отличается от апстрима, описано в [`LOCAL-CHANGES.md`](./LOCAL-CHANGES.md).
+Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LOCAL-CHANGES.md).
 
-## Что изменено
+## What's changed
 
-**Бар (левая панель)**
-- одна ячейка на воркспейс, вместо точки — настоящая иконка приложения (`.desktop`),
-  у активного окна — свечение по силуэту иконки (`MultiEffect` shadow);
-- в блоке статуса вместо caps/num и bluetooth — текущая раскладка (`ru`/`us`).
+**Bar (left panel)**
+- one cell per workspace, with the real app icon (from the `.desktop` entry) instead of a dot;
+- the focused window gets a glow that follows the icon's silhouette (`MultiEffect` shadow);
+- the status block shows the current keyboard layout (`us`/`ru`) instead of caps/num and bluetooth icons.
 
-**Super / лаунчер**
-- обычный поиск caelestia, а над ним сетка воркспейсов 2×5 с живыми превью окон
-  (`ScreencopyView`), перетаскиванием окон между воркспейсами, навигацией стрелками,
-  `Enter` и колесом мыши (страницы воркспейсов);
-- справа: компактный Keep awake и Quick toggles, в которых живут ползунки громкости
-  и яркости; клик по иконке динамика глушит звук (0 % / обратно);
-- OSD громкости/яркости отключён — всё в лаунчере.
+**Super / launcher**
+- the stock caelestia search, with a 2×5 workspace grid above it:
+  - live window previews (`ScreencopyView`), drag a window onto another workspace to move it;
+  - arrow keys move the selection (`↑/↓` by rows, `←/→` by one), `Enter` jumps to the workspace
+    (or focuses its window), the scroll wheel pages through workspace groups;
+- on the right: a compact *Keep awake* card and *Quick toggles*, where the volume and
+  brightness sliders live (click the speaker icon to mute — volume drops to 0 % and back);
+- the stock volume/brightness OSD is disabled — everything happens in the launcher;
+- the dashboard (Dashboard / Media / Performance / Weather) expands only together with the launcher.
 
-**Прочее**
-- Keep awake переживает перезапуск шелла (`~/.local/state/caelestia/idle-inhibited`);
-- Nexus → About: «Caelestia Storm», свой логотип, `v2.5.0 | STORM 1.0`;
-- логотип в баре — марка Arch.
+**Other**
+- *Keep awake* survives shell restarts (`~/.local/state/caelestia/idle-inhibited`);
+- Nexus → About: “Caelestia Storm”, custom logo, `v2.5.0 | STORM 1.0`;
+- the bar logo is the Arch mark, wallpaper is drawn by the shell.
 
-## Установка
+## Install
 
-Нужен `caelestia-shell` 2.5.0 из AUR (или совместимая версия) и `quickshell-git`.
+Requires `caelestia-shell` 2.5.0 from the AUR (or a compatible version) and `quickshell-git`.
 
 ```sh
 git clone https://github.com/0xcds4r/caelestia-storm.git ~/.config/quickshell/caelestia
@@ -38,15 +40,15 @@ cp ~/.config/quickshell/caelestia/extra/caelestia-shell.json ~/.config/caelestia
 caelestia shell -r -d
 ```
 
-`extra/caelestia-shell.json` — конфиг шелла (громкость/яркость в Quick toggles,
-10 воркспейсов, `osd.enabled: false` и т.д.).
+`extra/caelestia-shell.json` is the shell config (volume/brightness inside Quick toggles,
+10 workspaces, `osd.enabled: false`, etc.).
 
-## Обновление с апстрима
+## Updating from upstream
 
-Форк полностью подменяет пакетный конфиг из `/etc/xdg/quickshell/caelestia`.
-После обновления `caelestia-shell` нужно пересинхронизировать и заново накатить
-правки — порядок описан в `LOCAL-CHANGES.md`.
+The fork fully shadows the packaged config in `/etc/xdg/quickshell/caelestia`.
+After updating `caelestia-shell` you have to re-sync and re-apply the patches —
+see `LOCAL-CHANGES.md` for the exact steps.
 
-## Лицензия
+## License
 
-GPL-3.0-only, как и у апстрима (см. `LICENSE`).
+GPL-3.0-only, same as upstream (see `LICENSE`).
