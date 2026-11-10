@@ -39,6 +39,16 @@ Item {
 
     Component.onCompleted: Qt.callLater(() => Apps) // Load apps on init
 
+    // Local patch: dashboard is only expanded while the launcher (Super) is open
+    Connections {
+        function onLauncherChanged(): void {
+            if (Config.dashboard.enabled)
+                root.screenState.dashboard = root.screenState.launcher;
+        }
+
+        target: root.screenState
+    }
+
     Behavior on offsetScale {
         Anim {}
     }

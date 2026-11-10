@@ -207,8 +207,8 @@ CustomMouseArea {
                 screenState.launcher = false;
         }
 
-        // Show dashboard on hover
-        const showDashboard = Config.dashboard.showOnHover && inTopPanel(panels.dashboard, x, y);
+        // Local patch: dashboard opens only together with the launcher (Super)
+        const showDashboard = Config.dashboard.enabled && Config.dashboard.showOnHover && inTopPanel(panels.dashboard, x, y);
 
         // Always update visibility based on hover if not in shortcut mode
         if (!dashboardShortcutActive) {

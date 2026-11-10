@@ -112,7 +112,16 @@ Quickshell предпочитает `~/.config/quickshell/<name>`, поэтом�
 `AnimatedLogo` заменён на `Image` (`assets/storm-logo.png`, 128×128, скопирован из
 `~/Downloads/Crisp Thundercloud and Lavender Swirl.png`).
 
-## 8. `~/.config/caelestia/shell.json`
+## 8. Dashboard только вместе с Super
+
+- `shell.json`: `dashboard.showOnHover: false` — верхняя панель больше не раскрывается
+  наведением на верхний край.
+- `modules/launcher/Wrapper.qml`: `Connections` на `screenState` — `dashboard`
+  включается/выключается вместе с лаунчером (`dashboard = launcher`).
+- `modules/drawers/Interactions.qml`: hover-блок дашборда работает только при
+  `dashboard.showOnHover` (иначе каждый mousemove гасил панель).
+
+## 9. `~/.config/caelestia/shell.json`
 
 `bar.workspaces.activeIndicator: false` — штатный индикатор (залитая пилюля)
 отключён, иначе он перекрашивает/перекрывает иконку.
