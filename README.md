@@ -11,10 +11,12 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 
 ## What's changed
 
-**Bar (left panel)**
+**Bar (left panel by default)**
 - one cell per workspace, with the real app icon (from the `.desktop` entry) instead of a dot;
 - the focused window gets a glow that follows the icon's silhouette (`MultiEffect` shadow);
-- the status block shows the current keyboard layout (`us`/`ru`) instead of caps/num and bluetooth icons.
+- the status block shows the current keyboard layout (`us`/`ru`), a microphone mute toggle, the
+  network icon (a `vpn_lock` globe while the traffic goes through a tunnel) and a power button;
+- the bar can sit on the **left, right, top or bottom** — Settings → Taskbar → Position.
 
 **Super / launcher**
 - the stock caelestia search, with a 2×5 workspace grid above it:

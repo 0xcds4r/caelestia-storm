@@ -65,8 +65,10 @@ StyledClippingRect {
         return index % shown;
     }
 
-    implicitWidth: Tokens.sizes.bar.innerWidth
-    implicitHeight: workspaces.layoutHeight + workspaces.anchors.margins * 2
+    readonly property bool vertical: BarPos.vertical
+
+    implicitWidth: root.vertical ? Tokens.sizes.bar.innerWidth : horizontal.margins * 2 + horizontalLayout.implicitWidth
+    implicitHeight: root.vertical ? workspaces.layoutHeight + workspaces.anchors.margins * 2 : Tokens.sizes.bar.innerWidth
 
     color: Colours.tPalette.m3surfaceContainer
     radius: Tokens.rounding.full
@@ -237,5 +239,60 @@ StyledClippingRect {
 
     Behavior on implicitHeight {
         Anim {}
+    }
+
+    Item {
+        id: horizontal
+
+        readonly property int margins: Tokens.padding.extraSmall
+
+        anchors.fill: parent
+        visible: !root.fullscreen && !root.vertical
+        opacity: root.onSpecial ? 0.5 : 1
+        scale: root.onSpecial ? 0.8 : 1
+
+        Row {
+            id: horizontalLayout
+
+            anchors.centerIn: parent
+            spacing: Tokens.spacing.extraSmall
+
+            Repeater {
+                model: ScriptModel {
+                    values: root.wsIds
+                }
+
+                delegate: Item {
+                    id: cell
+
+                    required property int index
+                    required property var modelData
+
+                    readonly property int cellSize: Tokens.sizes.bar.innerWidth - Tokens.padding.small
+
+                    implicitWidth: cellSize
+                    implicitHeight: cellSize
+                    width: cellSize
+                    height: cellSize
+
+                    Workspace {
+                        anchors.fill: parent
+
+                        index: cell.index
+                        modelData: cell.modelData
+                        activeWsId: root.activeWsId
+                        ws: Config.bar.workspaces.showUnoccupied ? root.groupOffset + cell.index + 1 : cell.modelData
+                        monitor: root.monitor
+
+                        displayType: Config.bar.workspaces.displayType
+                        showWindows: Config.bar.workspaces.showWindows
+                        iconRules: GlobalConfig.bar.workspaces.workspaceIcons
+                        activeLabel: Config.bar.workspaces.activeLabel
+                        occupiedLabel: Config.bar.workspaces.occupiedLabel
+                        label: Config.bar.workspaces.label
+                    }
+                }
+            }
+        }
     }
 }

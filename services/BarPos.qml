@@ -27,7 +27,7 @@ Singleton {
             return;
 
         root.position = pos;
-        writer.command = ["sh", "-c", `mkdir -p '${root.stateDir}' && printf '%s' '${pos}' > '${root.path}'`];
+        writer.command = ["sh", "-c", `mkdir -p '${root.stateDir}' && printf '%s' '${pos}' > '${root.path}' && sleep 0.4 && setsid caelestia shell -r -d >/dev/null 2>&1 &`];
         writer.running = true;
     }
 

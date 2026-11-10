@@ -54,7 +54,7 @@ CustomMouseArea {
     function onWheel(event: WheelEvent): void {
         if (fullscreen)
             return;
-        if (event.x < bar.implicitWidth) {
+        if (BarPos.vertical ? event.x < bar.implicitWidth : event.y < bar.implicitHeight) {
             bar.handleWheel(event.y, event.angleDelta);
         }
     }
@@ -233,9 +233,9 @@ CustomMouseArea {
             utilitiesShortcutActive = false;
 
         // Show popouts on hover (not while the launcher covers the screen: they'd render behind it)
-        if (x < bar.implicitWidth) {
+        if (BarPos.vertical ? x < bar.implicitWidth : y < bar.implicitHeight) {
             if (!screenState.launcher)
-                bar.checkPopout(y);
+                bar.checkPopout(BarPos.vertical ? y : x);
         } else if ((!popouts.currentName.startsWith("traymenu") || ((popouts.current as StackView)?.depth ?? 0) <= 1) && !inLeftPanel(panels.popoutsWrapper, x, y)) {
             popouts.hasCurrent = false;
             bar.closeTray();
