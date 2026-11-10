@@ -174,8 +174,15 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
 - `modules/drawers/ContentWindow.qml` — the bar slot is placed with explicit
   `x/y/width/height` bindings (right/bottom aware) instead of anchors.
 
-Still TODO: horizontal variants of the bar entries (workspaces pill, tray, clock,
-active window, status icons) and the drawer/popout geometry flip for `right`/`top`/`bottom`.
+Done so far: `Tray`, `Clock`, `ActiveWindow` and `StatusIcons` have horizontal variants
+(`GridLayout`/`RowLayout`, axis-aware sizes and popout anchors).
+
+Still TODO: the workspaces pill is vertical-only (`Workspaces` + `LazyListView`, `OccupiedBg`,
+`ActiveIndicator` all use `layoutY`/`preferredHeight`; a plain `Row` of `Workspace` delegates
+comes out with zero width because the delegate's size comes from the `LazyListView` attached
+properties), the drawer/popout geometry for `right`/`top`/`bottom`, and the Nexus settings row.
+`~/.local/state/caelestia/bar-position` is `left` by default; setting `top` renders a partly
+broken bar until the remaining work is done.
 
 ## 9. `~/.config/caelestia/shell.json`
 
