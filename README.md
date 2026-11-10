@@ -1,4 +1,6 @@
-# <img src="./assets/storm-logo.png" width="34" alt="logo" /> Caelestia Storm
+<h1>
+  <img src="./assets/storm-logo.png" width="40" alt="logo" align="absmiddle" /> Caelestia Storm
+</h1>
 
 A personal rice built on top of [caelestia-dots/shell](https://github.com/caelestia-dots/shell) —
 a fork of the Quickshell config with a reworked left bar and a workspace overview.
