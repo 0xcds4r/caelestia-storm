@@ -70,7 +70,11 @@ Scope {
                 const screenState = ShellState.forActive();
                 if (!screenState)
                     return;
-                screenState.clipboardMode = false;
+                // when closing, keep clipboardMode until the drawer finishes hiding
+                // (the launcher Wrapper clears it with a timer), otherwise the
+                // normal launcher flashes during the close animation
+                if (!screenState.launcher)
+                    screenState.clipboardMode = false;
                 screenState.launcher = !screenState.launcher;
             }
             root.launcherInterrupted = false;
