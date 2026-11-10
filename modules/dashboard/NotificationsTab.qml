@@ -74,7 +74,7 @@ Item {
             }
 
             delegate: Notifications.Notification {
-                width: Tokens.sizes.notifs.width
+                width: root.cardWidth - Tokens.padding.extraLarge * 2
             }
         }
 
