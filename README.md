@@ -3,6 +3,8 @@
 Мой рабочий райс на базе [caelestia-dots/shell](https://github.com/caelestia-dots/shell) —
 форк системного конфига Quickshell с переделанной левой панелью и обзором воркспейсов.
 
+![Caelestia Storm](./preview.png)
+
 Всё, что отличается от апстрима, описано в [`LOCAL-CHANGES.md`](./LOCAL-CHANGES.md).
 
 ## Что изменено
