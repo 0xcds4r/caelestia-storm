@@ -61,6 +61,11 @@ Item {
 
         active: root.shouldBeVisible
 
+        onLoaded: {
+            item.width = Qt.binding(() => root.vertical ? root.thickness : root.width);
+            item.height = Qt.binding(() => root.vertical ? root.height : root.thickness);
+        }
+
         sourceComponent: Bar {
             screen: root.screen
             screenState: root.screenState
