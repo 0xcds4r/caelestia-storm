@@ -20,7 +20,7 @@ Item {
     readonly property int cardWidth: 720
 
     implicitWidth: root.cardWidth
-    implicitHeight: Math.max(160, column.implicitHeight)
+    implicitHeight: root.items.length === 0 ? 110 : Math.max(160, column.implicitHeight)
 
     ColumnLayout {
         id: column
@@ -184,8 +184,8 @@ Item {
 
         StyledText {
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: Tokens.padding.large
-            Layout.bottomMargin: Tokens.padding.large
+            Layout.topMargin: Tokens.padding.medium
+            Layout.bottomMargin: Tokens.padding.medium
             visible: root.items.length === 0
             text: Tr.tr("No notifications")
             color: Colours.palette.m3onSurfaceVariant
