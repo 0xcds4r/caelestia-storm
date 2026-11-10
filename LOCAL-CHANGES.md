@@ -90,8 +90,11 @@ is empty the workspace grid is shown above it, and typing switches back to the a
 
 ## 4b. Notifications tab in the dashboard
 
-- `modules/dashboard/NotificationsTab.qml` (new) — a tab with the active notifications
-  (reuses `Notifications.Notification`), a counter and a clear-all button; empty state text.
+- `modules/dashboard/NotificationsTab.qml` (new) — a tab with the active notifications.
+  The cards are custom (icon / summary / body / app name / time / close button) instead of
+  the stock `Notification.qml`: its text cross-fade glitched when the card width was bound
+  to the list width (title drawn twice on top of itself). Cards fill the pane width, a
+  counter and a clear-all button sit in the header, plus an empty state.
 - `modules/dashboard/Content.qml` — the tab is added to `dashboardTabs`
   (icon `notifications`, always enabled).
 
