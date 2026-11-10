@@ -107,7 +107,8 @@ is empty the workspace grid is shown above it, and typing switches back to the a
   `PNG 703×616 · 97 KiB` label. Click or `↑/↓` + `Enter` copies via `wl-copy`; the `✕` on a
   row deletes that entry (`cliphist list | awk | cliphist delete`), the `delete_sweep` icon
   in the header wipes all (`cliphist wipe`); `Delete` removes the selected row, `Esc` closes.
-  No search input in this mode — the launcher's search bar is hidden.
+  No search input in this mode — the launcher's search bar is hidden. Rows have a hover
+  highlight (`m3surfaceContainerHighest`).
 - `components/ScreenState.qml` — new `clipboardMode` flag.
 - `modules/Shortcuts.qml` — global shortcut `caelestia:clipboard`
   (`Super+V`): opens the launcher in clipboard mode, again — closes it.
