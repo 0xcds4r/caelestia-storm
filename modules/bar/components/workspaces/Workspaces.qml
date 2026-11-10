@@ -65,8 +65,10 @@ StyledClippingRect {
         return index % shown;
     }
 
-    implicitWidth: Tokens.sizes.bar.innerWidth
-    implicitHeight: workspaces.layoutHeight + workspaces.anchors.margins * 2
+    readonly property bool vertical: BarPos.vertical
+
+    implicitWidth: root.vertical ? Tokens.sizes.bar.innerWidth : horizontal.anchors.margins * 2 + horizontalLayout.implicitWidth
+    implicitHeight: root.vertical ? workspaces.layoutHeight + workspaces.anchors.margins * 2 : Tokens.sizes.bar.innerWidth
 
     color: Colours.tPalette.m3surfaceContainer
     radius: Tokens.rounding.full
@@ -75,7 +77,7 @@ StyledClippingRect {
         anchors.fill: parent
         scale: root.onSpecial ? 0.8 : 1
         opacity: root.onSpecial ? 0.5 : 1
-        visible: !root.fullscreen
+        visible: !root.fullscreen && root.vertical
 
         layer.enabled: root.blur > 0
         layer.effect: MultiEffect {
@@ -237,5 +239,44 @@ StyledClippingRect {
 
     Behavior on implicitHeight {
         Anim {}
+    }
+
+    Item {
+        id: horizontal
+
+        anchors.fill: parent
+        anchors.margins: Tokens.padding.extraSmall
+        visible: !root.fullscreen && !root.vertical
+        opacity: root.onSpecial ? 0.5 : 1
+        scale: root.onSpecial ? 0.8 : 1
+
+        Row {
+            id: horizontalLayout
+
+            anchors.centerIn: parent
+            spacing: Tokens.spacing.extraSmall
+
+            Repeater {
+                model: ScriptModel {
+                    values: root.wsIds
+                }
+
+                delegate: Workspace {
+                    width: Tokens.sizes.bar.innerWidth - Tokens.padding.small
+                    height: width
+
+                    activeWsId: root.activeWsId
+                    ws: Config.bar.workspaces.showUnoccupied ? root.groupOffset + index + 1 : modelData
+                    monitor: root.monitor
+
+                    displayType: Config.bar.workspaces.displayType
+                    showWindows: Config.bar.workspaces.showWindows
+                    iconRules: GlobalConfig.bar.workspaces.workspaceIcons
+                    activeLabel: Config.bar.workspaces.activeLabel
+                    occupiedLabel: Config.bar.workspaces.occupiedLabel
+                    label: Config.bar.workspaces.label
+                }
+            }
+        }
     }
 }
