@@ -46,7 +46,7 @@ Item {
     Connections {
         function onLauncherChanged(): void {
             if (Config.dashboard.enabled)
-                root.screenState.dashboard = root.screenState.launcher;
+                root.screenState.dashboard = root.screenState.launcher && !root.screenState.clipboardMode;
 
             // Local patch: the launcher owns the screen, dismiss any tray popout
             if (root.screenState.launcher) {
