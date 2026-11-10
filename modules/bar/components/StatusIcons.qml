@@ -43,19 +43,26 @@ StyledRect {
     color: Colours.tPalette.m3surfaceContainer
     radius: Tokens.rounding.full
 
-    clip: true
-    implicitWidth: Tokens.sizes.bar.innerWidth
-    implicitHeight: iconColumn.implicitHeight + Tokens.padding.medium * 2
+    readonly property bool vertical: BarPos.vertical
 
-    ColumnLayout {
+    clip: true
+    implicitWidth: root.vertical ? Tokens.sizes.bar.innerWidth : iconColumn.implicitWidth + Tokens.padding.medium * 2
+    implicitHeight: root.vertical ? iconColumn.implicitHeight + Tokens.padding.medium * 2 : Tokens.sizes.bar.innerWidth
+
+    GridLayout {
         id: iconColumn
 
         anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: Tokens.padding.medium
+        anchors.right: root.vertical ? parent.right : undefined
+        anchors.bottom: root.vertical ? parent.bottom : undefined
+        anchors.bottomMargin: root.vertical ? Tokens.padding.medium : 0
+        anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
+        anchors.leftMargin: root.vertical ? 0 : Tokens.padding.medium
 
-        spacing: 0
+        columns: root.vertical ? 1 : -1
+        rows: root.vertical ? -1 : 1
+        rowSpacing: 0
+        columnSpacing: 0
 
         Repeater {
             model: ScriptModel {
