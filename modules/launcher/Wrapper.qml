@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Caelestia.Config
 import qs.components
 import qs.modules.launcher.services
@@ -25,10 +26,12 @@ Item {
     property real offsetScale: shouldBeActive ? 0 : 1
 
     onShouldBeActiveChanged: {
-        if (shouldBeActive)
+        if (shouldBeActive) {
             implicitHeight = Qt.binding(() => content.implicitHeight);
-        else
+        } else {
+            root.screenState.clipboardMode = false;
             implicitHeight = implicitHeight; // Break binding during close anim
+        }
     }
 
     visible: offsetScale < 1
@@ -71,6 +74,9 @@ Item {
             screenState: root.screenState
             panels: root.panels
             maxHeight: root.maxHeight
+            clipboardMode: root.screenState.clipboardMode
+
+            onClipboardDismissed: root.screenState.clipboardMode = false
         }
     }
 }

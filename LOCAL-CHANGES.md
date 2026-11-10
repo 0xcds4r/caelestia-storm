@@ -99,6 +99,19 @@ is empty the workspace grid is shown above it, and typing switches back to the a
 - `modules/dashboard/Content.qml` — the tab is added to `dashboardTabs`
   (icon `notifications`, always enabled).
 
+## 4c. Clipboard panel (Super+V)
+
+- `modules/overview/ClipboardPanel.qml` (new) — clipboard history from `cliphist list`,
+  rendered as styled rows (text / `image` icon, two-line elide), the current row is
+  highlighted. Click or `↑/↓` + `Enter` copies via `cliphist decode <id> | wl-copy`;
+  `Esc` closes. Refreshes every time the panel opens, shows an empty state.
+- `components/ScreenState.qml` — new `clipboardMode` flag.
+- `modules/Shortcuts.qml` — global shortcut `caelestia:clipboard`
+  (`Super+V`): opens the launcher in clipboard mode, again — closes it.
+- `modules/launcher/Content.qml` — in clipboard mode the overview, app list and search bar
+  are hidden and the panel is shown; keyboard focus is moved to it.
+- `modules/launcher/Wrapper.qml` — passes the flag through.
+
 ## 5. Recorder state does not freeze
 
 `services/Recorder.qml` — the `pidof` poll runs while `refCount > 0 || props.running`, so the
