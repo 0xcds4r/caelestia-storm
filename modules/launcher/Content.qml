@@ -103,6 +103,9 @@ Item {
         visible: !root.clipboardMode
         objectName: "launcherSearch"
 
+        // hide the dashboard while a search is running
+        onTextChanged: root.screenState.dashboard = root.screenState.launcher && text.length === 0
+
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -200,7 +203,9 @@ Item {
 
         Connections {
             function onLauncherChanged(): void {
-                if (!root.screenState.launcher)
+                // Clear on open, not on close: otherwise the overview pops up
+                // during the close animation when the query was non-empty.
+                if (root.screenState.launcher)
                     search.text = "";
             }
 
