@@ -10,12 +10,7 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    readonly property var positionItem: ({
-            left: posLeft,
-            right: posRight,
-            top: posTop,
-            bottom: posBottom
-        })[BarPos.position] ?? posLeft
+    readonly property var positionItem: posLeft
 
     title: Tr.tr("Taskbar")
     isSubPage: true
@@ -39,34 +34,13 @@ PageBase {
             active: root.positionItem
             onSelected: item => BarPos.set(item.value)
 
-            menuItems: [posLeft, posRight, posTop, posBottom]
+            menuItems: [posLeft]
 
             MenuItem {
                 id: posLeft
 
                 readonly property string value: "left"
                 text: Tr.tr("Left")
-            }
-
-            MenuItem {
-                id: posRight
-
-                readonly property string value: "right"
-                text: Tr.tr("Right")
-            }
-
-            MenuItem {
-                id: posTop
-
-                readonly property string value: "top"
-                text: Tr.tr("Top")
-            }
-
-            MenuItem {
-                id: posBottom
-
-                readonly property string value: "bottom"
-                text: Tr.tr("Bottom")
             }
         }
 
