@@ -232,9 +232,10 @@ CustomMouseArea {
         if (utilitiesShortcutActive && inBottomPanel(panels.utilities, x, y, true))
             utilitiesShortcutActive = false;
 
-        // Show popouts on hover
+        // Show popouts on hover (not while the launcher covers the screen: they'd render behind it)
         if (x < bar.implicitWidth) {
-            bar.checkPopout(y);
+            if (!screenState.launcher)
+                bar.checkPopout(y);
         } else if ((!popouts.currentName.startsWith("traymenu") || ((popouts.current as StackView)?.depth ?? 0) <= 1) && !inLeftPanel(panels.popoutsWrapper, x, y)) {
             popouts.hasCurrent = false;
             bar.closeTray();
