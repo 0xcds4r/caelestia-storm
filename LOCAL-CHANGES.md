@@ -94,7 +94,8 @@ is empty the workspace grid is shown above it, and typing switches back to the a
   The cards are custom (icon / summary / body / app name / time / close button) instead of
   the stock `Notification.qml`: its text cross-fade glitched when the card width was bound
   to the list width (title drawn twice on top of itself). Cards fill the pane width, a
-  counter and a clear-all button sit in the header, plus an empty state.
+  counter and a clear-all button sit in the header, plus an empty state. The pane height
+  follows the content (`implicitHeight` of the column, list capped at 460 px and scrolls).
 - `modules/dashboard/Content.qml` — the tab is added to `dashboardTabs`
   (icon `notifications`, always enabled).
 
