@@ -100,6 +100,7 @@ Item {
     SearchBar {
         id: search
 
+        visible: !root.clipboardMode
         objectName: "launcherSearch"
 
         anchors.left: parent.left
