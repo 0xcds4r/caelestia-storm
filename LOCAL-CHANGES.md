@@ -170,6 +170,10 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
   `lockStatus`/`bluetooth` removed;
 - `modules/bar/components/StatusIcons.qml`: a click router on the pill — clicking the
   microphone entry toggles mic mute (`Audio.toggleMicMute()`), other entries stay as before;
+- `services/Tunnel.qml` (new) — polls `ip route get 1.1.1.1` every 5 s and reports whether the
+  default route goes through a tunnel (`tun*`, `tap*`, `wg*`, `ppp*`, tailscale, …);
+- `modules/bar/components/StatusIcons.qml`: the network icon becomes a `vpn_lock` globe while
+  `Tunnel.active`, and the pill routes clicks to the entry under the cursor (mic = mute toggle);
 - `services/Hypr.qml`: `kbLayout` falls back to the last known value — `activeKeymap` is
   briefly empty while Hyprland reloads devices (caps/num lock, layout switch), which used to
   show `??`. The layout list parser also accepts descriptions with commas/digits now;

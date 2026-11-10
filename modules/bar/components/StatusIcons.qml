@@ -130,7 +130,7 @@ StyledRect {
                     delegate: EntryWrapper {
                         MaterialIcon {
                             animate: true
-                            text: Nmcli.activeEthernet ? "cable" : Nmcli.active ? Icons.getNetworkIcon(Nmcli.active.strength ?? 0) : "wifi_off"
+                            text: Tunnel.active ? "vpn_lock" : Nmcli.activeEthernet ? "cable" : Nmcli.active ? Icons.getNetworkIcon(Nmcli.active.strength ?? 0) : "wifi_off"
                             color: root.colour
                         }
                     }
