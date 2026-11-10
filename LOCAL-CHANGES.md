@@ -110,7 +110,10 @@ is empty the workspace grid is shown above it, and typing switches back to the a
   (`Super+V`): opens the launcher in clipboard mode, again — closes it.
 - `modules/launcher/Content.qml` — in clipboard mode the overview, app list and search bar
   are hidden and the panel is shown; keyboard focus is moved to it.
-- `modules/launcher/Wrapper.qml` — passes the flag through and keeps the dashboard closed (`dashboard = launcher && !clipboardMode`), so the clipboard is a standalone panel.
+- `modules/launcher/Wrapper.qml` — passes the flag through and keeps the dashboard closed
+(`dashboard = launcher && !clipboardMode`), so the clipboard is a standalone panel.
+On close the flag is cleared by a 280 ms timer *after* the drawer finished hiding, otherwise
+the normal launcher flashed during the close animation.
 
 ## 5. Recorder state does not freeze
 

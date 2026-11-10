@@ -29,7 +29,9 @@ Item {
         if (shouldBeActive) {
             implicitHeight = Qt.binding(() => content.implicitHeight);
         } else {
-            root.screenState.clipboardMode = false;
+            // keep the clipboard panel visible while the drawer animates out,
+            // otherwise the normal launcher flashes during the close animation
+            hideTimer.restart();
             implicitHeight = implicitHeight; // Break binding during close anim
         }
     }
@@ -58,6 +60,14 @@ Item {
         target: root.screenState
     }
 
+    Timer {
+        id: hideTimer
+
+        interval: 280
+
+        onTriggered: root.screenState.clipboardMode = false;
+    }
+
     Behavior on offsetScale {
         Anim {}
     }
@@ -76,7 +86,7 @@ Item {
             maxHeight: root.maxHeight
             clipboardMode: root.screenState.clipboardMode
 
-            onClipboardDismissed: root.screenState.clipboardMode = false
+            onClipboardDismissed: root.screenState.launcher = false
         }
     }
 }
