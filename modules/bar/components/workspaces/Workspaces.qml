@@ -245,11 +245,29 @@ StyledClippingRect {
         id: horizontal
 
         readonly property int margins: Tokens.padding.extraSmall
+        readonly property int cellSize: Tokens.sizes.bar.innerWidth - Tokens.padding.small
+        readonly property int activeIndex: root.wsIds.indexOf(root.activeWsId)
 
         anchors.fill: parent
         visible: !root.fullscreen && !root.vertical
         opacity: root.onSpecial ? 0.5 : 1
         scale: root.onSpecial ? 0.8 : 1
+
+        StyledRect {
+            id: activePill
+
+            visible: horizontal.activeIndex >= 0
+            x: horizontalLayout.x + horizontal.activeIndex * (horizontal.cellSize + horizontalLayout.spacing)
+            y: horizontalLayout.y
+            width: horizontal.cellSize
+            height: horizontal.cellSize
+            radius: Tokens.rounding.full
+            color: Colours.palette.m3primary
+
+            Behavior on x {
+                Anim {}
+            }
+        }
 
         Row {
             id: horizontalLayout
@@ -268,12 +286,10 @@ StyledClippingRect {
                     required property int index
                     required property var modelData
 
-                    readonly property int cellSize: Tokens.sizes.bar.innerWidth - Tokens.padding.small
-
-                    implicitWidth: cellSize
-                    implicitHeight: cellSize
-                    width: cellSize
-                    height: cellSize
+                    implicitWidth: horizontal.cellSize
+                    implicitHeight: horizontal.cellSize
+                    width: horizontal.cellSize
+                    height: horizontal.cellSize
 
                     Workspace {
                         anchors.fill: parent
