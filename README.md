@@ -16,7 +16,8 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - the focused window gets a glow that follows the icon's silhouette (`MultiEffect` shadow);
 - the status block shows the current keyboard layout (`us`/`ru`), a microphone mute toggle, the
   network icon (a `vpn_lock` globe while the traffic goes through a tunnel) and a power button;
-- the bar can sit on the **left, right, top or bottom** — Settings → Taskbar → Position.
+- the bar can sit on the **left, right, top or bottom** — Settings → Taskbar → Position;
+- `Alt+J` hides/shows the whole taskbar.
 
 **Super / launcher**
 - the stock caelestia search, with a 2×5 workspace grid above it:

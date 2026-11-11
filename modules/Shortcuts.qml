@@ -89,6 +89,16 @@ Scope {
         onPressed: root.launcherInterrupted = true
     }
 
+    // Local patch: hide/show the whole taskbar
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "barToggle"
+        description: "Hide or show the taskbar"
+
+        onPressed: BarPos.toggleHidden()
+    }
+
     // Local patch: Super+V opens the clipboard panel inside the launcher
     // qmllint disable unresolved-type
     CustomShortcut {
