@@ -22,17 +22,18 @@ Item {
     implicitWidth: root.vertical ? content.implicitWidth * (1 - offsetScale) : content.implicitWidth
     implicitHeight: root.vertical ? content.implicitHeight : content.implicitHeight * (1 - offsetScale)
 
+    // The popout background is a bit wider than the content (see popoutBg in ContentWindow.qml),
+    // split evenly on each side. Keep that whole shape on screen so the content stays centred.
+    readonly property real sidePad: root.vertical ? 0 : content.nonAnimWidth * 0.03
+
     x: {
         if (content.isDetached)
             return (parent.width - content.nonAnimWidth) / 2;
         if (root.vertical)
             return 0;
 
-        const off = content.currentCenter - borderThickness - content.nonAnimWidth / 2;
-        const diff = parent.width - Math.floor(off + content.nonAnimWidth);
-        if (diff < 0)
-            return off + diff;
-        return Math.max(off, 0);
+        const off = content.currentCenter - content.nonAnimWidth / 2;
+        return Math.max(Math.min(off, parent.width - content.nonAnimWidth - sidePad), sidePad);
     }
 
     y: {

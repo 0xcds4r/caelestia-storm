@@ -208,7 +208,11 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
   bar) and the popout region shrinks on the height axis when the bar is horizontal.
 - `modules/bar/popouts/ClipWrapper.qml` — orientation aware: on a horizontal bar the popout is
   centred on the hovered entry's x and slides down from the bar (`height` animation) instead of being
-  pinned to the left edge and positioned by `y`.
+  pinned to the left edge and positioned by `y`. The position is clamped so the whole popout
+  background (which is a little wider than the content) stays on screen.
+- `modules/drawers/ContentWindow.qml` — the popout background's extra width (deform padding) is
+  added on the left only for a vertical bar (so the panel tucks under the bar) and split evenly for a
+  horizontal one, so the popout content is centred in its background.
 - `modules/bar/Bar.qml` — `checkPopout()` hit-tests status icons by their own geometry (the
   `GridLayout`'s width lagged behind its children, so `childAt` missed them in horizontal mode).
 - `modules/bar/popouts/Wrapper.qml` — the wrapper now takes its own width/height from the content

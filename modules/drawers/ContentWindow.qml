@@ -234,12 +234,16 @@ StyledWindow {
         PanelBg {
             id: popoutBg
 
-            // Extra width to prevent vertical movement deformation partially detaching panel from bar
-            property real extraWidth: panels.popouts.isDetached ? 0 : 0.2
+            // Extra width to prevent vertical movement deformation partially detaching panel from bar.
+            // A horizontal bar needs much less of it: it is split evenly around the content and only
+            // has to cover the deformation, not the gap to the bar.
+            property real extraWidth: panels.popouts.isDetached ? 0 : BarPos.vertical ? 0.2 : 0.06
 
             panel: panels.popoutsWrapper
             deformAmount: panels.popouts.isDetached ? 0.05 : panels.popouts.hasCurrent ? 0.15 : 0.1
-            x: panels.popoutsWrapper.x + panels.popouts.x + (BarPos.vertical ? bar.implicitWidth : 0) - panels.popouts.width * extraWidth
+            // On a vertical bar the extra width is added on the left so the panel tucks under the bar;
+            // on a horizontal bar it is split evenly so the popout stays centred on its entry.
+            x: panels.popoutsWrapper.x + panels.popouts.x + (BarPos.vertical ? bar.implicitWidth - panels.popouts.width * extraWidth : -panels.popouts.width * extraWidth / 2)
             implicitWidth: panels.popouts.width * (1 + extraWidth)
 
             Behavior on extraWidth {
