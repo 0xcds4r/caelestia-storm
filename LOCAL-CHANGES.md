@@ -209,6 +209,11 @@ a `MouseArea` over the card switches
 `GlobalConfig.services.weatherUnits` between `Fahrenheit` and `Celsius` (same value the Nexus
 Language & Region page writes).
 
+## 8e. Clock toggles 24h/12h
+
+`modules/bar/components/Clock.qml` — a `MouseArea` over the clock switches
+`GlobalConfig.services.clockFormat` between `TwelveHour` and `TwentyFourHour`.
+
 ## 9. `~/.config/caelestia/shell.json`
 
 - `bar.workspaces.activeIndicator: false` — the stock filled pill indicator is disabled,
