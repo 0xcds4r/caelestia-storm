@@ -99,6 +99,9 @@ is empty the workspace grid is shown above it, and typing switches back to the a
   to the list width (title drawn twice on top of itself). Cards fill the pane width, a
   counter and a clear-all button sit in the header, plus an empty state. The pane height
   follows the content (`implicitHeight` of the column, list capped at 460 px and scrolls).
+  Cost control: at most 30 entries, summary/body rendered as short **plain-text** excerpts
+  (120/220 chars) instead of markdown, `cacheBuffer: 0` — long notifications used to make the
+  tab lag badly.
 - `modules/dashboard/Content.qml` — the tab is added to `dashboardTabs`
   (icon `notifications`, always enabled).
 
