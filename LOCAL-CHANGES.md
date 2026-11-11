@@ -289,3 +289,21 @@ cp -a /etc/xdg/quickshell/caelestia/. ~/.config/quickshell/caelestia/
 
 Or drop the fork entirely and go back to the stock config:
 `rm -rf ~/.config/quickshell/caelestia && caelestia shell -r -d`
+
+## Verification checklist (read before touching the bar)
+
+Learned the hard way — never leave the machine in a half-tested state.
+
+- **Key injection:** send explicit press *and* release (`ydotool key 1:1`, wait, `ydotool key 1:0`).
+  A bare `ydotool key 1` can emit only the release, which looks exactly like a dead Escape key.
+  Never leave a virtual device with stuck keys; if keys misbehave, re-send the releases first and
+  only then blame the config.
+- **Shell restarts:** batch edits, then `caelestia shell -k` + `caelestia shell -d` once. Do not
+  restart after every one-line change.
+- **Always restore the working state before reporting done:**
+  - `~/.local/state/caelestia/bar-position` = `left`;
+  - keyboard layout back to `us` (`hyprctl switchxkblayout <main-kbd> 0`) — clicking the layout
+    popout during testing switches it for real;
+  - no drawers/popouts left open;
+  - `hyprctl monitors` → `reserved` matches the bar side;
+  - screenshot both orientations when the bar layout changed.
