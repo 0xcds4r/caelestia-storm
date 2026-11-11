@@ -36,7 +36,6 @@ GridLayout {
 
     function checkPopout(pos: real): void {
         const ch = childAt(root.vertical ? width / 2 : pos, root.vertical ? pos : height / 2) as EntryWrapper;
-
         if (ch?.entryId !== "tray")
             closeTray();
 
@@ -50,7 +49,21 @@ GridLayout {
 
         if (id === "statusIcons" && Config.bar.popouts.statusIcons) {
             const items = (ch.item as StatusIcons).items;
-            const icon = items.childAt(items.width / 2, mapToItem(items, 0, y).y);
+            // The icon row is a GridLayout whose own size can lag behind its children, so hit-test
+            // the entry items directly. Horizontal bars are traversed by x, vertical ones by y.
+            const local = root.vertical ? mapToItem(items, 0, pos) : mapToItem(items, pos, 0);
+            const at = root.vertical ? local.y : local.x;
+            let icon = null;
+            for (const entry of items.children) {
+                if (!entry.name || !entry.visible)
+                    continue;
+                const start = root.vertical ? entry.y : entry.x;
+                const extent = root.vertical ? entry.height : entry.width;
+                if (at >= start && at < start + extent) {
+                    icon = entry;
+                    break;
+                }
+            }
             if (icon) {
                 popouts.currentName = icon.name;
                 popouts.currentCenter = Qt.binding(() => root.vertical ? icon.mapToItem(root, 0, icon.implicitHeight / 2).y : icon.mapToItem(root, icon.implicitWidth / 2, 0).x);

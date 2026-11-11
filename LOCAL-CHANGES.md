@@ -194,11 +194,28 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
 - `modules/bar/components/StatusIcons.qml`, `Tray.qml`, `Clock.qml`, `ActiveWindow.qml` — horizontal
   variants (`GridLayout`/`RowLayout`, axis-aware sizes, anchors, rotation and popout centres).
 - `modules/bar/components/workspaces/Workspaces.qml` — a `Row` of `Workspace` delegates for the
-  horizontal pill: a `Row` of `Workspace` delegates with explicit sizes and a per-cell `MouseArea`
-  (click switches workspace). The vertical content is hidden in horizontal mode (`visible: root.vertical`)
-  — it used to keep rendering and produce duplicate icons. No extra highlight/background is drawn:
-  the active workspace is shown by its own icon only (`OccupiedBg`/`GapMarkers`/`ActiveIndicator`
-  stay vertical-only, their geometry is built on `LazyListView.layoutY/preferredHeight`).
+  horizontal pill with explicit sizes and a per-cell `MouseArea` declared *after* the delegate so it
+  actually receives the click. The vertical content is hidden in horizontal mode
+  (`visible: root.vertical`) — it used to keep rendering and produce duplicate icons. No extra
+  highlight/background is drawn: the active workspace is shown by its own icon only
+  (`OccupiedBg`/`GapMarkers`/`ActiveIndicator` stay vertical-only, their geometry is built on
+  `LazyListView.layoutY/preferredHeight`).
+- `modules/drawers/Regions.qml` — the click-through mask is XOR'd with the window, so the base region
+  has to cover the screen *without* the bar's edge; the insets are now computed per side from
+  `BarPos`. The base region previously assumed a left bar, so a horizontal bar (and every empty
+  workspace, where `dragMaskPadding` is 80) landed inside the click-through area and the whole bar
+  ignored clicks. Child regions are offset from the bar side (`bar.implicitHeight` for a horizontal
+  bar) and the popout region shrinks on the height axis when the bar is horizontal.
+- `modules/bar/popouts/ClipWrapper.qml` — orientation aware: on a horizontal bar the popout is
+  centred on the hovered entry's x and slides down from the bar (`height` animation) instead of being
+  pinned to the left edge and positioned by `y`.
+- `modules/bar/Bar.qml` — `checkPopout()` hit-tests status icons by their own geometry (the
+  `GridLayout`'s width lagged behind its children, so `childAt` missed them in horizontal mode).
+- `modules/bar/popouts/ActiveWindow.qml` — width falls back to the preview size; when
+  `Hypr.activeToplevel` was momentarily null the implicit width went negative and the popout
+  rendered invisible.
+- `modules/drawers/Interactions.qml` — `onPressed` also calls `bar.checkPopout()`, so the entries
+  open on click and not only on hover (hover was unreliable and left the bar dead in horizontal mode).
 - `modules/drawers/ContentWindow.qml` — panel blob `y` offset follows the bar (`panel.y + bar.implicitHeight`
   for a horizontal bar), otherwise the dashboard/launcher background stayed as an empty strip under the bar.
 - `modules/drawers/ContentWindow.qml`, `Panels.qml`, `Interactions.qml` — bar slot placed with explicit
@@ -208,8 +225,8 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
   the bar's edge: top/bottom for a horizontal bar, left/right for a vertical one.
 - `modules/bar/components/Tray.qml` — the collapsed (compact) tray only applies to a vertical bar; in a
   horizontal one the icons overflowed the reserved width and overlapped the neighbouring entries.
-- `modules/nexus/pages/panels/TaskbarPanel.qml` — `SelectRow` for the position; only `Left` is
-  exposed (the other three are implemented but not selectable).
+- `modules/nexus/pages/panels/TaskbarPanel.qml` — `SelectRow` for the position with `Left` and `Top`
+  (bottom/right are implemented but not exposed).
 - `modules/drawers/Interactions.qml` — missing `qs.services` import added (`BarPos`).
 
 ## 8d. Weather card toggles °F/°C

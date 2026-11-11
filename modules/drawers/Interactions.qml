@@ -64,7 +64,15 @@ CustomMouseArea {
     acceptedButtons: fullscreen ? Qt.NoButton : Qt.AllButtons
     hoverEnabled: true
 
-    onPressed: event => dragStart = Qt.point(event.x, event.y)
+    onPressed: event => {
+        dragStart = Qt.point(event.x, event.y);
+        // Also open the popout for the entry under the cursor on click, not only on hover:
+        // hovering is unreliable for some layer surfaces and left the bar dead in horizontal mode.
+        if (BarPos.vertical ? event.x < bar.implicitWidth : event.y < bar.implicitHeight) {
+            if (!root.screenState.launcher)
+                bar.checkPopout(BarPos.vertical ? event.y : event.x);
+        }
+    }
     onContainsMouseChanged: {
         if (!containsMouse) {
             // Only hide if not activated by shortcut
