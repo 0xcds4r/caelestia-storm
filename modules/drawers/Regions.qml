@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Caelestia.Config
 import qs.modules.bar as Bar
+import qs.services
 
 Region {
     id: root
@@ -15,10 +16,22 @@ Region {
     readonly property real borderThickness: win.contentItem.Config.border.thickness
     readonly property real clampedThickness: win.contentItem.Config.border.clampedThickness
 
-    x: bar.clampedWidth + win.dragMaskPadding
-    y: clampedThickness + win.dragMaskPadding
-    width: win.width - bar.clampedWidth - clampedThickness - win.dragMaskPadding * 2
-    height: win.height - clampedThickness * 2 - win.dragMaskPadding * 2
+    // The mask is XOR'd with the window (see ContentWindow.qml), so the base region describes
+    // where clicks pass through. The bar's own edge must stay outside of it, otherwise the whole
+    // bar becomes click-through (very noticeable on an empty workspace, where dragMaskPadding
+    // is at its largest).
+    readonly property real pad: win.dragMaskPadding
+    readonly property real edge: clampedThickness
+    readonly property real barSide: bar.clampedWidth
+    readonly property real leftInset: bar.vertical && !BarPos.onRight ? barSide + pad : edge + pad
+    readonly property real topInset: !bar.vertical && !BarPos.onBottom ? barSide + pad : edge + pad
+    readonly property real rightInset: bar.vertical && BarPos.onRight ? barSide + pad : edge + pad
+    readonly property real bottomInset: !bar.vertical && BarPos.onBottom ? barSide + pad : edge + pad
+
+    x: leftInset
+    y: topInset
+    width: win.width - leftInset - rightInset
+    height: win.height - topInset - bottomInset
     intersection: Intersection.Xor
 
     R {
@@ -75,8 +88,8 @@ Region {
     component R: Region {
         required property Item panel
 
-        x: panel.x + root.bar.implicitWidth
-        y: panel.y + root.borderThickness
+        x: panel.x + (root.bar.vertical ? root.bar.implicitWidth : 0)
+        y: panel.y + (root.bar.vertical ? root.borderThickness : root.bar.implicitHeight)
         width: panel.width
         height: panel.height
         intersection: Intersection.Subtract

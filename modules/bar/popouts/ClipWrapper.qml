@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import qs.components
+import qs.services
 import qs.modules.bar.popouts // Need to import this module so the Wrapper type is the same as others
 
 Item {
@@ -12,18 +13,33 @@ Item {
     required property real borderThickness
 
     readonly property alias content: content
-    property real offsetScale: x > 0 || content.hasCurrent ? 0 : 1
+    readonly property bool vertical: BarPos.vertical
+    property real offsetScale: (root.vertical ? x > 0 : y > 0) || content.hasCurrent ? 0 : 1
 
     visible: width > 0 && height > 0
     clip: true
 
-    implicitWidth: content.implicitWidth * (1 - offsetScale)
-    implicitHeight: content.implicitHeight
+    implicitWidth: root.vertical ? content.implicitWidth * (1 - offsetScale) : content.implicitWidth
+    implicitHeight: root.vertical ? content.implicitHeight : content.implicitHeight * (1 - offsetScale)
 
-    x: content.isDetached ? (parent.width - content.nonAnimWidth) / 2 : 0
+    x: {
+        if (content.isDetached)
+            return (parent.width - content.nonAnimWidth) / 2;
+        if (root.vertical)
+            return 0;
+
+        const off = content.currentCenter - borderThickness - content.nonAnimWidth / 2;
+        const diff = parent.width - Math.floor(off + content.nonAnimWidth);
+        if (diff < 0)
+            return off + diff;
+        return Math.max(off, 0);
+    }
+
     y: {
         if (content.isDetached)
             return (parent.height - content.nonAnimHeight) / 2;
+        if (!root.vertical)
+            return 0;
 
         const off = content.currentCenter - borderThickness - content.nonAnimHeight / 2;
         const diff = parent.height - Math.floor(off + content.nonAnimHeight);
@@ -58,8 +74,10 @@ Item {
         screen: root.screen
         offsetScale: root.offsetScale
 
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.left
-        anchors.leftMargin: (-implicitWidth - 5) * root.offsetScale
+        anchors.top: root.vertical ? undefined : parent.top
+        anchors.left: root.vertical ? parent.left : undefined
+        anchors.verticalCenter: root.vertical ? parent.verticalCenter : undefined
+        anchors.leftMargin: root.vertical ? (-implicitWidth - 5) * root.offsetScale : 0
+        anchors.topMargin: root.vertical ? 0 : (-implicitHeight - 5) * root.offsetScale
     }
 }

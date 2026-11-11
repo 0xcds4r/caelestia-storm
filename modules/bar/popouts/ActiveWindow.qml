@@ -12,7 +12,10 @@ Item {
 
     required property PopoutState popouts
 
-    implicitWidth: Hypr.activeToplevel ? child.implicitWidth : -Tokens.padding.extraLargeIncreased
+    // The Column's implicitWidth collapses to 0 when Hypr.activeToplevel is momentarily null
+    // (and while the preview is still sizing), which made the popout invisible. Fall back to
+    // the preview width instead of a negative value.
+    implicitWidth: Math.max(child.implicitWidth, Tokens.sizes.bar.windowPreviewSize)
     implicitHeight: child.implicitHeight
 
     Column {

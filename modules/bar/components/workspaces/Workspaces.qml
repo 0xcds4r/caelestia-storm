@@ -279,16 +279,6 @@ StyledClippingRect {
                     width: horizontal.cellSize
                     height: horizontal.cellSize
 
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-
-                        onClicked: {
-                            if (Hypr.activeWsId !== cell.ws)
-                                Hypr.focusWorkspace(cell.ws);
-                        }
-                    }
-
                     Workspace {
                         anchors.fill: parent
 
@@ -304,6 +294,17 @@ StyledClippingRect {
                         activeLabel: Config.bar.workspaces.activeLabel
                         occupiedLabel: Config.bar.workspaces.occupiedLabel
                         label: Config.bar.workspaces.label
+                    }
+
+                    // Declared after Workspace so it sits on top of the delegate and receives the click.
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+                            if (Hypr.activeWsId !== cell.ws)
+                                Hypr.focusWorkspace(cell.ws);
+                        }
                     }
                 }
             }
