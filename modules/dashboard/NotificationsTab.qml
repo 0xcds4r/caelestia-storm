@@ -16,7 +16,14 @@ import qs.utils
 Item {
     id: root
 
-    readonly property var items: Notifs.list.filter(n => !n.closed)
+    readonly property var items: Notifs.list.filter(n => !n.closed).slice(0, 30)
+
+    // Long/markdown bodies are expensive to lay out and used to make the tab lag,
+    // so the cards only ever render a short plain-text excerpt.
+    function excerpt(text: string, maxLength: int): string {
+        const value = (text ?? "").replace(/\s+/g, " ").trim();
+        return value.length > maxLength ? `${value.slice(0, maxLength)}…` : value;
+    }
     readonly property int cardWidth: 720
 
     implicitWidth: root.cardWidth
@@ -68,6 +75,7 @@ Item {
             Layout.fillHeight: false
             implicitWidth: 0
             implicitHeight: Math.min(contentHeight, 460)
+            cacheBuffer: 0
             clip: true
             spacing: Tokens.spacing.medium
 
@@ -131,7 +139,7 @@ Item {
 
                             StyledText {
                                 Layout.fillWidth: true
-                                text: card.modelData.summary
+                                text: root.excerpt(card.modelData.summary, 120)
                                 maximumLineCount: 1
                                 elide: Text.ElideRight
                                 color: card.critical ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
@@ -147,10 +155,10 @@ Item {
                         StyledText {
                             Layout.fillWidth: true
                             visible: text.length > 0
-                            text: card.modelData.body
+                            text: root.excerpt(card.modelData.body, 220)
                             maximumLineCount: 2
                             elide: Text.ElideRight
-                            textFormat: /[<*_`#\[\]]/.test(text) ? Text.MarkdownText : Text.PlainText
+                            textFormat: Text.PlainText
                             color: card.critical ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurfaceVariant
                             font: Tokens.font.body.small
                         }
