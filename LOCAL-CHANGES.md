@@ -195,9 +195,10 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
   variants (`GridLayout`/`RowLayout`, axis-aware sizes, anchors, rotation and popout centres).
 - `modules/bar/components/workspaces/Workspaces.qml` — a `Row` of `Workspace` delegates for the
   horizontal pill (the delegates get explicit sizes and the `LazyListView`-attached properties are
-  taken from the wrapper) plus a pill highlighting the active workspace (`activePill`).
-  `OccupiedBg`, `GapMarkers` and the animated `ActiveIndicator` stay vertical-only — their geometry
-  is built on `LazyListView.layoutY/preferredHeight`.
+  taken from the wrapper), a pill highlighting the active workspace (`activePill`), per-cell
+  `MouseArea` (click switches workspace) and an own occupied background (a rounded rect per
+  occupied cell, since `OccupiedBg`/`GapMarkers`/the animated `ActiveIndicator` are built on
+  `LazyListView.layoutY/preferredHeight` and stay vertical-only).
 - `modules/drawers/ContentWindow.qml`, `Panels.qml`, `Interactions.qml` — bar slot placed with explicit
   geometry, panels inset from the bar side (left/right/top/bottom), hover region and popout coordinate
   follow the orientation.
