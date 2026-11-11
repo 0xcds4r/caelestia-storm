@@ -78,7 +78,7 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
 
-        active: root.shouldBeActive || root.visible
+        active: true
 
         sourceComponent: Content {
             screenState: root.screenState
