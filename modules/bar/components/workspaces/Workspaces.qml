@@ -244,14 +244,37 @@ StyledClippingRect {
     Item {
         id: horizontal
 
+        width: root.implicitWidth
+        height: root.implicitHeight
+
         readonly property int margins: Tokens.padding.extraSmall
         readonly property int cellSize: Tokens.sizes.bar.innerWidth - Tokens.padding.small
         readonly property int activeIndex: root.wsIds.indexOf(root.activeWsId)
 
-        anchors.fill: parent
         visible: !root.fullscreen && !root.vertical
         opacity: root.onSpecial ? 0.5 : 1
         scale: root.onSpecial ? 0.8 : 1
+
+        Repeater {
+            model: ScriptModel {
+                values: root.wsIds
+            }
+
+            delegate: StyledRect {
+                required property int index
+                required property var modelData
+
+                readonly property int ws: Config.bar.workspaces.showUnoccupied ? root.groupOffset + index + 1 : modelData
+
+                visible: !root.fullscreen && !root.vertical && Hypr.toplevelsForWs(ws).length > 0
+                x: horizontalLayout.x + index * (horizontal.cellSize + horizontalLayout.spacing)
+                y: horizontalLayout.y
+                width: horizontal.cellSize
+                height: horizontal.cellSize
+                radius: Tokens.rounding.full
+                color: Colours.layer(Colours.palette.m3surfaceContainerHighest, 2)
+            }
+        }
 
         StyledRect {
             id: activePill
@@ -286,10 +309,22 @@ StyledClippingRect {
                     required property int index
                     required property var modelData
 
+                    readonly property int ws: Config.bar.workspaces.showUnoccupied ? root.groupOffset + index + 1 : modelData
+
                     implicitWidth: horizontal.cellSize
                     implicitHeight: horizontal.cellSize
                     width: horizontal.cellSize
                     height: horizontal.cellSize
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+                            if (Hypr.activeWsId !== cell.ws)
+                                Hypr.focusWorkspace(cell.ws);
+                        }
+                    }
 
                     Workspace {
                         anchors.fill: parent
@@ -297,7 +332,7 @@ StyledClippingRect {
                         index: cell.index
                         modelData: cell.modelData
                         activeWsId: root.activeWsId
-                        ws: Config.bar.workspaces.showUnoccupied ? root.groupOffset + cell.index + 1 : cell.modelData
+                        ws: cell.ws
                         monitor: root.monitor
 
                         displayType: Config.bar.workspaces.displayType
