@@ -21,6 +21,7 @@ Singleton {
     property double ipApiBlockedUntil: 0
     property bool citiesLoaded: false
     property string pendingCoords
+    property int fetchRetries: 0
 
     readonly property string icon: cc ? Icons.getWeatherIcon(cc.weatherCode) : "cloud_alert"
     readonly property string description: cc ? getWeatherCondition(cc.weatherCode) : Tr.tr("No weather")
@@ -233,6 +234,7 @@ Singleton {
             return;
 
         Requests.get(url, text => {
+            root.fetchRetries = 0;
             const json = JSON.parse(text);
             if (!json.current || !json.daily)
                 return;
@@ -277,7 +279,18 @@ Singleton {
                 });
             }
             hourlyForecast = hourlyList;
+        }, error => {
+            // open-meteo answers with 503 when it rate-limits; without a retry the bar stayed
+            // "No weather" until the next hourly refresh.
+            console.warn(lc, `Weather request failed: ${error}`);
+            root.scheduleRetry();
         });
+    }
+
+    function scheduleRetry(): void {
+        root.fetchRetries = Math.min(root.fetchRetries + 1, 6);
+        retryTimer.interval = Math.min(root.fetchRetries * 5 * 60 * 1000, 30 * 60 * 1000);
+        retryTimer.restart();
     }
 
     function getWeatherUrl(): string {
@@ -348,6 +361,14 @@ Singleton {
         running: true
         repeat: true
         onTriggered: fetchWeatherData()
+    }
+
+    Timer {
+        id: retryTimer
+
+        repeat: false
+
+        onTriggered: root.fetchWeatherData()
     }
 
     Timer {
