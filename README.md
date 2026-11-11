@@ -3,7 +3,8 @@
 </h1>
 
 A personal rice built on top of [caelestia-dots/shell](https://github.com/caelestia-dots/shell) —
-a fork of the Quickshell config with a reworked left bar and a workspace overview.
+a fork of the Quickshell config with a reworked taskbar (left **or** top), a workspace overview
+and a few quality-of-life patches.
 
 ![Caelestia Storm](./preview.png)
 
@@ -16,9 +17,15 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - the focused window gets a glow that follows the icon's silhouette (`MultiEffect` shadow);
 - the status block shows the current keyboard layout (`us`/`ru`), a microphone mute toggle, the
   network icon (a `vpn_lock` globe while the traffic goes through a tunnel) and a power button;
-- the bar can sit on the **left, right, top or bottom** (the code supports all four, only
-  *left* is selectable for now) — Settings → Taskbar → Position;
+- the bar can sit on the **left or top** (the code supports right/bottom too, they are just not
+  exposed in the UI) — Settings → Taskbar → Position. Switching happens **live**: the bar
+  re-lays itself out in place, no shell restart;
+- on a horizontal bar the workspace pill, tray, clock, status icons and pop-outs all switch to a
+  horizontal layout, and the screen's reserved area moves to the bar's edge (windows are pushed
+  down instead of right);
 - clicking the **clock** toggles 24h/12h, clicking the **mic** mutes it;
+- clicking the status icons / active window / tray opens a pop-out anchored under (horizontal)
+  or beside (vertical) the entry it belongs to;
 - `Alt+J` hides/shows the whole taskbar.
 
 **Super / launcher**
