@@ -120,6 +120,11 @@ is empty the workspace grid is shown above it, and typing switches back to the a
 - `modules/launcher/services/Apps.qml` — `fallback()`: if the C++ searcher returns no results
   for a non-empty query, a plain case-insensitive substring match over
   `DesktopEntries.applications` is used, so a search never comes back empty when the app exists.
+- `modules/launcher/Content.qml` — live previews start 220 ms after the launcher opens
+  (`previewsLive`), so the open animation is not competing with screencopy startup.
+- `modules/dashboard/Wrapper.qml` — the dashboard content is kept alive after the first open
+  (`wasOpened`); rebuilding the calendar/media/performance panes on every open was the main
+  source of the sluggishness.
 - `modules/launcher/Wrapper.qml` — the loader is `active: true` again: the launcher content is built
   once at startup, so opening it is just an animation (live previews are still gated by
   `live: screenState.launcher`). Costs ~60 MiB RSS.

@@ -21,6 +21,36 @@ Item {
 
     signal clipboardDismissed()
 
+    // Live previews are the expensive part of opening the overview: start them
+    // only once the panel is on screen, so the open animation stays smooth.
+    property bool previewsLive: false
+
+    Timer {
+        id: previewsDelay
+
+        interval: 220
+
+        onTriggered: root.previewsLive = root.screenState.launcher && !root.clipboardMode
+    }
+
+    Connections {
+        function onLauncherChanged(): void {
+            if (root.screenState.launcher) {
+                previewsDelay.restart();
+            } else {
+                previewsDelay.stop();
+                root.previewsLive = false;
+            }
+        }
+
+        function onClipboardModeChanged(): void {
+            if (root.clipboardMode)
+                root.previewsLive = false;
+        }
+
+        target: root.screenState
+    }
+
     readonly property int padding: Tokens.padding.large
     readonly property int rounding: Tokens.rounding.extraLarge
 

@@ -30,6 +30,12 @@ Item {
     readonly property real nonAnimHeight: (content.item as Content)?.nonAnimHeight ?? 0
     readonly property bool shouldBeActive: screenState.dashboard && Config.dashboard.enabled
     property real offsetScale: shouldBeActive ? 0 : 1
+    property bool wasOpened: false
+
+    onShouldBeActiveChanged: {
+        if (shouldBeActive)
+            wasOpened = true;
+    }
 
     visible: offsetScale < 1
     anchors.topMargin: (-implicitHeight - 5) * offsetScale
@@ -47,7 +53,9 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
 
-        active: root.shouldBeActive || root.visible
+        // keep the dashboard content around after the first open: rebuilding it
+        // (calendar, media, performance graphs) is what made the launcher feel slow
+        active: root.shouldBeActive || root.visible || root.wasOpened
 
         sourceComponent: Content {
             screenState: root.screenState
