@@ -117,6 +117,12 @@ is empty the workspace grid is shown above it, and typing switches back to the a
   (`Super+V`): opens the launcher in clipboard mode, again — closes it.
 - `modules/launcher/Content.qml` — in clipboard mode the overview, app list and search bar
   are hidden and the panel is shown; keyboard focus is moved to it.
+- `modules/launcher/services/Apps.qml` — `fallback()`: if the C++ searcher returns no results
+  for a non-empty query, a plain case-insensitive substring match over
+  `DesktopEntries.applications` is used, so a search never comes back empty when the app exists.
+- `modules/launcher/Wrapper.qml` — the loader is `active: true` again: the launcher content is built
+  once at startup, so opening it is just an animation (live previews are still gated by
+  `live: screenState.launcher`). Costs ~60 MiB RSS.
 - `modules/launcher/Wrapper.qml` — passes the flag through and keeps the dashboard closed
 (`dashboard = launcher && !clipboardMode`), so the clipboard is a standalone panel.
 On close the flag is cleared by a 280 ms timer *after* the drawer finished hiding, otherwise

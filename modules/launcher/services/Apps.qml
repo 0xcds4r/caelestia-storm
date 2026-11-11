@@ -20,6 +20,17 @@ Searcher {
             entry.execute();
     }
 
+    // Local patch: the C++ searcher occasionally returns nothing for a query that
+    // obviously matches an app; fall back to a plain substring match over the
+    // desktop entries.
+    function fallback(needle: string): var {
+        const query = needle.trim().toLowerCase();
+        if (query.length === 0)
+            return [];
+
+        return DesktopEntries.applications.values.filter(e => e && !e.noDisplay && (e.name ?? "").toLowerCase().includes(query)).slice(0, GlobalConfig.launcher.maxShown);
+    }
+
     function search(search: string): var {
         const prefix = GlobalConfig.launcher.specialPrefix;
 
@@ -48,14 +59,16 @@ Searcher {
             keys = ["name"];
             weights = [1];
 
-            if (!search.startsWith(`${prefix}t `))
-                return query(search).map(e => e.entry);
+            if (!search.startsWith(`${prefix}t `)) {
+                const found = query(search).map(e => e.entry);
+                return found.length > 0 ? found : fallback(search);
+            }
         }
 
         const results = query(search.slice(prefix.length + 2)).map(e => e.entry);
         if (search.startsWith(`${prefix}t `))
             return results.filter(a => a.runInTerminal);
-        return results;
+        return results.length > 0 ? results : fallback(search.slice(prefix.length + 2));
     }
 
     function selector(item: var): string {
