@@ -72,6 +72,14 @@ Item {
             radius: Tokens.rounding.extraLarge * 2
             color: Colours.tPalette.m3surfaceContainer
 
+            // Local patch: clicking the main card toggles °F <-> °C
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+
+                onClicked: GlobalConfig.services.weatherUnits = GlobalConfig.services.weatherUnits === TemperatureUnit.Fahrenheit ? TemperatureUnit.Celsius : TemperatureUnit.Fahrenheit
+            }
+
             RowLayout {
                 id: bigInfoRow
 
