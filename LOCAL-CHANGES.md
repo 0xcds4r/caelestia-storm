@@ -193,7 +193,10 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
 - `modules/bar/Bar.qml` — `GridLayout` (`columns: vertical ? 1 : -1` / `rows: vertical ? -1 : 1`),
   axis-aware padding, spacer fill, entry margins and popout/wheel coordinates.
 - `modules/bar/components/StatusIcons.qml`, `Tray.qml`, `Clock.qml`, `ActiveWindow.qml` — horizontal
-  variants (`GridLayout`/`RowLayout`, axis-aware sizes, anchors, rotation and popout centres).
+  variants (`GridLayout`/`RowLayout`, axis-aware sizes, rotation and popout centres) positioned with
+  plain `x`/`y` bindings. Conditional anchors (`anchors.left: cond ? item : undefined`) must not be
+  used here: assigning `undefined` does not detach an anchor at runtime, so a live position switch
+  collapsed the icon rows (the status pill and tray lost their icons).
 - `modules/bar/components/workspaces/Workspaces.qml` — a `Row` of `Workspace` delegates for the
   horizontal pill with explicit sizes and a per-cell `MouseArea` declared *after* the delegate so it
   actually receives the click. The vertical content is hidden in horizontal mode

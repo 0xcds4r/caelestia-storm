@@ -50,12 +50,10 @@ StyledRect {
     GridLayout {
         id: layout
 
-        anchors.horizontalCenter: root.vertical ? parent.horizontalCenter : undefined
-        anchors.top: root.vertical ? parent.top : undefined
-        anchors.topMargin: root.vertical ? root.padding : 0
-        anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
-        anchors.left: root.vertical ? undefined : parent.left
-        anchors.leftMargin: root.vertical ? 0 : root.padding
+        // Plain geometry instead of conditional anchors: `undefined` does not detach an anchor at
+        // runtime, which broke the layout when the bar changed orientation.
+        x: root.vertical ? (root.width - width) / 2 : root.padding
+        y: root.vertical ? root.padding : (root.height - height) / 2
 
         columns: root.vertical ? 1 : -1
         rows: root.vertical ? -1 : 1
@@ -86,10 +84,8 @@ StyledRect {
 
         asynchronous: true
 
-        anchors.horizontalCenter: root.vertical ? parent.horizontalCenter : undefined
-        anchors.bottom: root.vertical ? parent.bottom : undefined
-        anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
-        anchors.right: root.vertical ? undefined : parent.right
+        x: root.vertical ? (root.width - width) / 2 : root.width - width
+        y: root.vertical ? root.height - height : (root.height - height) / 2
 
         active: root.compact && items.count > 0
 
@@ -100,12 +96,8 @@ StyledRect {
             MaterialIcon {
                 id: expandIconInner
 
-                anchors.horizontalCenter: root.vertical ? parent.horizontalCenter : undefined
-                anchors.bottom: root.vertical ? parent.bottom : undefined
-                anchors.bottomMargin: root.vertical ? (Config.bar.tray.background ? Tokens.padding.extraSmall : -Tokens.padding.small) : 0
-                anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
-                anchors.right: root.vertical ? undefined : parent.right
-                anchors.rightMargin: root.vertical ? 0 : (Config.bar.tray.background ? Tokens.padding.extraSmall : -Tokens.padding.small)
+                x: root.vertical ? (parent.width - width) / 2 : parent.width - width - (Config.bar.tray.background ? Tokens.padding.extraSmall : -Tokens.padding.small)
+                y: root.vertical ? parent.height - height - (Config.bar.tray.background ? Tokens.padding.extraSmall : -Tokens.padding.small) : (parent.height - height) / 2
                 text: "expand_less"
                 color: Colours.palette.m3onSurfaceVariant
                 fontStyle: Tokens.font.icon.medium
@@ -115,7 +107,7 @@ StyledRect {
                     Anim {}
                 }
 
-                Behavior on anchors.bottomMargin {
+                Behavior on y {
                     Anim {}
                 }
             }

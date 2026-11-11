@@ -74,9 +74,9 @@ Item {
     MaterialIcon {
         id: icon
 
-        anchors.horizontalCenter: root.vertical ? parent.horizontalCenter : undefined
-        anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
-        anchors.left: root.vertical ? undefined : parent.left
+        // Plain geometry instead of conditional anchors (`undefined` does not detach an anchor).
+        x: root.vertical ? (parent.width - width) / 2 : 0
+        y: root.vertical ? 0 : (parent.height - height) / 2
 
         animate: true
         text: Icons.getAppCategoryIcon(Hypr.activeToplevel?.lastIpcObject.class, "desktop_windows")
@@ -118,12 +118,9 @@ Item {
     component Title: StyledText {
         id: text
 
-        anchors.horizontalCenter: icon.horizontalCenter
-        anchors.top: root.vertical ? icon.bottom : undefined
-        anchors.topMargin: root.vertical ? Tokens.spacing.small : 0
-        anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
-        anchors.left: root.vertical ? undefined : icon.right
-        anchors.leftMargin: root.vertical ? 0 : Tokens.spacing.small
+        // Plain geometry instead of conditional anchors (`undefined` does not detach an anchor).
+        x: root.vertical ? icon.x + (icon.width - width) / 2 : icon.x + icon.width + Tokens.spacing.small
+        y: root.vertical ? icon.y + icon.height + Tokens.spacing.small : (parent.height - height) / 2
 
         font: metrics.font
         color: root.colour
