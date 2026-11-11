@@ -22,6 +22,13 @@ Singleton {
     readonly property bool onTop: root.position === "top"
     readonly property bool onBottom: root.position === "bottom"
 
+    // session-only hide toggle (Alt+J), not persisted
+    property bool hidden: false
+
+    function toggleHidden(): void {
+        root.hidden = !root.hidden;
+    }
+
     function set(pos: string): void {
         if (root.positions.indexOf(pos) < 0 || pos === root.position)
             return;

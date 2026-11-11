@@ -214,6 +214,14 @@ Language & Region page writes).
 `modules/bar/components/Clock.qml` — a `MouseArea` over the clock switches
 `GlobalConfig.services.clockFormat` between `TwelveHour` and `TwentyFourHour`.
 
+## 8f. Hide the taskbar (Alt+J)
+
+- `services/BarPos.qml` — session-only `hidden` flag + `toggleHidden()`.
+- `modules/bar/BarWrapper.qml` — `shouldBeVisible`/`exclusiveZone` respect `BarPos.hidden`, so the
+  bar collapses and windows take the freed space.
+- `modules/Shortcuts.qml` — global shortcut `caelestia:barToggle`.
+- Hyprland bind: `ALT + J → hl.dsp.global("caelestia:barToggle")`.
+
 ## 9. `~/.config/caelestia/shell.json`
 
 - `bar.workspaces.activeIndicator: false` — the stock filled pill indicator is disabled,

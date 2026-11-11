@@ -22,8 +22,8 @@ Item {
     readonly property int clampedWidth: Math.max(Config.border.minThickness, vertical ? implicitWidth : implicitHeight)
     readonly property int padding: Math.max(Tokens.padding.small, Config.border.thickness)
     readonly property int thickness: Tokens.sizes.bar.innerWidth + padding * 2
-    readonly property int exclusiveZone: !disabled && (Config.bar.persistent || screenState.bar) ? thickness : Config.border.thickness
-    readonly property bool shouldBeVisible: !fullscreen && !disabled && (Config.bar.persistent || screenState.bar || isHovered)
+    readonly property int exclusiveZone: !disabled && !BarPos.hidden && (Config.bar.persistent || screenState.bar) ? thickness : Config.border.thickness
+    readonly property bool shouldBeVisible: !BarPos.hidden && !fullscreen && !disabled && (Config.bar.persistent || screenState.bar || isHovered)
     property bool isHovered
 
     function closeTray(): void {
