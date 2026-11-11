@@ -52,12 +52,12 @@ StyledRect {
     GridLayout {
         id: iconColumn
 
-        anchors.left: parent.left
-        anchors.right: root.vertical ? parent.right : undefined
-        anchors.bottom: root.vertical ? parent.bottom : undefined
-        anchors.bottomMargin: root.vertical ? Tokens.padding.medium : 0
-        anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
-        anchors.leftMargin: root.vertical ? 0 : Tokens.padding.medium
+        // Plain geometry instead of conditional anchors: assigning `undefined` to an anchor at
+        // runtime does not detach it, so switching the bar orientation collapsed the icon row.
+        x: root.vertical ? 0 : Tokens.padding.medium
+        y: root.vertical ? root.height - height - Tokens.padding.medium : (root.height - height) / 2
+        width: root.vertical ? root.width : implicitWidth
+        height: implicitHeight
 
         columns: root.vertical ? 1 : -1
         rows: root.vertical ? -1 : 1
