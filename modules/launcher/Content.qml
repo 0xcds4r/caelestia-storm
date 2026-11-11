@@ -201,11 +201,6 @@ Item {
             if (root.showOverview)
                 overview.moveHorizontal(1);
         }
-        Keys.onReturnPressed: {
-            if (root.showOverview)
-                overview.activateSelection();
-        }
-
         Keys.onEscapePressed: root.screenState.launcher = false
 
         Keys.onPressed: event => {

@@ -62,6 +62,9 @@ Navigation (`modules/launcher/Content.qml` + `WorkspaceOverview.qml`):
 - `WorkspaceOverview` was added to `listWrapper` (visible while the search is empty) and
   `ContentList` is hidden; `listWrapper` sizes switch between grid and list;
 - clicking a workspace closes the launcher (`screenState.launcher = false`);
+- `Keys.onReturnPressed` on the search bar was removed: it swallowed Return before the
+  `TextInput` could emit `accepted`, so Enter never launched the highlighted app. Overview and
+  clipboard modes are handled inside `onAccepted` instead;
 - the query is cleared when the launcher *opens* (not when it closes): clearing on close made
   the workspace overview pop up during the close animation while a search was running;
 - the dashboard is hidden while a search is running (`onTextChanged` → `dashboard = launcher && text === ""`).
