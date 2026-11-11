@@ -201,7 +201,8 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
 
 ## 8d. Weather card toggles °F/°C
 
-`modules/dashboard/dash/SmallWeather.qml` — a `MouseArea` over the card switches
+`modules/dashboard/dash/SmallWeather.qml` and `modules/dashboard/WeatherTab.qml` (the big card) —
+a `MouseArea` over the card switches
 `GlobalConfig.services.weatherUnits` between `Fahrenheit` and `Celsius` (same value the Nexus
 Language & Region page writes).
 
