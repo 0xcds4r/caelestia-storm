@@ -220,8 +220,10 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
   the wrapper's height to 0.
 - `modules/bar/popouts/ActiveWindow.qml` — width falls back to the preview size (when
   `Hypr.activeToplevel` was momentarily null the implicit width went negative and the popout
-  rendered invisible) and the preview box is hidden when there is no screencopy source, instead of
-  leaving a large empty area under the details.
+  rendered invisible). `Bar.checkPopout()` additionally only opens this popout when
+  `Hypr.activeToplevel` exists: Quickshell only learns the active window from Hyprland *events*, so
+  right after a shell restart (with a window already focused) it is `null` and the popout was a
+  large empty panel with just an icon.
 - `modules/drawers/Interactions.qml` — `onPressed` also calls `bar.checkPopout()`, so the entries
   open on click and not only on hover (hover was unreliable and left the bar dead in horizontal mode).
 - `modules/drawers/ContentWindow.qml` — panel blob `y` offset follows the bar (`panel.y + bar.implicitHeight`

@@ -15,9 +15,7 @@ Item {
     // The Column's implicitWidth collapses to 0 when Hypr.activeToplevel is momentarily null
     // (and while the preview is still sizing), which made the popout invisible. Fall back to
     // the preview width instead of a negative value.
-    readonly property bool hasPreview: !!Hypr.activeToplevel?.wayland
-
-    implicitWidth: Math.max(child.implicitWidth, hasPreview ? Tokens.sizes.bar.windowPreviewSize : 0)
+    implicitWidth: Math.max(child.implicitWidth, Tokens.sizes.bar.windowPreviewSize)
     implicitHeight: child.implicitHeight
 
     Column {
@@ -88,9 +86,6 @@ Item {
         }
 
         ClippingWrapperRectangle {
-            // No screencopy source => the box would just be a large empty area under the details.
-            visible: root.hasPreview
-
             color: "transparent"
             radius: Tokens.rounding.medium
 

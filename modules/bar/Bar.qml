@@ -87,7 +87,7 @@ GridLayout {
                 popouts.hasCurrent = false;
                 tray.expanded = true;
             }
-        } else if (id === "activeWindow" && Config.bar.popouts.activeWindow && Config.bar.activeWindow.showOnHover) {
+        } else if (id === "activeWindow" && Hypr.activeToplevel && Config.bar.popouts.activeWindow && Config.bar.activeWindow.showOnHover) {
             popouts.currentName = id.toLowerCase();
             popouts.currentCenter = root.vertical ? ((ch.item as Item).mapToItem(root, 0, (ch.item as Item).implicitHeight / 2).y ?? 0) : ((ch.item as Item).mapToItem(root, (ch.item as Item).implicitWidth / 2, 0).x ?? 0);
             popouts.hasCurrent = true;
