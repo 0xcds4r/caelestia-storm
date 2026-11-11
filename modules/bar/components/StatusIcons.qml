@@ -62,7 +62,7 @@ StyledRect {
         columns: root.vertical ? 1 : -1
         rows: root.vertical ? -1 : 1
         rowSpacing: 0
-        columnSpacing: 0
+        columnSpacing: root.vertical ? 0 : Tokens.spacing.small
 
         Repeater {
             model: ScriptModel {
@@ -172,8 +172,10 @@ StyledRect {
         default property Item item
         property string name: modelData.id.toLowerCase()
 
-        Layout.topMargin: Math.round(topGap)
-        Layout.bottomMargin: Math.round(bottomGap)
+        Layout.topMargin: root.vertical ? Math.round(topGap) : 0
+        Layout.bottomMargin: root.vertical ? Math.round(bottomGap) : 0
+        Layout.leftMargin: root.vertical ? 0 : Math.round(topGap)
+        Layout.rightMargin: root.vertical ? 0 : Math.round(bottomGap)
         Layout.alignment: Qt.AlignHCenter
 
         implicitWidth: item?.implicitWidth ?? 0
