@@ -211,9 +211,17 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
   pinned to the left edge and positioned by `y`.
 - `modules/bar/Bar.qml` — `checkPopout()` hit-tests status icons by their own geometry (the
   `GridLayout`'s width lagged behind its children, so `childAt` missed them in horizontal mode).
-- `modules/bar/popouts/ActiveWindow.qml` — width falls back to the preview size; when
+- `modules/bar/popouts/Wrapper.qml` — the wrapper now takes its own width/height from the content
+  (`width/height: nonAnim*`). It is positioned with plain `x`/`y`, so without this it stayed 0x0 and
+  the popout content was centred around a zero-size origin — the panel showed, but its contents were
+  pushed half outside, i.e. "half empty".
+- `modules/bar/popouts/ClipWrapper.qml` — the child wrapper is positioned with `x`/`y` bindings
+  instead of conditional anchors; assigning `undefined` to `anchors.top`/`verticalCenter` collapsed
+  the wrapper's height to 0.
+- `modules/bar/popouts/ActiveWindow.qml` — width falls back to the preview size (when
   `Hypr.activeToplevel` was momentarily null the implicit width went negative and the popout
-  rendered invisible.
+  rendered invisible) and the preview box is hidden when there is no screencopy source, instead of
+  leaving a large empty area under the details.
 - `modules/drawers/Interactions.qml` — `onPressed` also calls `bar.checkPopout()`, so the entries
   open on click and not only on hover (hover was unreliable and left the bar dead in horizontal mode).
 - `modules/drawers/ContentWindow.qml` — panel blob `y` offset follows the bar (`panel.y + bar.implicitHeight`

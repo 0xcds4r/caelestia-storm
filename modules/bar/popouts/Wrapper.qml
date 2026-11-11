@@ -63,6 +63,10 @@ Item {
 
     implicitWidth: nonAnimWidth
     implicitHeight: nonAnimHeight
+    // Positioned with plain x/y by ClipWrapper, so it has to take its own size from the content;
+    // otherwise it stays 0x0 and the popout contents get centred around a zero-size origin.
+    width: root.nonAnimWidth
+    height: root.nonAnimHeight
 
     focus: hasCurrent
     Keys.onEscapePressed: {
