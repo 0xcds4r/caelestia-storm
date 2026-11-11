@@ -186,7 +186,8 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
 
 - `services/BarPos.qml` (new) — `position`, kept in `~/.local/state/caelestia/bar-position`
   (the C++ config is packaged, so no new key there); derived `vertical`, `onLeft/onRight/onTop/onBottom`.
-  `set()` writes the file and restarts the shell (layout changes are not hot-swappable).
+  `set()` only writes the state file and updates the property: every consumer is bound to `BarPos`,
+  so the bar re-lays itself out in place (no shell restart, no lost popouts/drawers).
 - `modules/bar/BarWrapper.qml` — orientation aware: the thickness animates on the width axis for a
   vertical bar and on the height axis for a horizontal one.
 - `modules/bar/Bar.qml` — `GridLayout` (`columns: vertical ? 1 : -1` / `rows: vertical ? -1 : 1`),

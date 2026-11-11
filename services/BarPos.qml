@@ -33,8 +33,10 @@ Singleton {
         if (root.positions.indexOf(pos) < 0 || pos === root.position)
             return;
 
+        // Everything reads the position through bindings, so the shell re-lays itself out in
+        // place; only the state file needs to be written for the next start.
         root.position = pos;
-        writer.command = ["sh", "-c", `mkdir -p '${root.stateDir}' && printf '%s' '${pos}' > '${root.path}' && sleep 0.4 && setsid caelestia shell -r -d >/dev/null 2>&1 &`];
+        writer.command = ["sh", "-c", `mkdir -p '${root.stateDir}' && printf '%s' '${pos}' > '${root.path}'`];
         writer.running = true;
     }
 

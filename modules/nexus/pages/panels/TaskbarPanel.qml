@@ -30,7 +30,7 @@ PageBase {
         SelectRow {
             first: true
             label: Tr.tr("Position")
-            subtext: Tr.tr("Where the taskbar sits on screen (restarts the shell)")
+            subtext: Tr.tr("Where the taskbar sits on screen")
             active: root.positionItem
             onSelected: item => BarPos.set(item.value)
 
