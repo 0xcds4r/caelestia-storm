@@ -294,6 +294,12 @@ cp -a /etc/xdg/quickshell/caelestia/. ~/.config/quickshell/caelestia/
 Or drop the fork entirely and go back to the stock config:
 `rm -rf ~/.config/quickshell/caelestia && caelestia shell -r -d`
 
+## Weather retry
+
+`services/Weather.qml` — `fetchWeatherData()` got an error callback: open-meteo answers `503` when it
+rate-limits, and without a retry the dashboard stayed on "No weather" until the next hourly refresh.
+Failed requests now retry with a 5 → 30 minute backoff (`fetchRetries`, `retryTimer`), reset on success.
+
 ## Verification checklist (read before touching the bar)
 
 Learned the hard way — never leave the machine in a half-tested state.
