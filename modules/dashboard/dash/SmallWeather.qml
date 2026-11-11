@@ -13,6 +13,16 @@ Item {
 
     Component.onCompleted: Weather.reload()
 
+    // Local patch: clicking the weather card toggles °F <-> °C
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+
+        onClicked: {
+            GlobalConfig.services.weatherUnits = GlobalConfig.services.weatherUnits === TemperatureUnit.Fahrenheit ? TemperatureUnit.Celsius : TemperatureUnit.Fahrenheit;
+        }
+    }
+
     MaterialIcon {
         id: icon
 

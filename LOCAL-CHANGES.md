@@ -199,6 +199,12 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
   exposed (the other three are implemented but not selectable).
 - `modules/drawers/Interactions.qml` — missing `qs.services` import added (`BarPos`).
 
+## 8d. Weather card toggles °F/°C
+
+`modules/dashboard/dash/SmallWeather.qml` — a `MouseArea` over the card switches
+`GlobalConfig.services.weatherUnits` between `Fahrenheit` and `Celsius` (same value the Nexus
+Language & Region page writes).
+
 ## 9. `~/.config/caelestia/shell.json`
 
 - `bar.workspaces.activeIndicator: false` — the stock filled pill indicator is disabled,
