@@ -201,7 +201,11 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
   `LazyListView.layoutY/preferredHeight` and stay vertical-only).
 - `modules/drawers/ContentWindow.qml`, `Panels.qml`, `Interactions.qml` — bar slot placed with explicit
   geometry, panels inset from the bar side (left/right/top/bottom), hover region and popout coordinate
-  follow the orientation.
+  follow the orientation; the blob background cut (`borderLeft`/`borderTop`) follows the bar's side.
+- `modules/drawers/Exclusions.qml` — the exclusive zone (the screen area the bar reserves) is moved to
+  the bar's edge: top/bottom for a horizontal bar, left/right for a vertical one.
+- `modules/bar/components/Tray.qml` — the collapsed (compact) tray only applies to a vertical bar; in a
+  horizontal one the icons overflowed the reserved width and overlapped the neighbouring entries.
 - `modules/nexus/pages/panels/TaskbarPanel.qml` — `SelectRow` for the position; only `Left` is
   exposed (the other three are implemented but not selectable).
 - `modules/drawers/Interactions.qml` — missing `qs.services` import added (`BarPos`).

@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Caelestia.Config
 import qs.components.containers
+import qs.services
 import qs.modules.bar as Bar
 
 Scope {
@@ -13,26 +14,35 @@ Scope {
     required property Bar.BarWrapper bar
 
     ExclusionZone {
-        anchors.left: true
-        exclusiveZone: root.bar.exclusiveZone
+        side: "left"
     }
 
     ExclusionZone {
-        anchors.top: true
+        side: "top"
     }
 
     ExclusionZone {
-        anchors.right: true
+        side: "right"
     }
 
     ExclusionZone {
-        anchors.bottom: true
+        side: "bottom"
     }
 
     component ExclusionZone: StyledWindow {
+        id: zone
+
+        required property string side
+
+        readonly property bool barSide: BarPos.vertical ? (side === (BarPos.onRight ? "right" : "left")) : (side === (BarPos.onBottom ? "bottom" : "top"))
+
         screen: root.screen
         name: "border-exclusion"
-        exclusiveZone: contentItem.Config.border.thickness
+        anchors.left: side === "left"
+        anchors.right: side === "right"
+        anchors.top: side === "top"
+        anchors.bottom: side === "bottom"
+        exclusiveZone: zone.barSide ? root.bar.exclusiveZone : contentItem.Config.border.thickness
         mask: Region {}
         implicitWidth: 1
         implicitHeight: 1
