@@ -342,7 +342,7 @@ StyledWindow {
 
         group: blobGroup
         x: panel.x + (BarPos.vertical ? bar.implicitWidth : 0)
-        y: panel.y + root.borderThickness
+        y: panel.y + (BarPos.vertical ? root.borderThickness : bar.implicitHeight)
         implicitWidth: panel.width
         implicitHeight: panel.height
         radius: Tokens.rounding.extraLarge

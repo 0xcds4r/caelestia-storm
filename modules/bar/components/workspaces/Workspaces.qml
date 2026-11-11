@@ -77,7 +77,7 @@ StyledClippingRect {
         anchors.fill: parent
         scale: root.onSpecial ? 0.8 : 1
         opacity: root.onSpecial ? 0.5 : 1
-        visible: !root.fullscreen
+        visible: !root.fullscreen && root.vertical
 
         layer.enabled: root.blur > 0
         layer.effect: MultiEffect {
@@ -254,43 +254,6 @@ StyledClippingRect {
         visible: !root.fullscreen && !root.vertical
         opacity: root.onSpecial ? 0.5 : 1
         scale: root.onSpecial ? 0.8 : 1
-
-        Repeater {
-            model: ScriptModel {
-                values: root.wsIds
-            }
-
-            delegate: StyledRect {
-                required property int index
-                required property var modelData
-
-                readonly property int ws: Config.bar.workspaces.showUnoccupied ? root.groupOffset + index + 1 : modelData
-
-                visible: !root.fullscreen && !root.vertical && Hypr.toplevelsForWs(ws).length > 0
-                x: horizontalLayout.x + index * (horizontal.cellSize + horizontalLayout.spacing)
-                y: horizontalLayout.y
-                width: horizontal.cellSize
-                height: horizontal.cellSize
-                radius: Tokens.rounding.full
-                color: Colours.layer(Colours.palette.m3surfaceContainerHighest, 2)
-            }
-        }
-
-        StyledRect {
-            id: activePill
-
-            visible: horizontal.activeIndex >= 0
-            x: horizontalLayout.x + horizontal.activeIndex * (horizontal.cellSize + horizontalLayout.spacing)
-            y: horizontalLayout.y
-            width: horizontal.cellSize
-            height: horizontal.cellSize
-            radius: Tokens.rounding.full
-            color: Colours.palette.m3primary
-
-            Behavior on x {
-                Anim {}
-            }
-        }
 
         Row {
             id: horizontalLayout

@@ -194,11 +194,13 @@ longer calls `bar.checkPopout()`, so tray popouts/tooltips don't render behind t
 - `modules/bar/components/StatusIcons.qml`, `Tray.qml`, `Clock.qml`, `ActiveWindow.qml` — horizontal
   variants (`GridLayout`/`RowLayout`, axis-aware sizes, anchors, rotation and popout centres).
 - `modules/bar/components/workspaces/Workspaces.qml` — a `Row` of `Workspace` delegates for the
-  horizontal pill (the delegates get explicit sizes and the `LazyListView`-attached properties are
-  taken from the wrapper), a pill highlighting the active workspace (`activePill`), per-cell
-  `MouseArea` (click switches workspace) and an own occupied background (a rounded rect per
-  occupied cell, since `OccupiedBg`/`GapMarkers`/the animated `ActiveIndicator` are built on
-  `LazyListView.layoutY/preferredHeight` and stay vertical-only).
+  horizontal pill: a `Row` of `Workspace` delegates with explicit sizes and a per-cell `MouseArea`
+  (click switches workspace). The vertical content is hidden in horizontal mode (`visible: root.vertical`)
+  — it used to keep rendering and produce duplicate icons. No extra highlight/background is drawn:
+  the active workspace is shown by its own icon only (`OccupiedBg`/`GapMarkers`/`ActiveIndicator`
+  stay vertical-only, their geometry is built on `LazyListView.layoutY/preferredHeight`).
+- `modules/drawers/ContentWindow.qml` — panel blob `y` offset follows the bar (`panel.y + bar.implicitHeight`
+  for a horizontal bar), otherwise the dashboard/launcher background stayed as an empty strip under the bar.
 - `modules/drawers/ContentWindow.qml`, `Panels.qml`, `Interactions.qml` — bar slot placed with explicit
   geometry, panels inset from the bar side (left/right/top/bottom), hover region and popout coordinate
   follow the orientation; the blob background cut (`borderLeft`/`borderTop`) follows the bar's side.
