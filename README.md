@@ -16,7 +16,9 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - the focused window gets a glow that follows the icon's silhouette (`MultiEffect` shadow);
 - the status block shows the current keyboard layout (`us`/`ru`), a microphone mute toggle, the
   network icon (a `vpn_lock` globe while the traffic goes through a tunnel) and a power button;
-- the bar can sit on the **left, right, top or bottom** — Settings → Taskbar → Position;
+- the bar can sit on the **left, right, top or bottom** (the code supports all four, only
+  *left* is selectable for now) — Settings → Taskbar → Position;
+- clicking the **clock** toggles 24h/12h, clicking the **mic** mutes it;
 - `Alt+J` hides/shows the whole taskbar.
 
 **Super / launcher**
@@ -27,9 +29,12 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - on the right: a compact *Keep awake* card and *Quick toggles*, where the volume and
   brightness sliders live (click the speaker icon to mute — volume drops to 0 % and back);
 - the stock volume/brightness OSD is disabled — everything happens in the launcher;
+- the search falls back to a plain substring match when the C++ searcher returns nothing,
+  `Enter` launches the highlighted app, and the panel content is pre-built so opening is instant;
 - the dashboard (Dashboard / Media / Performance / Weather / **Notifications**) expands only
   together with the launcher; the notifications tab has its own cards, a counter, clear-all
-  and an auto-sized pane.
+  and an auto-sized pane (plain-text excerpts, max 30 entries — cheap to render);
+- clicking the weather card (dashboard or Weather tab) switches **°F** ↔ **°C**.
 
 **Clipboard (`Super+V`)**
 - a standalone panel (no search bar, no dashboard) with the `cliphist` history;
@@ -38,7 +43,7 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 
 **Other**
 - *Keep awake* survives shell restarts (`~/.local/state/caelestia/idle-inhibited`);
-- Nexus → About: “Caelestia Storm”, custom logo, `v2.5.0 | STORM 1.0`;
+- Nexus → About: “Caelestia Storm”, custom logo, `v2.5.0 | STORM 1.2`;
 - the bar logo is the Arch mark, wallpaper is drawn by the shell.
 
 ## Install
