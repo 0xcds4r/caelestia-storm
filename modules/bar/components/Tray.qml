@@ -16,6 +16,9 @@ StyledRect {
     readonly property alias expandIcon: expandIcon
 
     readonly property bool vertical: BarPos.vertical
+    // The compact (collapsed) tray only makes sense on a vertical bar; in a horizontal
+    // one the icons overflow the reserved width and overlap the neighbouring entries.
+    readonly property bool compact: Config.bar.tray.compact && root.vertical
     readonly property int padding: Config.bar.tray.background ? Tokens.padding.medium : Tokens.padding.extraSmall
     readonly property int spacing: Config.bar.tray.background ? Tokens.spacing.medium : Tokens.spacing.extraSmall
 
@@ -25,7 +28,7 @@ StyledRect {
         const length = root.vertical ? layout.implicitHeight : layout.implicitWidth;
         const expand = root.vertical ? expandIcon.implicitHeight : expandIcon.implicitWidth;
 
-        if (!Config.bar.tray.compact)
+        if (!root.compact)
             return length + padding * 2;
 
         const pad = (Config.bar.tray.background ? Tokens.padding.extraSmall : 0) + padding;
@@ -59,7 +62,7 @@ StyledRect {
         rowSpacing: Tokens.spacing.small
         columnSpacing: Tokens.spacing.small
 
-        opacity: root.expanded || !Config.bar.tray.compact ? 1 : 0
+        opacity: root.expanded || !root.compact ? 1 : 0
 
         Repeater {
             id: items
@@ -88,7 +91,7 @@ StyledRect {
         anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
         anchors.right: root.vertical ? undefined : parent.right
 
-        active: Config.bar.tray.compact && items.count > 0
+        active: root.compact && items.count > 0
 
         sourceComponent: Item {
             implicitWidth: expandIconInner.implicitWidth
