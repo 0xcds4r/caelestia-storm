@@ -230,8 +230,10 @@ Item {
             function onLauncherChanged(): void {
                 // Clear on open, not on close: otherwise the overview pops up
                 // during the close animation when the query was non-empty.
-                if (root.screenState.launcher)
+                if (root.screenState.launcher) {
                     search.text = "";
+                    search.forceActiveFocus();
+                }
             }
 
             function onSessionChanged(): void {
