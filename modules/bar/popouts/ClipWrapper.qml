@@ -74,10 +74,8 @@ Item {
         screen: root.screen
         offsetScale: root.offsetScale
 
-        anchors.top: root.vertical ? undefined : parent.top
-        anchors.left: root.vertical ? parent.left : undefined
-        anchors.verticalCenter: root.vertical ? parent.verticalCenter : undefined
+        y: root.vertical ? (parent.height - height) / 2 : (-root.implicitHeight - 5) * root.offsetScale
+        anchors.left: parent.left
         anchors.leftMargin: root.vertical ? (-implicitWidth - 5) * root.offsetScale : 0
-        anchors.topMargin: root.vertical ? 0 : (-implicitHeight - 5) * root.offsetScale
     }
 }
