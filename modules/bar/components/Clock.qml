@@ -192,4 +192,12 @@ StyledRect {
             color: root.colour
         }
     }
+
+    // Local patch: clicking the clock toggles 24h/12h
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+
+        onClicked: GlobalConfig.services.clockFormat = Units.twelveHourClock ? ClockFormat.TwentyFourHour : ClockFormat.TwelveHour
+    }
 }
