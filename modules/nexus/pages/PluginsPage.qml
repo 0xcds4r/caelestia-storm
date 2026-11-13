@@ -231,6 +231,26 @@ PageBase {
                     maximumLineCount: 2
                     elide: Text.ElideRight
                 }
+
+                Row {
+                    visible: !row.confirmingDelete && row.plugin.actions.length > 0
+                    width: parent.width
+                    spacing: Tokens.spacing.extraSmall
+
+                    Repeater {
+                        model: row.plugin.actions
+
+                        TextButton {
+                            required property var modelData
+
+                            type: TextButton.Text
+                            text: modelData.name
+                            font: Tokens.font.label.small
+
+                            onClicked: Plugins.runAction(row.plugin, modelData.id)
+                        }
+                    }
+                }
             }
         }
     }

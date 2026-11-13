@@ -296,6 +296,10 @@ Or drop the fork entirely and go back to the stock config:
 
 ## Plugins
 
+- Plugin API: `info`, `schemes`, `actions` + `run <action>`, `widget` (+ `run click` for a widget
+  click). `scripts/plugins-widgets.sh` polls widget-capable plugins every minute; `Plugins.widgets`
+  feeds the taskbar, `Plugins.widgetSignature` keeps the bar's repeater stable so a poll only updates
+  the widget text instead of rebuilding the bar.
 - `scripts/plugins-scan.sh` + `services/Plugins.qml` — plugins are executables discovered in
   `~/.config/caelestia/plugins` and `~/.local/share/caelestia/plugins` (a bare executable, or a
   directory with an executable named `plugin`). Each is asked for `info` and `schemes` JSON; the
@@ -306,7 +310,8 @@ Or drop the fork entirely and go back to the stock config:
   The stored scheme name is `dynamic` because the CLI only accepts names that resolve to a scheme
   file shipped in the read-only package.
 - `modules/nexus/pages/PluginsPage.qml` (page index 5, previously a placeholder) — installed plugins
-  with a per-plugin toggle, a trash button (inline "Delete …?" confirmation) and import / rescan.
+  with a per-plugin toggle, a trash button (inline "Delete …?" confirmation), action buttons and
+  import / rescan.
   A plugin directory may ship `icon.{png,svg,jpg,jpeg,webp}` (or `<id>.<ext>` next to a bare
   executable); `scripts/plugins-scan.sh` reports it and the card shows it on the left.
 - `scripts/plugin-unpack.py` + `scripts/plugin-remove.py` — `.stormpack` is a plain zip with a custom

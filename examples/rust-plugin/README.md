@@ -7,10 +7,14 @@ schemes that show up in **Settings → Wallpaper & style → Colours → Plugin 
 
 A plugin is just an executable that answers two commands:
 
-| Command   | Output |
-|-----------|--------|
-| `info`    | `{"name": "...", "description": "...", "version": "...", "capabilities": ["schemes"]}` |
+| Command | Output |
+|---------|--------|
+| `info` | `{"name": "...", "description": "...", "version": "...", "capabilities": ["schemes", "actions", "widget"]}` |
 | `schemes` | `[{"id": "...", "name": "...", "seed": "#rrggbb", "mode": "dark", "variant": "tonalspot"}]` |
+| `actions` | `[{"id": "...", "name": "..."}]` — buttons on the plugin card |
+| `run <action>` | performs the action; stdout is shown as a notification |
+| `widget` | `{"icon": "speed", "text": "0.42", "tooltip": "..."}` — a taskbar item, polled every minute |
+| `run click` | sent when the taskbar widget is clicked |
 
 `seed` is a single colour; the shell expands it into the full Material palette
 (plus terminal/app colours) with `scripts/scheme-from-seed.py` and applies it the

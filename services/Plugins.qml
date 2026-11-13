@@ -15,6 +15,9 @@ Singleton {
 
     property var plugins: []
     property var schemes: []
+    property var widgets: []
+    // Stable key for the set of widget plugins, so the bar's repeater is not rebuilt on every poll
+    property string widgetSignature: ""
     property bool scanning: false
 
     readonly property var schemePlugins: root.plugins.filter(p => p.enabled && p.schemes.length > 0)
@@ -45,6 +48,68 @@ Singleton {
 
         UiPrefs.appliedPluginScheme = scheme.key;
         UiPrefs.save();
+    }
+
+    function widgetFor(pluginId: string): var {
+        return root.widgets.find(widget => widget.pluginId === pluginId) ?? null;
+    }
+
+    function refreshWidgets(): void {
+        if (widgetPoll.running)
+            return;
+
+        widgetPoll.running = true;
+    }
+
+    function applyWidgets(text: string): void {
+        const list = [];
+
+        for (const line of text.split("\n")) {
+            if (!line.trim())
+                continue;
+
+            const separator = line.indexOf("\t");
+            if (separator < 0)
+                continue;
+
+            const id = line.slice(0, separator);
+            if (!root.isEnabled(id))
+                continue;
+
+            let data;
+            try {
+                data = JSON.parse(line.slice(separator + 1));
+            } catch (error) {
+                continue;
+            }
+
+            if (!data)
+                continue;
+
+            list.push({
+                pluginId: id,
+                icon: data.icon ?? "",
+                text: data.text ?? "",
+                tooltip: data.tooltip ?? ""
+            });
+        }
+
+        root.widgets = list;
+        root.widgetSignature = list.map(widget => widget.pluginId).join(",");
+    }
+
+    function runAction(plugin: var, actionId: string): void {
+        if (!plugin?.path || !actionId)
+            return;
+
+        actionProc.command = [plugin.path, "run", actionId];
+        actionProc.running = true;
+    }
+
+    function runWidgetClick(pluginId: string): void {
+        const plugin = root.plugins.find(item => item.id === pluginId);
+        if (plugin)
+            root.runAction(plugin, "click");
     }
 
     function notify(title: string, body: string): void {
@@ -106,7 +171,7 @@ Singleton {
             if (parts.length < 4)
                 continue;
 
-            const [id, path, infoRaw, schemesRaw, icon] = parts;
+            const [id, path, infoRaw, schemesRaw, icon, actionsRaw] = parts;
 
             let info;
             try {
@@ -122,6 +187,13 @@ Singleton {
                 schemes = [];
             }
 
+            let actions = [];
+            try {
+                actions = JSON.parse(actionsRaw);
+            } catch (error) {
+                actions = [];
+            }
+
             list.push({
                 id: id,
                 path: path,
@@ -130,6 +202,7 @@ Singleton {
                 version: info.version ?? "",
                 capabilities: info.capabilities ?? [],
                 schemes: Array.isArray(schemes) ? schemes : [],
+                actions: Array.isArray(actions) ? actions : [],
                 icon: icon && icon.length > 0 ? `file://${icon}` : "",
                 enabled: root.isEnabled(id)
             });
@@ -160,13 +233,46 @@ Singleton {
             onStreamFinished: root.load(text)
         }
 
-        onExited: root.scanning = false
+        onExited: {
+            root.scanning = false;
+            root.refreshWidgets();
+        }
     }
 
     Process {
         id: applyProc
 
         onExited: root.refresh()
+    }
+
+    Process {
+        id: widgetPoll
+
+        command: ["sh", Quickshell.shellPath("scripts/plugins-widgets.sh")]
+
+        stdout: StdioCollector {
+            onStreamFinished: root.applyWidgets(text)
+        }
+    }
+
+    Process {
+        id: actionProc
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const message = text.trim();
+                if (message)
+                    root.notify(Tr.tr("Plugin"), message);
+            }
+        }
+    }
+
+    Timer {
+        interval: 60000
+        running: true
+        repeat: true
+
+        onTriggered: root.refreshWidgets()
     }
 
     Process {
