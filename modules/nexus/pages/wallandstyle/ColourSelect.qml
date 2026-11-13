@@ -285,13 +285,47 @@ PageBase {
             }
         }
 
-        RowButton {
+        StyledRect {
+            id: randomButton
+
             Layout.topMargin: Tokens.spacing.medium
             Layout.fillWidth: true
-            icon: "casino"
-            text: Tr.tr("Random scheme")
-            subtext: Tr.tr("Feeling lucky")
-            onClicked: Quickshell.execDetached(["caelestia", "scheme", "set", "--notify", "--random"])
+            implicitHeight: Math.max(randomIcon.implicitHeight, randomText.implicitHeight) + Tokens.padding.medium * 2
+            radius: implicitHeight / 2 * Math.min(1, Tokens.rounding.scale)
+            color: Colours.palette.m3secondaryContainer
+
+            StateLayer {
+                anchors.fill: parent
+                radius: parent.radius
+                onClicked: Quickshell.execDetached(["caelestia", "scheme", "set", "--notify", "--random"])
+            }
+
+            Row {
+                anchors.centerIn: parent
+                spacing: Tokens.spacing.small
+
+                MaterialIcon {
+                    id: randomIcon
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "casino"
+                    color: Colours.palette.m3onSecondaryContainer
+                    fill: 1
+                }
+
+                StyledText {
+                    id: randomText
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Tr.tr("Random scheme")
+                    color: Colours.palette.m3onSecondaryContainer
+                    font: Tokens.font.body.small
+                }
+            }
+
+            Behavior on color {
+                CAnim {}
+            }
         }
     }
 
