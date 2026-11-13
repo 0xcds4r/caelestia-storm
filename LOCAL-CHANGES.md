@@ -297,7 +297,10 @@ Or drop the fork entirely and go back to the stock config:
 ## Plugins
 
 - Plugin API: `info`, `schemes`, `actions` + `run <action>`, `widget` (+ `run click` for a widget
-  click). `scripts/plugins-widgets.sh` polls widget-capable plugins every minute; `Plugins.widgets`
+  click), and windows: `window` returns a descriptor (`title`, `pages[]` with `label`/`icon` and
+  `sections[]`) rendered by `modules/nexus/PluginWindow.qml` with the shell's own components
+  (`section`, `text`, `info`, `toggle`, `button`, `textfield`, `slider`, `choice`). Control changes
+  are sent as `event <id> <json>`; the window re-reads the descriptor when the plugin is done. `scripts/plugins-widgets.sh` polls widget-capable plugins every minute; `Plugins.widgets`
   feeds the taskbar, `Plugins.widgetSignature` keeps the bar's repeater stable so a poll only updates
   the widget text instead of rebuilding the bar.
 - `scripts/plugins-scan.sh` + `services/Plugins.qml` — plugins are executables discovered in

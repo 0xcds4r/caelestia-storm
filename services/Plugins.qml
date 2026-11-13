@@ -20,6 +20,9 @@ Singleton {
     property string widgetSignature: ""
     property bool scanning: false
 
+    // Emitted after a plugin handled an event (e.g. a control in its window changed)
+    signal eventFinished(string pluginId)
+
     readonly property var schemePlugins: root.plugins.filter(p => p.enabled && p.schemes.length > 0)
 
     function refresh(): void {
@@ -96,6 +99,15 @@ Singleton {
 
         root.widgets = list;
         root.widgetSignature = list.map(widget => widget.pluginId).join(",");
+    }
+
+    function sendEvent(plugin: var, controlId: string, value: var): void {
+        if (!plugin?.path || !controlId)
+            return;
+
+        actionProc.command = [plugin.path, "event", controlId, JSON.stringify(value)];
+        actionProc.running = true;
+        actionProc.pendingPluginId = plugin.id;
     }
 
     function runAction(plugin: var, actionId: string): void {
@@ -258,11 +270,20 @@ Singleton {
     Process {
         id: actionProc
 
+        property string pendingPluginId: ""
+
         stdout: StdioCollector {
             onStreamFinished: {
                 const message = text.trim();
                 if (message)
                     root.notify(Tr.tr("Plugin"), message);
+            }
+        }
+
+        onExited: {
+            if (actionProc.pendingPluginId) {
+                root.eventFinished(actionProc.pendingPluginId);
+                actionProc.pendingPluginId = "";
             }
         }
     }
