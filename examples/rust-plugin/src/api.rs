@@ -314,10 +314,12 @@ pub struct Desktop<'a> {
     pub anchor: &'a str,
     pub margin: Option<f64>,
     pub width: Option<f64>,
+    pub height: Option<f64>,
     pub icon: &'a str,
     pub title: &'a str,
     pub text: &'a str,
     pub subtext: &'a str,
+    pub url: &'a str,
 }
 
 impl<'a> Desktop<'a> {
@@ -327,10 +329,12 @@ impl<'a> Desktop<'a> {
             anchor: "top-left",
             margin: None,
             width: None,
+            height: None,
             icon: "",
             title,
             text,
             subtext: "",
+            url: "",
         }
     }
 
@@ -359,12 +363,25 @@ impl<'a> Desktop<'a> {
         self
     }
 
+    /// Turns the card into a render-only web view of `url`.
+    pub fn url(mut self, url: &'a str) -> Self {
+        self.url = url;
+        self
+    }
+
+    pub fn height(mut self, height: f64) -> Self {
+        self.height = Some(height);
+        self
+    }
+
     pub fn json(&self) -> String {
         Fields::new()
             .text("id", self.id)
             .text("anchor", self.anchor)
             .opt_num("margin", self.margin)
             .opt_num("width", self.width)
+            .opt_num("height", self.height)
+            .text("url", self.url)
             .text("icon", self.icon)
             .text("title", self.title)
             .text("text", self.text)
@@ -430,6 +447,10 @@ pub enum Row<'a> {
         value: &'a str,
         options: &'a [Choice<'a>],
     },
+    Webview {
+        url: &'a str,
+        height: Option<f64>,
+    },
 }
 
 impl Row<'_> {
@@ -471,6 +492,11 @@ impl Row<'_> {
                 .opt_num("min", *min)
                 .opt_num("max", *max)
                 .num("value", *value)
+                .build(),
+            Row::Webview { url, height } => Fields::new()
+                .text("type", "webview")
+                .text("url", url)
+                .opt_num("height", *height)
                 .build(),
             Row::Choice { id, label, value, options } => Fields::new()
                 .text("type", "choice")

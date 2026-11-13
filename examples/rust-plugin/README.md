@@ -15,7 +15,7 @@ A plugin is just an executable that answers two commands:
 | `run <action>` | performs the action; stdout is shown as a notification |
 | `widgets` | `[{"id": "load", "icon": "speed", "text": "0.42", "tooltip": "..."}]` — taskbar items, polled every minute (a single `widget` object also works) |
 | `run click <id>` | sent when a taskbar widget is clicked |
-| `desktop` | `{"widgets": [{"id": "...", "anchor": "bottom-right", "icon": "...", "title": "...", "text": "...", "subtext": "..."}]}` — cards on the wallpaper |
+| `desktop` | `{"widgets": [{"id": "...", "anchor": "bottom-right", "icon": "...", "title": "...", "text": "...", "subtext": "...", "url": "https://…", "height": 180}]}` — cards on the wallpaper; with `url` the card becomes a render-only web view |
 | `window` | window descriptor (see below) |
 | `event <id> <json>` | a control in that window changed |
 
@@ -36,7 +36,8 @@ A plugin is just an executable that answers two commands:
       { "type": "textfield", "id": "name", "label": "Name", "value": "" },
       { "type": "text", "text": "Free-form paragraph" },
       { "type": "info", "label": "Version", "value": "0.3.0" },
-      { "type": "button", "id": "reset", "label": "Reset", "icon": "restart_alt" }
+      { "type": "button", "id": "reset", "label": "Reset", "icon": "restart_alt" },
+      { "type": "webview", "url": "https://example.com", "height": 280 }
     ] }
   ]
 }
@@ -91,6 +92,9 @@ if let Some(event) = Event::parse(&args) {
     let _ = state.save();
 }
 ```
+
+`Row::Webview { url, height }` and `Desktop::new(..).url("https://…").height(180.0)` embed web pages
+(render-only snapshots, refreshed every minute — needs a chromium binary).
 
 `Fields` builds arbitrary JSON objects (`text`, `num`, `bool`, `raw`), `EventValue` gives typed
 access to control values, and `State` is a `key=value` store in `$XDG_STATE_HOME/<plugin id>.conf`.

@@ -137,6 +137,13 @@ fn window() -> String {
                 Row::Section("Notes"),
                 Row::Text("These settings live in the plugin's own state file — the shell only renders this window and forwards events."),
             ]),
+            Page::new("web", "Web").rows(vec![
+                Row::Section("Embedded page"),
+                Row::Webview {
+                    url: "https://example.com",
+                    height: Some(300.0),
+                },
+            ]),
             Page::new("about", "About").rows(vec![
                 Row::Info {
                     label: "Version",
