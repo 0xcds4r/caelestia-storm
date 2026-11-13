@@ -294,6 +294,19 @@ cp -a /etc/xdg/quickshell/caelestia/. ~/.config/quickshell/caelestia/
 Or drop the fork entirely and go back to the stock config:
 `rm -rf ~/.config/quickshell/caelestia && caelestia shell -r -d`
 
+## Colour scheme picker
+
+`modules/nexus/pages/wallandstyle/ColourSelect.qml` — the "Colours" sub-page of Wallpaper & style was
+a placeholder, now it picks the scheme:
+
+- scheme chips (`dynamic` + every scheme shipped with `caelestia scheme`) and flavour chips, shown
+  only for schemes that have more than one flavour;
+- variant dropdown (`tonalspot` … `content`) and a "random scheme" row;
+- everything runs through `caelestia scheme set`. `-m` is passed only when the scheme cannot imply
+  the mode itself — flavours like catppuccin `latte`/rosepine `dawn` are light by definition, and
+  forcing `-m dark` produced mismatched palettes.
+- `services/Colours.qml` now also exposes `variant` (read from `scheme.json`).
+
 ## Drag-to-open switch
 
 `services/UiPrefs.qml` (new) — small persisted preferences (`~/.local/state/caelestia/ui-prefs.json`),
