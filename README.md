@@ -52,7 +52,8 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - Settings → **Plugins** lists executables from `~/.config/caelestia/plugins` (and
   `~/.local/share/caelestia/plugins`), each with an on/off switch;
 - a plugin is any executable answering JSON commands: `info`, `schemes`, `actions` + `run <id>`,
-  `widget` (a live value in the taskbar, refreshed every minute, clickable via `run click`) and
+  `widgets` (live values in the taskbar, refreshed every minute, each clickable via
+  `run click <id>`) and
   `window` + `event <id> <json>` (the shell renders the plugin's own window — sections, toggles,
   sliders, choices, text fields, buttons — and forwards every change back); drop an `icon.png` next
   to it and the card shows it;

@@ -13,8 +13,8 @@ A plugin is just an executable that answers two commands:
 | `schemes` | `[{"id": "...", "name": "...", "seed": "#rrggbb", "mode": "dark", "variant": "tonalspot"}]` |
 | `actions` | `[{"id": "...", "name": "..."}]` — buttons on the plugin card |
 | `run <action>` | performs the action; stdout is shown as a notification |
-| `widget` | `{"icon": "speed", "text": "0.42", "tooltip": "..."}` — a taskbar item, polled every minute |
-| `run click` | sent when the taskbar widget is clicked |
+| `widgets` | `[{"id": "load", "icon": "speed", "text": "0.42", "tooltip": "..."}]` — taskbar items, polled every minute (a single `widget` object also works) |
+| `run click <id>` | sent when a taskbar widget is clicked |
 | `window` | window descriptor (see below) |
 | `event <id> <json>` | a control in that window changed |
 

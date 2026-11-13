@@ -5,8 +5,8 @@
 //!   `schemes` -> JSON array of colour schemes (seed colours are expanded to a full palette)
 //!   `actions` -> JSON array of buttons shown on the plugin card
 //!   `run <id>`-> run one of those actions (stdout is shown as a notification)
-//!   `widget`  -> one-line bar widget, `{"icon": "...", "text": "..."}`
-//!   `run click` is sent when the bar widget is clicked.
+//!   `widgets` -> bar widgets, `[{"id": "load", "icon": "...", "text": "..."}]`
+//!   `run click <widget id>` is sent when one of them is clicked.
 //!   `window`  -> JSON descriptor of a window the shell renders with its own settings widgets
 //!   `event <id> <json>` -> a control in that window changed
 //!
@@ -19,7 +19,7 @@ use std::process::ExitCode;
 const INFO: &str = r#"{
     "name": "Storm Palette Pack",
     "description": "Example plugin with seed-based colour schemes, an action and a bar widget",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "capabilities": ["schemes", "actions", "widget", "window"]
 }"#;
 
@@ -93,6 +93,35 @@ impl State {
             ),
         );
     }
+}
+
+fn memory_percent() -> u32 {
+    let read = |key: &str| -> Option<u32> {
+        std::fs::read_to_string("/proc/meminfo")
+            .ok()?
+            .lines()
+            .find(|line| line.starts_with(key))?
+            .split_whitespace()
+            .nth(1)?
+            .parse()
+            .ok()
+    };
+
+    let total = read("MemTotal:").unwrap_or(0);
+    let available = read("MemAvailable:").unwrap_or(0);
+    if total == 0 {
+        return 0;
+    }
+
+    (((total - available) as f32 / total as f32) * 100.0).round() as u32
+}
+
+fn widgets() -> String {
+    format!(
+        r#"[{{ "id": "load", "icon": "speed", "text": "{}", "tooltip": "1 minute load average" }}, {{ "id": "mem", "icon": "memory", "text": "{}%", "tooltip": "Memory in use" }}]"#,
+        load_average(),
+        memory_percent()
+    )
 }
 
 fn window_descriptor() -> String {
@@ -189,31 +218,37 @@ fn main() -> ExitCode {
                 ExitCode::FAILURE
             }
         }
-        Some("widget") => {
-            println!(
-                r#"{{ "icon": "speed", "text": "{}", "tooltip": "1 minute load average" }}"#,
-                load_average()
-            );
+        Some("widgets") => {
+            println!("{}", widgets());
             ExitCode::SUCCESS
         }
-        Some("run") => match args.next().as_deref() {
-            Some("about") => {
-                println!("Storm Palette Pack 0.2.0 - example caelestia plugin");
-                ExitCode::SUCCESS
+        Some("run") => {
+            let action = args.next();
+            let target = args.next();
+
+            match action.as_deref() {
+                Some("about") => {
+                    println!("Storm Palette Pack 0.4.0 - example caelestia plugin");
+                    ExitCode::SUCCESS
+                }
+                Some("reload") => {
+                    println!("Palette pack reloaded");
+                    ExitCode::SUCCESS
+                }
+                Some("click") => {
+                    if target.as_deref() == Some("mem") {
+                        println!("Memory in use: {}%", memory_percent());
+                    } else {
+                        println!("Load average: {}", load_average());
+                    }
+                    ExitCode::SUCCESS
+                }
+                other => {
+                    eprintln!("unknown action: {other:?}");
+                    ExitCode::FAILURE
+                }
             }
-            Some("reload") => {
-                println!("Palette pack reloaded");
-                ExitCode::SUCCESS
-            }
-            Some("click") => {
-                println!("Load average: {}", load_average());
-                ExitCode::SUCCESS
-            }
-            other => {
-                eprintln!("unknown action: {other:?}");
-                ExitCode::FAILURE
-            }
-        },
+        }
         Some(other) => {
             eprintln!("unknown command: {other}");
             ExitCode::FAILURE
