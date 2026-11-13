@@ -261,7 +261,7 @@ GridLayout {
         implicitWidth: root.vertical ? verticalContent.implicitWidth : horizontalContent.implicitWidth
         implicitHeight: root.vertical ? verticalContent.implicitHeight : horizontalContent.implicitHeight
 
-        Row {
+        RowLayout {
             id: horizontalContent
 
             visible: !root.vertical
@@ -269,6 +269,7 @@ GridLayout {
             spacing: Tokens.spacing.extraSmall
 
             MaterialIcon {
+                Layout.alignment: Qt.AlignVCenter
                 text: widget.iconName
                 color: Colours.palette.m3onSurfaceVariant
                 fontStyle: Tokens.font.icon.small
@@ -276,13 +277,14 @@ GridLayout {
             }
 
             StyledText {
+                Layout.alignment: Qt.AlignVCenter
                 text: widget.label
                 color: Colours.palette.m3onSurfaceVariant
                 font: Tokens.font.label.small
             }
         }
 
-        Column {
+        ColumnLayout {
             id: verticalContent
 
             visible: root.vertical
@@ -290,6 +292,9 @@ GridLayout {
             spacing: 0
 
             MaterialIcon {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
                 text: widget.iconName
                 color: Colours.palette.m3onSurfaceVariant
                 fontStyle: Tokens.font.icon.small
@@ -297,6 +302,9 @@ GridLayout {
             }
 
             StyledText {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
                 text: widget.label
                 color: Colours.palette.m3onSurfaceVariant
                 font: Tokens.font.label.small
