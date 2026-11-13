@@ -68,19 +68,13 @@ PageBase {
 
         RowButton {
             first: true
+            last: true
             icon: "file_upload"
             text: Tr.tr("Import plugin…")
-            subtext: Tr.tr("Install a .stormpack produced by Export")
+            subtext: Tr.tr("Install a .stormpack archive")
             onClicked: root.importPlugin()
         }
 
-        RowButton {
-            last: true
-            icon: "file_download"
-            text: Tr.tr("Export all plugins")
-            subtext: Tr.tr("Pack every installed plugin into one .stormpack in ~/Downloads")
-            onClicked: Plugins.exportAll()
-        }
 
         SectionHeader {
             text: Tr.tr("Add manually")
@@ -110,6 +104,8 @@ PageBase {
 
         required property var plugin
 
+        property bool confirmingDelete: false
+
         Layout.fillWidth: true
         implicitHeight: rowContent.implicitHeight + Tokens.padding.medium * 2
 
@@ -136,23 +132,54 @@ PageBase {
             }
 
             IconButton {
-                id: exportButton
+                id: removeButton
 
                 anchors.right: pluginSwitch.left
                 anchors.rightMargin: Tokens.spacing.small
                 anchors.verticalCenter: parent.verticalCenter
 
+                visible: !row.confirmingDelete
                 type: IconButton.Text
-                icon: "file_download"
+                icon: "delete"
 
-                onClicked: Plugins.exportPlugin(row.plugin)
+                onClicked: row.confirmingDelete = true
+            }
+
+            Row {
+                id: confirmRow
+
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: Tokens.spacing.small
+
+                visible: row.confirmingDelete
+
+                TextButton {
+                    type: TextButton.Text
+                    text: Tr.trCtx("Cancel", "button")
+
+                    onClicked: row.confirmingDelete = false
+                }
+
+                TextButton {
+                    type: TextButton.Text
+                    text: Tr.tr("Delete")
+
+                    inactiveOnColour: Colours.palette.m3error
+                    activeOnColour: Colours.palette.m3error
+
+                    onClicked: {
+                        row.confirmingDelete = false;
+                        Plugins.removePlugin(row.plugin);
+                    }
+                }
             }
 
             Column {
                 id: texts
 
                 anchors.left: parent.left
-                anchors.right: exportButton.left
+                anchors.right: row.confirmingDelete ? confirmRow.left : removeButton.left
                 anchors.rightMargin: Tokens.spacing.small
                 anchors.verticalCenter: parent.verticalCenter
 
@@ -167,6 +194,16 @@ PageBase {
 
                 StyledText {
                     width: parent.width
+                    visible: row.confirmingDelete
+                    text: Tr.tr("Delete %1? The plugin files will be removed.").arg(row.plugin.name)
+                    color: Colours.palette.m3error
+                    font: Tokens.font.label.small
+                    elide: Text.ElideRight
+                }
+
+                StyledText {
+                    width: parent.width
+                    visible: !row.confirmingDelete
                     text: {
                         const schemes = row.plugin.schemes.length;
                         const caps = schemes > 0 ? Tr.tr("%1 schemes").arg(schemes) : Tr.tr("no features");

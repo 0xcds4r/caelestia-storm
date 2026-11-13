@@ -55,8 +55,9 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
   name a **seed colour** — the shell expands it into the full Material palette and applies it
   system-wide (terminal, GTK, Qt, btop, …), same as `caelestia scheme set`;
 - enabled plugin schemes appear in **Wallpaper & style → Colours → Plugin schemes**;
-- **export** packs a plugin (or all of them) into a `.stormpack` — a zip with a custom extension, written
-  to `~/Downloads`; **import** installs one back through a file picker;
+- **import** installs a `.stormpack` (a zip with a custom extension) through a file picker, and a
+  trash button removes a plugin after an inline confirmation
+  (`scripts/plugin-pack.py` can still pack plugins from the command line);
 - a working Rust example with the protocol lives in [`examples/rust-plugin`](./examples/rust-plugin).
 
 **Other**

@@ -51,17 +51,17 @@ Singleton {
         Quickshell.execDetached(["notify-send", "-a", "Caelestia", title, body]);
     }
 
-    function exportPlugin(plugin: var): void {
+    function removePlugin(plugin: var): void {
         if (!plugin?.id)
             return;
 
-        exportProc.command = ["python3", Quickshell.shellPath("scripts/plugin-pack.py"), plugin.id];
-        exportProc.running = true;
-    }
+        removeProc.command = ["python3", Quickshell.shellPath("scripts/plugin-remove.py"), plugin.id];
+        removeProc.running = true;
 
-    function exportAll(): void {
-        exportProc.command = ["python3", Quickshell.shellPath("scripts/plugin-pack.py"), "--all"];
-        exportProc.running = true;
+        if (UiPrefs.appliedPluginScheme.startsWith(`${plugin.id}:`)) {
+            UiPrefs.appliedPluginScheme = "";
+            UiPrefs.save();
+        }
     }
 
     function importArchive(path: string): void {
@@ -169,15 +169,17 @@ Singleton {
     }
 
     Process {
-        id: exportProc
+        id: removeProc
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const path = text.trim();
-                if (path)
-                    root.notify(Tr.tr("Plugins exported"), path);
+                const id = text.trim();
+                if (id)
+                    root.notify(Tr.tr("Plugin removed"), id);
             }
         }
+
+        onExited: root.refresh()
     }
 
     Process {
