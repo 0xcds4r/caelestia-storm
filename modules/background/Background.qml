@@ -57,6 +57,10 @@ Variants {
             }
         }
 
+        DesktopWidgets {
+            anchors.fill: parent
+        }
+
         Loader {
             id: clockLoader
 

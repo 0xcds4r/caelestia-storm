@@ -15,6 +15,7 @@ A plugin is just an executable that answers two commands:
 | `run <action>` | performs the action; stdout is shown as a notification |
 | `widgets` | `[{"id": "load", "icon": "speed", "text": "0.42", "tooltip": "..."}]` — taskbar items, polled every minute (a single `widget` object also works) |
 | `run click <id>` | sent when a taskbar widget is clicked |
+| `desktop` | `{"widgets": [{"id": "...", "anchor": "bottom-right", "icon": "...", "title": "...", "text": "...", "subtext": "..."}]}` — cards on the wallpaper |
 | `window` | window descriptor (see below) |
 | `event <id> <json>` | a control in that window changed |
 

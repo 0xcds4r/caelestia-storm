@@ -9,6 +9,7 @@
 //!   `run click <widget id>` is sent when one of them is clicked.
 //!   `window`  -> JSON descriptor of a window the shell renders with its own settings widgets
 //!   `event <id> <json>` -> a control in that window changed
+//!   `desktop` -> JSON descriptor of widgets drawn on the desktop (wallpaper)
 //!
 //! Build with `cargo build --release` and drop the binary into
 //! `~/.config/caelestia/plugins/` (or a directory with it named `plugin`).
@@ -19,8 +20,8 @@ use std::process::ExitCode;
 const INFO: &str = r#"{
     "name": "Storm Palette Pack",
     "description": "Example plugin with seed-based colour schemes, an action and a bar widget",
-    "version": "0.4.0",
-    "capabilities": ["schemes", "actions", "widget", "window"]
+    "version": "0.5.0",
+    "capabilities": ["schemes", "actions", "widget", "window", "desktop"]
 }"#;
 
 const ACTIONS: &str = r#"[
@@ -124,6 +125,17 @@ fn widgets() -> String {
     )
 }
 
+fn desktop_descriptor() -> String {
+    format!(
+        r#"{{ "widgets": [
+    {{ "id": "load", "anchor": "top-left", "margin": 64, "width": 240, "icon": "speed", "title": "Load average", "text": "{}", "subtext": "1 minute" }},
+    {{ "id": "mem", "anchor": "bottom-right", "margin": 64, "width": 240, "icon": "memory", "title": "Memory", "text": "{}%", "subtext": "in use" }}
+] }}"#,
+        load_average(),
+        memory_percent()
+    )
+}
+
 fn window_descriptor() -> String {
     let state = State::load();
     let state_file = state_path().display().to_string();
@@ -217,6 +229,10 @@ fn main() -> ExitCode {
                 eprintln!("unknown control: {control}");
                 ExitCode::FAILURE
             }
+        }
+        Some("desktop") => {
+            println!("{}", desktop_descriptor());
+            ExitCode::SUCCESS
         }
         Some("widgets") => {
             println!("{}", widgets());

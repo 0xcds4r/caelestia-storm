@@ -16,6 +16,7 @@ Singleton {
     property var plugins: []
     property var schemes: []
     property var widgets: []
+    property var desktopWidgets: []
     // Stable key for the set of widget plugins, so the bar's repeater is not rebuilt on every poll
     property string widgetSignature: ""
     property bool scanning: false
@@ -62,6 +63,54 @@ Singleton {
             return;
 
         widgetPoll.running = true;
+
+        if (!desktopPoll.running)
+            desktopPoll.running = true;
+    }
+
+    function applyDesktop(text: string): void {
+        const list = [];
+
+        for (const line of text.split("\n")) {
+            if (!line.trim())
+                continue;
+
+            const separator = line.indexOf("\t");
+            if (separator < 0)
+                continue;
+
+            const id = line.slice(0, separator);
+            if (!root.isEnabled(id))
+                continue;
+
+            let data;
+            try {
+                data = JSON.parse(line.slice(separator + 1));
+            } catch (error) {
+                continue;
+            }
+
+            const widgets = data?.widgets ?? [];
+            for (let index = 0; index < widgets.length; index++) {
+                const widget = widgets[index] ?? {};
+
+                list.push({
+                    key: `${id}:${widget.id ?? index}`,
+                    pluginId: id,
+                    x: widget.x,
+                    y: widget.y,
+                    anchor: widget.anchor ?? "",
+                    margin: widget.margin,
+                    width: widget.width,
+                    icon: widget.icon ?? "",
+                    title: widget.title ?? "",
+                    text: widget.text ?? "",
+                    subtext: widget.subtext ?? ""
+                });
+            }
+        }
+
+        root.desktopWidgets = list;
     }
 
     function applyWidgets(text: string): void {
@@ -257,6 +306,16 @@ Singleton {
         id: applyProc
 
         onExited: root.refresh()
+    }
+
+    Process {
+        id: desktopPoll
+
+        command: ["sh", Quickshell.shellPath("scripts/plugins-desktop.sh")]
+
+        stdout: StdioCollector {
+            onStreamFinished: root.applyDesktop(text)
+        }
     }
 
     Process {

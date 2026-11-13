@@ -55,8 +55,9 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
   `widgets` (live values in the taskbar, refreshed every minute, each clickable via
   `run click <id>`) and
   `window` + `event <id> <json>` (the shell renders the plugin's own window — sections, toggles,
-  sliders, choices, text fields, buttons — and forwards every change back); drop an `icon.png` next
-  to it and the card shows it;
+  sliders, choices, text fields, buttons — and forwards every change back), `desktop` (cards drawn
+  on the wallpaper, anchored to a corner or positioned by x/y); drop an `icon.png` next to it and
+  the card shows it;
 - a plugin scheme only has to name a **seed colour** — the shell expands it into the full Material
   palette and applies it system-wide (terminal, GTK, Qt, btop, …), same as `caelestia scheme set`;
 - enabled plugin schemes appear in **Wallpaper & style → Colours → Plugin schemes**;
