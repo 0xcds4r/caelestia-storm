@@ -49,8 +49,10 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - click or `Enter` copies the entry, `✕` deletes one, `delete_sweep` wipes the history.
 
 **Other**
+- Panels → *Open by dragging* — hold and drag from the top or bottom screen edge to reveal the
+  dashboard / launcher (can be turned off, the edges then stay fully clickable);
 - *Keep awake* survives shell restarts (`~/.local/state/caelestia/idle-inhibited`);
-- Nexus → About: “Caelestia Storm”, custom logo, `v2.5.0 | STORM 1.2`;
+- Nexus → About: “Caelestia Storm”, custom logo, `v2.5.0 | STORM 1.3`;
 - the bar logo is the Arch mark, wallpaper is drawn by the shell.
 
 ## Install
