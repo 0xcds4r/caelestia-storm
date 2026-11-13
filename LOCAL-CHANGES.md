@@ -296,8 +296,8 @@ Or drop the fork entirely and go back to the stock config:
 
 ## Plugins
 
-- Plugin API: `info`, `schemes`, `actions` + `run <action>`, `widget` (+ `run click` for a widget
-  click), and windows: `window` returns a descriptor (`title`, `pages[]` with `label`/`icon` and
+- Plugin API: `info`, `schemes`, `actions` + `run <action>`, `widgets` (a list of taskbar items, each
+  clickable via `run click <widget id>`; the old single `widget` still works), and windows: `window` returns a descriptor (`title`, `pages[]` with `label`/`icon` and
   `sections[]`) rendered by `modules/nexus/PluginWindow.qml` with the shell's own components
   (`section`, `text`, `info`, `toggle`, `button`, `textfield`, `slider`, `choice`). Control changes
   are sent as `event <id> <json>`; the window re-reads the descriptor when the plugin is done. `scripts/plugins-widgets.sh` polls widget-capable plugins every minute; `Plugins.widgets`

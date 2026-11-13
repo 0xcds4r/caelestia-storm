@@ -53,8 +53,8 @@ Singleton {
         UiPrefs.save();
     }
 
-    function widgetFor(pluginId: string): var {
-        return root.widgets.find(widget => widget.pluginId === pluginId) ?? null;
+    function widgetFor(key: string): var {
+        return root.widgets.find(widget => widget.key === key) ?? null;
     }
 
     function refreshWidgets(): void {
@@ -71,34 +71,35 @@ Singleton {
             if (!line.trim())
                 continue;
 
-            const separator = line.indexOf("\t");
-            if (separator < 0)
-                continue;
-
-            const id = line.slice(0, separator);
-            if (!root.isEnabled(id))
-                continue;
-
             let data;
             try {
-                data = JSON.parse(line.slice(separator + 1));
+                data = JSON.parse(line);
             } catch (error) {
                 continue;
             }
 
-            if (!data)
+            const id = data?.plugin;
+            if (!id || !root.isEnabled(id))
                 continue;
 
-            list.push({
-                pluginId: id,
-                icon: data.icon ?? "",
-                text: data.text ?? "",
-                tooltip: data.tooltip ?? ""
-            });
+            const widgets = data.widgets ?? [];
+            for (let index = 0; index < widgets.length; index++) {
+                const widget = widgets[index] ?? {};
+                const widgetId = widget.id ?? String(index);
+
+                list.push({
+                    key: `${id}:${widgetId}`,
+                    pluginId: id,
+                    widgetId: widgetId,
+                    icon: widget.icon ?? "",
+                    text: widget.text ?? "",
+                    tooltip: widget.tooltip ?? ""
+                });
+            }
         }
 
         root.widgets = list;
-        root.widgetSignature = list.map(widget => widget.pluginId).join(",");
+        root.widgetSignature = list.map(widget => widget.key).join(",");
     }
 
     function sendEvent(plugin: var, controlId: string, value: var): void {
@@ -110,18 +111,19 @@ Singleton {
         actionProc.pendingPluginId = plugin.id;
     }
 
-    function runAction(plugin: var, actionId: string): void {
+    function runAction(plugin: var, actionId: string, argument): void {
         if (!plugin?.path || !actionId)
             return;
 
-        actionProc.command = [plugin.path, "run", actionId];
+        actionProc.command = argument ? [plugin.path, "run", actionId, argument] : [plugin.path, "run", actionId];
+        actionProc.pendingPluginId = "";
         actionProc.running = true;
     }
 
-    function runWidgetClick(pluginId: string): void {
+    function runWidgetClick(pluginId: string, widgetId: string): void {
         const plugin = root.plugins.find(item => item.id === pluginId);
         if (plugin)
-            root.runAction(plugin, "click");
+            root.runAction(plugin, "click", widgetId);
     }
 
     function notify(title: string, body: string): void {

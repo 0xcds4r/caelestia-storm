@@ -142,7 +142,7 @@ GridLayout {
                 for (const id of ids)
                     list.push({
                         id: "pluginWidget",
-                        pluginId: id
+                        widgetKey: id
                     });
                 inserted = true;
             }
@@ -153,7 +153,7 @@ GridLayout {
             for (const id of ids)
                 list.push({
                     id: "pluginWidget",
-                    pluginId: id
+                    widgetKey: id
                 });
 
         return list;
@@ -233,7 +233,7 @@ GridLayout {
                 delegate: EntryWrapper {
                     PluginWidget {
                         anchors.fill: parent
-                        plugin: Plugins.widgetFor(modelData.pluginId)
+                        plugin: Plugins.widgetFor(modelData.widgetKey)
                     }
                 }
             }
@@ -257,6 +257,7 @@ GridLayout {
         readonly property string iconName: widget.plugin?.icon ?? ""
         readonly property string label: widget.plugin?.text ?? ""
         readonly property string pluginId: widget.plugin?.pluginId ?? ""
+        readonly property string pluginWidgetId: widget.plugin?.widgetId ?? ""
 
         implicitWidth: root.vertical ? verticalContent.implicitWidth : horizontalContent.implicitWidth
         implicitHeight: root.vertical ? verticalContent.implicitHeight : horizontalContent.implicitHeight
@@ -315,7 +316,7 @@ GridLayout {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
 
-            onClicked: Plugins.runWidgetClick(widget.pluginId)
+            onClicked: Plugins.runWidgetClick(widget.pluginId, widget.pluginWidgetId)
         }
     }
 
