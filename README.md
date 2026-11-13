@@ -48,6 +48,15 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - text entries and real image thumbnails, uniform rows with a hover highlight;
 - click or `Enter` copies the entry, `✕` deletes one, `delete_sweep` wipes the history.
 
+**Plugins**
+- Settings → **Plugins** lists executables from `~/.config/caelestia/plugins` (and
+  `~/.local/share/caelestia/plugins`), each with an on/off switch;
+- a plugin is any executable answering `info` and `schemes` with JSON; a plugin scheme only has to
+  name a **seed colour** — the shell expands it into the full Material palette and applies it
+  system-wide (terminal, GTK, Qt, btop, …), same as `caelestia scheme set`;
+- enabled plugin schemes appear in **Wallpaper & style → Colours → Plugin schemes**;
+- a working Rust example with the protocol lives in [`examples/rust-plugin`](./examples/rust-plugin).
+
 **Other**
 - Panels → *Open by dragging* — hold and drag from the top or bottom screen edge to reveal the
   dashboard / launcher (can be turned off, the edges then stay fully clickable);
