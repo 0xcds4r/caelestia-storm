@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Widgets
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
@@ -117,7 +118,7 @@ PageBase {
             anchors.leftMargin: Tokens.padding.largeIncreased
             anchors.rightMargin: Tokens.padding.largeIncreased
 
-            implicitHeight: texts.implicitHeight
+            implicitHeight: Math.max(texts.implicitHeight, iconImage.visible ? iconImage.implicitHeight : 0)
 
             StyledSwitch {
                 id: pluginSwitch
@@ -176,10 +177,22 @@ PageBase {
                 }
             }
 
+            IconImage {
+                id: iconImage
+
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+
+                visible: row.plugin.icon.length > 0
+                implicitSize: Tokens.padding.extraLarge * 2
+                source: row.plugin.icon
+            }
+
             Column {
                 id: texts
 
-                anchors.left: parent.left
+                anchors.left: iconImage.visible ? iconImage.right : parent.left
+                anchors.leftMargin: iconImage.visible ? Tokens.spacing.small : 0
                 anchors.right: row.confirmingDelete ? confirmRow.left : removeButton.left
                 anchors.rightMargin: Tokens.spacing.small
                 anchors.verticalCenter: parent.verticalCenter

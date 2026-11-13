@@ -307,6 +307,8 @@ Or drop the fork entirely and go back to the stock config:
   file shipped in the read-only package.
 - `modules/nexus/pages/PluginsPage.qml` (page index 5, previously a placeholder) — installed plugins
   with a per-plugin toggle, a trash button (inline "Delete …?" confirmation) and import / rescan.
+  A plugin directory may ship `icon.{png,svg,jpg,jpeg,webp}` (or `<id>.<ext>` next to a bare
+  executable); `scripts/plugins-scan.sh` reports it and the card shows it on the left.
 - `scripts/plugin-unpack.py` + `scripts/plugin-remove.py` — `.stormpack` is a plain zip with a custom
   extension, laid out as `<plugin-id>/plugin …`. Import extracts it into
   `~/.config/caelestia/plugins` (rejecting absolute paths and `..`), restores the executable bit and
