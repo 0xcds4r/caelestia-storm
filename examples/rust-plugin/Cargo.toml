@@ -1,0 +1,8 @@
+[package]
+name = "storm-palette-pack"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "storm-palette-pack"
+path = "src/main.rs"

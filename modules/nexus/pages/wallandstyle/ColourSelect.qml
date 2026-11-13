@@ -104,6 +104,10 @@ PageBase {
         if (forceMode)
             args.push("-m", Colours.light ? "light" : "dark");
 
+        if (UiPrefs.appliedPluginScheme) {
+            UiPrefs.appliedPluginScheme = "";
+            UiPrefs.save();
+        }
         Quickshell.execDetached(args);
     }
 
@@ -200,6 +204,54 @@ PageBase {
                         text: modelData
                         selected: Colours.flavour === modelData
                         onClicked: root.apply(Colours.scheme, modelData, Colours.variant, false)
+                    }
+                }
+            }
+        }
+
+        // Plugin schemes
+        SectionHeader {
+            visible: Plugins.schemes.length > 0
+            text: Tr.tr("Plugin schemes")
+        }
+
+        ConnectedRect {
+            Layout.fillWidth: true
+            visible: Plugins.schemes.length > 0
+            first: true
+            last: true
+
+            implicitHeight: pluginColumn.implicitHeight + Tokens.padding.medium * 2
+
+            ColumnLayout {
+                id: pluginColumn
+
+                anchors.fill: parent
+                anchors.margins: Tokens.padding.medium
+                anchors.leftMargin: Tokens.padding.largeIncreased
+                anchors.rightMargin: Tokens.padding.largeIncreased
+                spacing: Tokens.spacing.small
+
+                StyledText {
+                    Layout.fillWidth: true
+                    text: Tr.tr("Provided by installed plugins")
+                    font: Tokens.font.body.small
+                }
+
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: Tokens.spacing.small
+
+                    Repeater {
+                        model: Plugins.schemes
+
+                        Chip {
+                            required property var modelData
+
+                            text: `${modelData.name} · ${modelData.pluginName}`
+                            selected: UiPrefs.appliedPluginScheme === modelData.key
+                            onClicked: Plugins.applyScheme(modelData)
+                        }
                     }
                 }
             }

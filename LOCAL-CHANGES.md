@@ -294,6 +294,24 @@ cp -a /etc/xdg/quickshell/caelestia/. ~/.config/quickshell/caelestia/
 Or drop the fork entirely and go back to the stock config:
 `rm -rf ~/.config/quickshell/caelestia && caelestia shell -r -d`
 
+## Plugins
+
+- `scripts/plugins-scan.sh` + `services/Plugins.qml` — plugins are executables discovered in
+  `~/.config/caelestia/plugins` and `~/.local/share/caelestia/plugins` (a bare executable, or a
+  directory with an executable named `plugin`). Each is asked for `info` and `schemes` JSON; the
+  scan runs through a single shell process and is exposed as `Plugins.plugins` / `Plugins.schemes`.
+- `scripts/scheme-from-seed.py` — expands a seed colour into the full palette via
+  `caelestia.utils.material.generator.gen_scheme`, writes `scheme.json` and runs
+  `apply_colours()`, so plugin schemes theme terminals/GTK/Qt just like `caelestia scheme set`.
+  The stored scheme name is `dynamic` because the CLI only accepts names that resolve to a scheme
+  file shipped in the read-only package.
+- `modules/nexus/pages/PluginsPage.qml` (page index 5, previously a placeholder) — installed plugins
+  with per-plugin toggles and a rescan button.
+- `modules/nexus/pages/wallandstyle/ColourSelect.qml` — "Plugin schemes" chips; the applied one is
+  tracked in `UiPrefs.appliedPluginScheme` and cleared when a built-in scheme is picked.
+- `services/UiPrefs.qml` — persists `disabledPlugins` and `appliedPluginScheme`.
+- `examples/rust-plugin/` — buildable Rust example (`cargo build --release`).
+
 ## Colour scheme picker
 
 `modules/nexus/pages/wallandstyle/ColourSelect.qml` — the "Colours" sub-page of Wallpaper & style was
