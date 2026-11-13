@@ -16,6 +16,8 @@ A plugin is just an executable that answers two commands:
 (plus terminal/app colours) with `scripts/scheme-from-seed.py` and applies it the
 same way `caelestia scheme set` does.
 
+Drop an `icon.png` (or `.svg`/`.jpg`/`.webp`) next to the binary to give the plugin a card icon.
+
 `mode` (`dark`/`light`) and `variant` (`tonalspot`, `vibrant`, `expressive`,
 `fidelity`, `fruitsalad`, `monochrome`, `neutral`, `rainbow`, `content`) are optional
 and default to the current ones.

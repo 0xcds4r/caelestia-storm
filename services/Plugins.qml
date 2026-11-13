@@ -106,7 +106,7 @@ Singleton {
             if (parts.length < 4)
                 continue;
 
-            const [id, path, infoRaw, schemesRaw] = parts;
+            const [id, path, infoRaw, schemesRaw, icon] = parts;
 
             let info;
             try {
@@ -130,6 +130,7 @@ Singleton {
                 version: info.version ?? "",
                 capabilities: info.capabilities ?? [],
                 schemes: Array.isArray(schemes) ? schemes : [],
+                icon: icon && icon.length > 0 ? `file://${icon}` : "",
                 enabled: root.isEnabled(id)
             });
         }
