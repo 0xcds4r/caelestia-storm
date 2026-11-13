@@ -81,6 +81,12 @@ Singleton {
     }
 
     function setMode(mode: string): void {
+        // Switching dark/light regenerates the scheme from the wallpaper, so a plugin palette is
+        // no longer the active one.
+        if (UiPrefs.appliedPluginScheme) {
+            UiPrefs.appliedPluginScheme = "";
+            UiPrefs.save();
+        }
         Quickshell.execDetached(["caelestia", "scheme", "set", "--notify", "-m", mode]);
     }
 
