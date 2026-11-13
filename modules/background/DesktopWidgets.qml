@@ -47,14 +47,33 @@ Item {
                 }
             }
 
+            readonly property bool hasWeb: (modelData.url ?? "").length > 0
+
             implicitWidth: modelData.width ?? 260
-            implicitHeight: cardColumn.implicitHeight + Tokens.padding.largeIncreased * 2
+            implicitHeight: card.hasWeb ? (modelData.height ?? 180) : cardColumn.implicitHeight + Tokens.padding.largeIncreased * 2
 
             radius: Tokens.rounding.large
             color: Qt.alpha(Colours.tPalette.m3surfaceContainer, 0.72)
 
+            StyledClippingRect {
+                anchors.fill: parent
+                anchors.margins: Tokens.padding.small
+                visible: card.hasWeb
+                radius: Tokens.rounding.medium
+
+                WebSnapshot {
+                    anchors.fill: parent
+                    url: card.modelData.url ?? ""
+                    captureWidth: Math.round(card.width)
+                    captureHeight: Math.round(card.height)
+                    refreshInterval: card.modelData.refresh ?? 60000
+                }
+            }
+
             Column {
                 id: cardColumn
+
+                visible: !card.hasWeb
 
                 anchors.left: parent.left
                 anchors.right: parent.right

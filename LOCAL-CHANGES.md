@@ -314,6 +314,11 @@ Or drop the fork entirely and go back to the stock config:
   `apply_colours()`, so plugin schemes theme terminals/GTK/Qt just like `caelestia scheme set`.
   The stored scheme name is `dynamic` because the CLI only accepts names that resolve to a scheme
   file shipped in the read-only package.
+- Web views: `components/WebSnapshot.qml` + `scripts/webview-snapshot.sh` render a page with
+  headless Chromium into a PNG and refresh it (default 60 s). Embedding QtWebEngine directly aborts
+  the shell — Chromium wants argv that Quickshell's launcher does not pass ("Argument list is empty
+  … base::CommandLine cannot be properly initialized") — so plugin web views are snapshots.
+  Available as the `webview` window row and as desktop cards with a `url`.
 - `modules/background/DesktopWidgets.qml` — desktop widgets from the `desktop` plugin command:
   cards (`icon`, `title`, `text`, `subtext`, `width`) placed by `anchor`
   (`top-left`/`top-right`/`bottom-left`/`bottom-right`/`center`) + `margin`, or absolute `x`/`y`.

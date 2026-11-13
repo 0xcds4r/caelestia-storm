@@ -278,6 +278,29 @@ FloatingWindow {
                         }
 
                         DelegateChoice {
+                            roleValue: "webview"
+                            delegate: Item {
+                                required property var modelData
+
+                                Layout.fillWidth: true
+                                implicitHeight: modelData.height ?? 280
+
+                                StyledClippingRect {
+                                    anchors.fill: parent
+                                    radius: Tokens.rounding.medium
+
+                                    WebSnapshot {
+                                        anchors.fill: parent
+                                        url: modelData.url ?? ""
+                                        captureWidth: 900
+                                        captureHeight: Math.round(parent.height) || 280
+                                        refreshInterval: modelData.refresh ?? 60000
+                                    }
+                                }
+                            }
+                        }
+
+                        DelegateChoice {
                             roleValue: "choice"
                             delegate: ConnectedRect {
                                 id: choiceRoot
