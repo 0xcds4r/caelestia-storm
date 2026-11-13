@@ -1,6 +1,7 @@
 import QtQuick.Layouts
 import Caelestia.Config
 import Caelestia.I18n
+import qs.services
 import qs.modules.nexus.common
 
 PageBase {
@@ -13,6 +14,25 @@ PageBase {
         anchors.top: parent.top
         width: root.cappedWidth
         spacing: Tokens.spacing.extraSmall / 2
+
+        // Behaviour
+        SectionHeader {
+            first: true
+            text: Tr.tr("Behaviour")
+        }
+
+        ToggleRow {
+            last: true
+            text: Tr.tr("Open by dragging")
+            subtext: Tr.tr("Hold and drag from the top or bottom screen edge to reveal the dashboard or launcher")
+            checked: UiPrefs.panelsDragOpen
+            onToggled: UiPrefs.setPanelsDragOpen(checked)
+        }
+
+        // Panels
+        SectionHeader {
+            text: Tr.tr("Panels")
+        }
 
         NavRow {
             first: true

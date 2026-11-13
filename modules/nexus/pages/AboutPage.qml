@@ -83,7 +83,7 @@ PageBase {
 
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
-                    text: CUtils.version ? `v${CUtils.version} | STORM 1.2` : "STORM 1.2"
+                    text: CUtils.version ? `v${CUtils.version} | STORM 1.3` : "STORM 1.3"
                     color: Colours.palette.m3onSurfaceVariant
                     font: Tokens.font.body.medium
                 }

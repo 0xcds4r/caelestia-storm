@@ -294,6 +294,17 @@ cp -a /etc/xdg/quickshell/caelestia/. ~/.config/quickshell/caelestia/
 Or drop the fork entirely and go back to the stock config:
 `rm -rf ~/.config/quickshell/caelestia && caelestia shell -r -d`
 
+## Drag-to-open switch
+
+`services/UiPrefs.qml` (new) — small persisted preferences (`~/.local/state/caelestia/ui-prefs.json`),
+currently `panelsDragOpen` (default `true`).
+
+- `modules/drawers/Interactions.qml` — the dashboard (top) and launcher (bottom) drag handlers are
+  gated on it.
+- `modules/drawers/ContentWindow.qml` — `dragMaskPadding` returns 0 when the switch is off, so the
+  screen edges stay fully clickable instead of reserving a dead strip for dragging.
+- `modules/nexus/pages/PanelsPage.qml` — new "Behaviour" section with the toggle above the panel list.
+
 ## Weather retry
 
 `services/Weather.qml` — `fetchWeatherData()` got an error callback: open-meteo answers `503` when it
