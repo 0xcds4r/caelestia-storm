@@ -15,6 +15,35 @@ A plugin is just an executable that answers two commands:
 | `run <action>` | performs the action; stdout is shown as a notification |
 | `widget` | `{"icon": "speed", "text": "0.42", "tooltip": "..."}` — a taskbar item, polled every minute |
 | `run click` | sent when the taskbar widget is clicked |
+| `window` | window descriptor (see below) |
+| `event <id> <json>` | a control in that window changed |
+
+### Windows
+
+`window` returns JSON that the shell renders with its own widgets:
+
+```json
+{
+  "title": "My plugin", "icon": "tune", "width": 560, "height": 500,
+  "pages": [
+    { "id": "general", "label": "General", "sections": [
+      { "type": "section", "text": "Behaviour" },
+      { "type": "toggle", "id": "enabled", "label": "Enabled", "subtext": "…", "value": true },
+      { "type": "choice", "id": "mode", "label": "Mode", "value": "auto",
+        "options": [{ "value": "auto", "text": "Auto" }] },
+      { "type": "slider", "id": "strength", "label": "Strength", "min": 0, "max": 100, "value": 60 },
+      { "type": "textfield", "id": "name", "label": "Name", "value": "" },
+      { "type": "text", "text": "Free-form paragraph" },
+      { "type": "info", "label": "Version", "value": "0.3.0" },
+      { "type": "button", "id": "reset", "label": "Reset", "icon": "restart_alt" }
+    ] }
+  ]
+}
+```
+
+One page renders as a plain window; several pages get a tab strip. Every change arrives as
+`event <control id> <json value>` (buttons send `true`), after which the shell re-reads `window`,
+so the plugin's state is the single source of truth.
 
 `seed` is a single colour; the shell expands it into the full Material palette
 (plus terminal/app colours) with `scripts/scheme-from-seed.py` and applies it the

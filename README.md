@@ -51,9 +51,11 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 **Plugins**
 - Settings → **Plugins** lists executables from `~/.config/caelestia/plugins` (and
   `~/.local/share/caelestia/plugins`), each with an on/off switch;
-- a plugin is any executable answering JSON commands: `info`, `schemes`, `actions` + `run <id>`
-  and `widget` (a live value in the taskbar, refreshed every minute, clickable via `run click`);
-  drop an `icon.png` next to it and the card shows it;
+- a plugin is any executable answering JSON commands: `info`, `schemes`, `actions` + `run <id>`,
+  `widget` (a live value in the taskbar, refreshed every minute, clickable via `run click`) and
+  `window` + `event <id> <json>` (the shell renders the plugin's own window — sections, toggles,
+  sliders, choices, text fields, buttons — and forwards every change back); drop an `icon.png` next
+  to it and the card shows it;
 - a plugin scheme only has to name a **seed colour** — the shell expands it into the full Material
   palette and applies it system-wide (terminal, GTK, Qt, btop, …), same as `caelestia scheme set`;
 - enabled plugin schemes appear in **Wallpaper & style → Colours → Plugin schemes**;

@@ -9,6 +9,7 @@ import qs.components
 import qs.components.controls
 import qs.components.filedialog
 import qs.services
+import qs.modules.nexus
 import qs.modules.nexus.common
 
 PageBase {
@@ -17,6 +18,31 @@ PageBase {
     title: Tr.tr("Plugins")
 
     readonly property int count: Plugins.plugins.length
+
+    property var openWindows: ({})
+
+    function openWindow(plugin: var): void {
+        const existing = root.openWindows[plugin.id];
+        if (existing) {
+            existing.requestActivate();
+            return;
+        }
+
+        const window = root.windowComp.createObject(null, {
+            plugin: plugin
+        });
+        if (!window)
+            return;
+
+        root.openWindows[plugin.id] = window;
+        window.destroyed.connect(() => {
+            delete root.openWindows[plugin.id];
+        });
+    }
+
+    readonly property Component windowComp: Component {
+        PluginWindow {}
+    }
 
     readonly property FileDialog importDialog: FileDialog {
         title: Tr.tr("Import plugin")
@@ -233,9 +259,18 @@ PageBase {
                 }
 
                 Row {
-                    visible: !row.confirmingDelete && row.plugin.actions.length > 0
+                    visible: !row.confirmingDelete && (row.plugin.actions.length > 0 || row.plugin.capabilities.indexOf("window") !== -1)
                     width: parent.width
                     spacing: Tokens.spacing.extraSmall
+
+                    TextButton {
+                        visible: row.plugin.capabilities.indexOf("window") !== -1
+                        type: TextButton.Tonal
+                        text: Tr.tr("Open")
+                        font: Tokens.font.label.small
+
+                        onClicked: root.openWindow(row.plugin)
+                    }
 
                     Repeater {
                         model: row.plugin.actions
