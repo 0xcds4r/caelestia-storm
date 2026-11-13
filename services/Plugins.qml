@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Caelestia.I18n
 import qs.services
 
 // Rust (or any language) plugins: an executable in ~/.config/caelestia/plugins that answers
@@ -44,6 +45,31 @@ Singleton {
 
         UiPrefs.appliedPluginScheme = scheme.key;
         UiPrefs.save();
+    }
+
+    function notify(title: string, body: string): void {
+        Quickshell.execDetached(["notify-send", "-a", "Caelestia", title, body]);
+    }
+
+    function exportPlugin(plugin: var): void {
+        if (!plugin?.id)
+            return;
+
+        exportProc.command = ["python3", Quickshell.shellPath("scripts/plugin-pack.py"), plugin.id];
+        exportProc.running = true;
+    }
+
+    function exportAll(): void {
+        exportProc.command = ["python3", Quickshell.shellPath("scripts/plugin-pack.py"), "--all"];
+        exportProc.running = true;
+    }
+
+    function importArchive(path: string): void {
+        if (!path)
+            return;
+
+        importProc.command = ["python3", Quickshell.shellPath("scripts/plugin-unpack.py"), path];
+        importProc.running = true;
     }
 
     function rebuildSchemes(): void {
@@ -138,6 +164,32 @@ Singleton {
 
     Process {
         id: applyProc
+
+        onExited: root.refresh()
+    }
+
+    Process {
+        id: exportProc
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const path = text.trim();
+                if (path)
+                    root.notify(Tr.tr("Plugins exported"), path);
+            }
+        }
+    }
+
+    Process {
+        id: importProc
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const ids = text.trim();
+                if (ids)
+                    root.notify(Tr.tr("Plugins imported"), ids);
+            }
+        }
 
         onExited: root.refresh()
     }

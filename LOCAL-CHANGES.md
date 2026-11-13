@@ -306,7 +306,11 @@ Or drop the fork entirely and go back to the stock config:
   The stored scheme name is `dynamic` because the CLI only accepts names that resolve to a scheme
   file shipped in the read-only package.
 - `modules/nexus/pages/PluginsPage.qml` (page index 5, previously a placeholder) — installed plugins
-  with per-plugin toggles and a rescan button.
+  with a per-plugin toggle and export button, plus import / export-all / rescan.
+- `scripts/plugin-pack.py` + `scripts/plugin-unpack.py` — `.stormpack` is a plain zip with a custom
+  extension, laid out as `<plugin-id>/plugin …`. Export writes it to `~/Downloads`, import extracts it
+  into `~/.config/caelestia/plugins` (rejecting absolute paths and `..`), restores the executable bit
+  and rescans. The import dialog uses the shell's `FileDialog` with a `*.stormpack` filter.
 - `modules/nexus/pages/wallandstyle/ColourSelect.qml` — "Plugin schemes" chips; the applied one is
   tracked in `UiPrefs.appliedPluginScheme` and cleared when a built-in scheme is picked.
 - `services/UiPrefs.qml` — persists `disabledPlugins` and `appliedPluginScheme`.
