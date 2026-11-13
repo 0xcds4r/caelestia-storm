@@ -53,6 +53,8 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
   dashboard / launcher (can be turned off, the edges then stay fully clickable);
 - *Keep awake* survives shell restarts (`~/.local/state/caelestia/idle-inhibited`);
 - Nexus → About: “Caelestia Storm”, custom logo, `v2.5.0 | STORM 1.3`;
+- Wallpaper & style → **Colours**: pick a colour scheme (`dynamic` from the wallpaper or any bundled
+  one), its flavour and palette variant, or roll a random scheme;
 - the bar logo is the Arch mark, wallpaper is drawn by the shell.
 
 ## Install
