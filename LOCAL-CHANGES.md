@@ -312,6 +312,10 @@ Or drop the fork entirely and go back to the stock config:
   `apply_colours()`, so plugin schemes theme terminals/GTK/Qt just like `caelestia scheme set`.
   The stored scheme name is `dynamic` because the CLI only accepts names that resolve to a scheme
   file shipped in the read-only package.
+- `modules/background/DesktopWidgets.qml` — desktop widgets from the `desktop` plugin command:
+  cards (`icon`, `title`, `text`, `subtext`, `width`) placed by `anchor`
+  (`top-left`/`top-right`/`bottom-left`/`bottom-right`/`center`) + `margin`, or absolute `x`/`y`.
+  They live in the background window, so they sit under every window on the wallpaper.
 - `modules/nexus/pages/PluginsPage.qml` (page index 5, previously a placeholder) — installed plugins
   with a per-plugin toggle, a trash button (inline "Delete …?" confirmation), action buttons and
   import / rescan.
