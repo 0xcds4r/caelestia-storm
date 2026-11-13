@@ -24,20 +24,20 @@ PageBase {
     function openWindow(plugin: var): void {
         const existing = root.openWindows[plugin.id];
         if (existing) {
-            existing.requestActivate();
-            return;
+            // The window may have been destroyed with its plugin; touching it throws.
+            try {
+                existing.visible = true;
+                return;
+            } catch (error) {
+                delete root.openWindows[plugin.id];
+            }
         }
 
         const window = root.windowComp.createObject(null, {
             plugin: plugin
         });
-        if (!window)
-            return;
-
-        root.openWindows[plugin.id] = window;
-        window.destroyed.connect(() => {
-            delete root.openWindows[plugin.id];
-        });
+        if (window)
+            root.openWindows[plugin.id] = window;
     }
 
     readonly property Component windowComp: Component {
