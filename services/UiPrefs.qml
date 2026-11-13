@@ -17,14 +17,19 @@ Singleton {
     property var disabledPlugins: []
     // Plugin scheme currently applied ("<plugin id>:<scheme id>"), empty for built-in schemes
     property string appliedPluginScheme: ""
+    // Scheme to restore when the plugin owning the current scheme is disabled (JSON)
+    property string previousScheme: ""
 
     function save(): void {
         const data = JSON.stringify({
             panelsDragOpen: root.panelsDragOpen,
             disabledPlugins: root.disabledPlugins,
-            appliedPluginScheme: root.appliedPluginScheme
+            appliedPluginScheme: root.appliedPluginScheme,
+            previousScheme: root.previousScheme
         });
-        writer.command = ["sh", "-c", `mkdir -p '${root.stateDir}' && printf '%s' '${data}' > '${root.path}'`];
+        // The plugin scripts read this file so they do not even execute disabled plugins.
+        const disabled = root.disabledPlugins.join("\n");
+        writer.command = ["sh", "-c", `mkdir -p '${root.stateDir}' && printf '%s' '${data}' > '${root.path}' && printf '%s' '${disabled}' > '${root.stateDir}/disabled-plugins'`];
         writer.running = true;
     }
 
@@ -53,6 +58,8 @@ Singleton {
                     root.disabledPlugins = data.disabledPlugins;
                 if (typeof data.appliedPluginScheme === "string")
                     root.appliedPluginScheme = data.appliedPluginScheme;
+                if (typeof data.previousScheme === "string")
+                    root.previousScheme = data.previousScheme;
             } catch (error) {
                 console.warn("Unable to parse ui-prefs.json:", error);
             }

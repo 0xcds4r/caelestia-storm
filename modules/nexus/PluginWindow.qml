@@ -51,6 +51,11 @@ FloatingWindow {
                 win.reload();
         }
 
+        function onPluginDisabled(pluginId: string): void {
+            if (pluginId === win.plugin.id)
+                win.destroy();
+        }
+
         target: Plugins
     }
 

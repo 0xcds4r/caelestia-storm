@@ -23,6 +23,8 @@ Singleton {
 
     // Emitted after a plugin handled an event (e.g. a control in its window changed)
     signal eventFinished(string pluginId)
+    // Emitted when the user disables or removes a plugin, so its windows can close
+    signal pluginDisabled(string pluginId)
 
     readonly property var schemePlugins: root.plugins.filter(p => p.enabled && p.schemes.length > 0)
 
@@ -39,13 +41,64 @@ Singleton {
     }
 
     function setEnabled(pluginId: string, enabled: bool): void {
+        if (!enabled)
+            root.forgetPlugin(pluginId, true);
+
         UiPrefs.setPluginEnabled(pluginId, enabled);
         root.rebuildSchemes();
+
+        if (enabled)
+            root.refreshWidgets();
+    }
+
+    // Stops everything a plugin contributed: bar widgets, desktop widgets, windows, and (optionally)
+    // the colour scheme it applied.
+    function forgetPlugin(pluginId: string, restoreScheme: bool): void {
+        root.widgets = root.widgets.filter(widget => widget.pluginId !== pluginId);
+        root.widgetSignature = root.widgets.map(widget => widget.key).join(",");
+        root.desktopWidgets = root.desktopWidgets.filter(widget => widget.pluginId !== pluginId);
+        root.pluginDisabled(pluginId);
+
+        if (!UiPrefs.appliedPluginScheme.startsWith(`${pluginId}:`))
+            return;
+
+        const previous = UiPrefs.previousScheme;
+        UiPrefs.appliedPluginScheme = "";
+        UiPrefs.previousScheme = "";
+        UiPrefs.save();
+
+        if (!restoreScheme || !previous)
+            return;
+
+        try {
+            const scheme = JSON.parse(previous);
+            const args = ["caelestia", "scheme", "set", "-n", scheme.name];
+            if (scheme.flavour)
+                args.push("-f", scheme.flavour);
+            if (scheme.variant)
+                args.push("-v", scheme.variant);
+            if (scheme.mode)
+                args.push("-m", scheme.mode);
+            schemeProc.command = args;
+            schemeProc.running = true;
+        } catch (error) {
+            console.warn("unable to restore the previous scheme:", error);
+        }
     }
 
     function applyScheme(scheme: var): void {
         if (!scheme?.seed)
             return;
+
+        if (!UiPrefs.appliedPluginScheme) {
+            UiPrefs.previousScheme = JSON.stringify({
+                name: Colours.scheme,
+                flavour: Colours.flavour,
+                mode: Colours.light ? "light" : "dark",
+                variant: Colours.variant
+            });
+            UiPrefs.save();
+        }
 
         applyProc.command = ["python3", Quickshell.shellPath("scripts/scheme-from-seed.py"), "--seed", scheme.seed, "--mode", scheme.mode ?? "dark", "--variant", scheme.variant ?? "tonalspot"];
         applyProc.running = true;
@@ -186,10 +239,7 @@ Singleton {
         removeProc.command = ["python3", Quickshell.shellPath("scripts/plugin-remove.py"), plugin.id];
         removeProc.running = true;
 
-        if (UiPrefs.appliedPluginScheme.startsWith(`${plugin.id}:`)) {
-            UiPrefs.appliedPluginScheme = "";
-            UiPrefs.save();
-        }
+        root.forgetPlugin(plugin.id, true);
     }
 
     function importArchive(path: string): void {
@@ -306,6 +356,10 @@ Singleton {
         id: applyProc
 
         onExited: root.refresh()
+    }
+
+    Process {
+        id: schemeProc
     }
 
     Process {

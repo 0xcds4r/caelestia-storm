@@ -3,6 +3,11 @@
 #   plugin-id <TAB> descriptor-json
 # A plugin opts in with the "desktop" capability and answers `desktop` with
 #   { "widgets": [ { "id": "...", "anchor": "bottom-left", "title": "...", ... } ] }
+disabled_file="${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/disabled-plugins"
+is_disabled() {
+    [ -f "$disabled_file" ] && grep -qx "$1" "$disabled_file"
+}
+
 for dir in "${XDG_CONFIG_HOME:-$HOME/.config}/caelestia/plugins" "${XDG_DATA_HOME:-$HOME/.local/share}/caelestia/plugins"; do
     [ -d "$dir" ] || continue
 
@@ -20,6 +25,7 @@ for dir in "${XDG_CONFIG_HOME:-$HOME/.config}/caelestia/plugins" "${XDG_DATA_HOM
         fi
 
         [ -n "$exe" ] || continue
+        is_disabled "$id" && continue
 
         info=$("$exe" info 2>/dev/null | tr -d '\n')
         case "$info" in
