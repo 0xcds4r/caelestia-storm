@@ -95,12 +95,14 @@ differ. For the lua-style config used by caelestia/end-4:
 ```lua
 hl.bind("SUPER + SUPER_L", hl.dsp.global("caelestia:launcher"), { release = true }) -- launcher + overview
 hl.bind("SUPER + V", hl.dsp.global("caelestia:clipboard"))                          -- clipboard panel
+hl.bind("SUPER + R", hl.dsp.exec_cmd("caelestia shell -r -d"))                       -- restart the shell
 ```
 
 For a plain `hyprland.conf`:
 
 ```
 bind  = SUPER, V, global, caelestia:clipboard
+bind  = SUPER, R, exec, caelestia shell -r -d
 ```
 
 ## Updating from upstream
