@@ -4,11 +4,6 @@
 # A plugin is either an executable file inside the plugins directory or a directory
 # containing an executable named "plugin". An optional icon is picked up from
 # <plugin-dir>/icon.{png,svg,jpg,jpeg,webp} (or <id>.<ext> next to a bare executable).
-disabled_file="${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/disabled-plugins"
-is_disabled() {
-    [ -f "$disabled_file" ] && grep -qx "$1" "$disabled_file"
-}
-
 for dir in "${XDG_CONFIG_HOME:-$HOME/.config}/caelestia/plugins" "${XDG_DATA_HOME:-$HOME/.local/share}/caelestia/plugins"; do
     [ -d "$dir" ] || continue
 
@@ -26,7 +21,6 @@ for dir in "${XDG_CONFIG_HOME:-$HOME/.config}/caelestia/plugins" "${XDG_DATA_HOM
         fi
 
         [ -n "$exe" ] || continue
-        is_disabled "$id" && continue
 
         icon=""
         for ext in png svg jpg jpeg webp; do
