@@ -104,8 +104,9 @@ PageBase {
         if (forceMode)
             args.push("-m", Colours.light ? "light" : "dark");
 
-        if (UiPrefs.appliedPluginScheme) {
+        if (UiPrefs.appliedPluginScheme || UiPrefs.previousScheme) {
             UiPrefs.appliedPluginScheme = "";
+            UiPrefs.previousScheme = "";
             UiPrefs.save();
         }
         Quickshell.execDetached(args);
