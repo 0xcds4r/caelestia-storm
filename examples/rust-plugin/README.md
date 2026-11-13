@@ -30,3 +30,8 @@ cp target/release/storm-palette-pack ~/.config/caelestia/plugins/
 
 Then open Settings → Plugins and hit **Rescan plugins** (or restart the shell).
 A plugin can also be a directory containing an executable named `plugin`.
+
+## Sharing
+
+Settings → Plugins exports the installed plugin as `~/Downloads/caelestia-plugin-<id>.stormpack`
+(a zip with a custom extension) and imports it back on another machine.
