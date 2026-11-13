@@ -330,7 +330,9 @@ Or drop the fork entirely and go back to the stock config:
 - `modules/nexus/pages/wallandstyle/ColourSelect.qml` — "Plugin schemes" chips; the applied one is
   tracked in `UiPrefs.appliedPluginScheme` and cleared when a built-in scheme is picked.
 - `services/UiPrefs.qml` — persists `disabledPlugins` and `appliedPluginScheme`.
-- `examples/rust-plugin/` — buildable Rust example (`cargo build --release`).
+- `examples/rust-plugin/` — buildable Rust example (`cargo build --release`) with `src/api.rs`, a
+  dependency-free helper module: JSON `Fields` builder, `Plugin`/`Scheme`/`Action`/`Widget`/
+  `Desktop`/`Window`+`Page`+`Row` builders, `Event` parsing and a `key=value` `State` store.
 
 ## Colour scheme picker
 

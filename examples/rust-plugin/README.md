@@ -56,6 +56,45 @@ Drop an `icon.png` (or `.svg`/`.jpg`/`.webp`) next to the binary to give the plu
 `fidelity`, `fruitsalad`, `monochrome`, `neutral`, `rainbow`, `content`) are optional
 and default to the current ones.
 
+## `api.rs`
+
+The example ships a dependency-free helper module (`src/api.rs`) so a plugin does not have to hand
+write JSON:
+
+```rust
+mod api;
+use api::{Action, Capability, Desktop, Event, Page, Plugin, Row, Scheme, State, Widget};
+
+let plugin = Plugin::new("demo", api::VERSION)
+    .description("Demo plugin")
+    .capabilities([Capability::Widget, Capability::Window]);
+
+// JSON output
+api::schemes(&[Scheme::new("sunset", "Sunset", "#ff7a18").variant("vibrant")]);
+api::actions(&[Action::new("about", "About")]);
+api::widgets(&[Widget::new("load").icon("speed").text("0.42").tooltip("load average")]);
+api::desktop(&[Desktop::new("load", "Load average", "0.42").anchor("top-left").margin(64.0)]);
+api::Window::new("Demo").size(560.0, 420.0).pages(vec![
+    Page::new("general", "General").rows(vec![
+        Row::Section("Behaviour"),
+        Row::Toggle { id: "enabled", label: "Enabled", subtext: "", value: true },
+        Row::Choice { id: "mode", label: "Mode", value: "auto",
+                      options: &[api::choice("auto", "Auto")] },
+        Row::Button { id: "reset", label: "Reset", subtext: "", icon: "restart_alt" },
+    ]),
+]).json();
+
+// events + persistence
+if let Some(event) = Event::parse(&args) {
+    let mut state = State::load("demo");
+    state.set("enabled", event.value.as_bool());
+    let _ = state.save();
+}
+```
+
+`Fields` builds arbitrary JSON objects (`text`, `num`, `bool`, `raw`), `EventValue` gives typed
+access to control values, and `State` is a `key=value` store in `$XDG_STATE_HOME/<plugin id>.conf`.
+
 ## Build and install
 
 ```sh

@@ -1,99 +1,42 @@
-//! Example caelestia plugin.
+//! Example caelestia plugin built on `api.rs`.
 //!
-//! A plugin is a plain executable. The shell calls it with:
-//!   `info`    -> JSON manifest
-//!   `schemes` -> JSON array of colour schemes (seed colours are expanded to a full palette)
-//!   `actions` -> JSON array of buttons shown on the plugin card
-//!   `run <id>`-> run one of those actions (stdout is shown as a notification)
-//!   `widgets` -> bar widgets, `[{"id": "load", "icon": "...", "text": "..."}]`
-//!   `run click <widget id>` is sent when one of them is clicked.
-//!   `window`  -> JSON descriptor of a window the shell renders with its own settings widgets
-//!   `event <id> <json>` -> a control in that window changed
-//!   `desktop` -> JSON descriptor of widgets drawn on the desktop (wallpaper)
-//!
-//! Build with `cargo build --release` and drop the binary into
-//! `~/.config/caelestia/plugins/` (or a directory with it named `plugin`).
+//! The shell calls the executable with:
+//!   `info`               -> JSON manifest
+//!   `schemes`            -> seed-based colour schemes
+//!   `actions`            -> buttons shown on the plugin card
+//!   `run <action>`       -> run an action (stdout becomes a notification)
+//!   `widgets`            -> taskbar widgets, polled every minute
+//!   `run click <id>`     -> a taskbar widget was clicked
+//!   `window`             -> window descriptor rendered by the shell
+//!   `event <id> <json>`  -> a control in that window changed
+//!   `desktop`            -> cards drawn on the desktop
 
+mod api;
+
+use api::{Action, Capability, Desktop, Event, EventValue, Page, Plugin, Row, Scheme, State, Widget, choice};
 use std::env;
 use std::process::ExitCode;
 
-const INFO: &str = r#"{
-    "name": "Storm Palette Pack",
-    "description": "Example plugin with seed-based colour schemes, an action and a bar widget",
-    "version": "0.5.0",
-    "capabilities": ["schemes", "actions", "widget", "window", "desktop"]
-}"#;
+const ID: &str = "storm-palette-pack";
 
-const ACTIONS: &str = r#"[
-    { "id": "about", "name": "About" },
-    { "id": "reload", "name": "Reload schemes" }
-]"#;
-
-const SCHEMES: &str = r##"[
-    { "id": "sunset", "name": "Sunset", "seed": "#ff7a18", "mode": "dark", "variant": "tonalspot" },
-    { "id": "mint", "name": "Mint", "seed": "#3ddc97", "mode": "dark", "variant": "vibrant" },
-    { "id": "paper", "name": "Paper", "seed": "#c8a98b", "mode": "light", "variant": "neutral" }
-]"##;
-
-#[derive(Clone)]
-struct State {
-    announce: bool,
-    mode: String,
-    strength: u32,
+fn plugin() -> Plugin {
+    Plugin::new("Storm Palette Pack", api::VERSION)
+        .id(ID)
+        .description("Example plugin: colour schemes, actions, widgets and a window")
+        .capabilities([
+            Capability::Schemes,
+            Capability::Actions,
+            Capability::Widget,
+            Capability::Window,
+            Capability::Desktop,
+        ])
 }
 
-impl Default for State {
-    fn default() -> Self {
-        Self {
-            announce: true,
-            mode: "auto".to_string(),
-            strength: 60,
-        }
-    }
-}
-
-fn state_path() -> std::path::PathBuf {
-    let base = env::var("XDG_STATE_HOME")
-        .map(std::path::PathBuf::from)
-        .unwrap_or_else(|_| {
-            std::path::PathBuf::from(env::var("HOME").unwrap_or_else(|_| ".".into()))
-                .join(".local/state")
-        });
-    base.join("storm-palette-pack.conf")
-}
-
-impl State {
-    fn load() -> Self {
-        let mut state = State::default();
-        if let Ok(text) = std::fs::read_to_string(state_path()) {
-            for line in text.lines() {
-                let Some((key, value)) = line.split_once('=') else {
-                    continue;
-                };
-                match key.trim() {
-                    "announce" => state.announce = value.trim() == "true",
-                    "mode" => state.mode = value.trim().to_string(),
-                    "strength" => state.strength = value.trim().parse().unwrap_or(60),
-                    _ => {}
-                }
-            }
-        }
-        state
-    }
-
-    fn save(&self) {
-        let path = state_path();
-        if let Some(parent) = path.parent() {
-            let _ = std::fs::create_dir_all(parent);
-        }
-        let _ = std::fs::write(
-            path,
-            format!(
-                "announce={}\nmode={}\nstrength={}\n",
-                self.announce, self.mode, self.strength
-            ),
-        );
-    }
+fn load_average() -> String {
+    std::fs::read_to_string("/proc/loadavg")
+        .ok()
+        .and_then(|text| text.split_whitespace().next().map(str::to_string))
+        .unwrap_or_else(|| "?".to_string())
 }
 
 fn memory_percent() -> u32 {
@@ -117,161 +60,179 @@ fn memory_percent() -> u32 {
     (((total - available) as f32 / total as f32) * 100.0).round() as u32
 }
 
+fn schemes() -> String {
+    api::schemes(&[
+        Scheme::new("sunset", "Sunset", "#ff7a18"),
+        Scheme::new("mint", "Mint", "#3ddc97").variant("vibrant"),
+        Scheme::new("paper", "Paper", "#c8a98b").mode("light").variant("neutral"),
+    ])
+}
+
+fn actions() -> String {
+    api::actions(&[Action::new("about", "About"), Action::new("reload", "Reload schemes")])
+}
+
 fn widgets() -> String {
-    format!(
-        r#"[{{ "id": "load", "icon": "speed", "text": "{}", "tooltip": "1 minute load average" }}, {{ "id": "mem", "icon": "memory", "text": "{}%", "tooltip": "Memory in use" }}]"#,
-        load_average(),
-        memory_percent()
-    )
+    let load = load_average();
+    let memory = format!("{}%", memory_percent());
+
+    api::widgets(&[
+        Widget::new("load").icon("speed").text(&load).tooltip("1 minute load average"),
+        Widget::new("mem").icon("memory").text(&memory).tooltip("Memory in use"),
+    ])
 }
 
-fn desktop_descriptor() -> String {
-    format!(
-        r#"{{ "widgets": [
-    {{ "id": "load", "anchor": "top-left", "margin": 64, "width": 240, "icon": "speed", "title": "Load average", "text": "{}", "subtext": "1 minute" }},
-    {{ "id": "mem", "anchor": "bottom-right", "margin": 64, "width": 240, "icon": "memory", "title": "Memory", "text": "{}%", "subtext": "in use" }}
-] }}"#,
-        load_average(),
-        memory_percent()
-    )
+fn desktop() -> String {
+    let load = load_average();
+    let memory = format!("{}%", memory_percent());
+
+    api::desktop(&[
+        Desktop::new("load", "Load average", &load)
+            .anchor("top-left")
+            .margin(64.0)
+            .width(240.0)
+            .icon("speed")
+            .subtext("1 minute"),
+        Desktop::new("mem", "Memory", &memory)
+            .anchor("bottom-right")
+            .margin(64.0)
+            .width(240.0)
+            .icon("memory")
+            .subtext("in use"),
+    ])
 }
 
-fn window_descriptor() -> String {
-    let state = State::load();
-    let state_file = state_path().display().to_string();
-    format!(
-        r##"{{
-  "title": "Storm Palette Pack",
-  "icon": "palette",
-  "width": 560,
-  "height": 500,
-  "pages": [
-    {{
-      "id": "general",
-      "label": "General",
-      "sections": [
-        {{ "type": "section", "text": "Behaviour" }},
-        {{ "type": "toggle", "id": "announce", "label": "Announce scheme changes", "subtext": "Show a desktop notification", "value": {} }},
-        {{ "type": "choice", "id": "mode", "label": "Accent source", "value": "{}", "options": [
-            {{ "value": "auto", "text": "Auto" }},
-            {{ "value": "wallpaper", "text": "Wallpaper" }},
-            {{ "value": "fixed", "text": "Fixed" }}
-        ] }},
-        {{ "type": "slider", "id": "strength", "label": "Accent strength", "min": 0, "max": 100, "value": {} }},
-        {{ "type": "section", "text": "Notes" }},
-        {{ "type": "text", "text": "These settings live in the plugin's own state file - the shell only renders this window and forwards events." }}
-      ]
-    }},
-    {{
-      "id": "about",
-      "label": "About",
-      "sections": [
-        {{ "type": "info", "label": "Version", "subtext": "Example plugin", "value": "0.3.0" }},
-        {{ "type": "info", "label": "State file", "value": "{}" }},
-        {{ "type": "button", "id": "reset", "label": "Reset settings", "subtext": "Back to defaults", "icon": "restart_alt" }}
-      ]
-    }}
-  ]
-}}"##,
-        state.announce, state.mode, state.strength, state_file
-    )
+fn window() -> String {
+    let state = State::load(ID);
+    let announce = state.bool("announce", true);
+    let mode = state.text("mode", "auto");
+    let strength = state.number("strength", 60.0);
+    let state_file = api::state_dir().join(format!("{ID}.conf")).display().to_string();
+
+    api::Window::new("Storm Palette Pack")
+        .icon("palette")
+        .size(560.0, 500.0)
+        .pages(vec![
+            Page::new("general", "General").rows(vec![
+                Row::Section("Behaviour"),
+                Row::Toggle {
+                    id: "announce",
+                    label: "Announce scheme changes",
+                    subtext: "Show a desktop notification",
+                    value: announce,
+                },
+                Row::Choice {
+                    id: "mode",
+                    label: "Accent source",
+                    value: &mode,
+                    options: &[choice("auto", "Auto"), choice("wallpaper", "Wallpaper"), choice("fixed", "Fixed")],
+                },
+                Row::Slider {
+                    id: "strength",
+                    label: "Accent strength",
+                    min: Some(0.0),
+                    max: Some(100.0),
+                    value: strength,
+                },
+                Row::Section("Notes"),
+                Row::Text("These settings live in the plugin's own state file — the shell only renders this window and forwards events."),
+            ]),
+            Page::new("about", "About").rows(vec![
+                Row::Info {
+                    label: "Version",
+                    subtext: "Example plugin",
+                    value: api::VERSION,
+                },
+                Row::Info {
+                    label: "State file",
+                    subtext: "",
+                    value: &state_file,
+                },
+                Row::Button {
+                    id: "reset",
+                    label: "Reset settings",
+                    subtext: "Back to defaults",
+                    icon: "restart_alt",
+                },
+            ]),
+        ])
+        .json()
 }
 
-fn apply_event(control: &str, raw: &str) -> bool {
-    let mut state = State::load();
-    let value = raw.trim().trim_matches('"');
+fn apply_event(control: &str, value: &EventValue) -> bool {
+    let mut state = State::load(ID);
 
     match control {
-        "announce" => state.announce = value == "true",
-        "mode" => state.mode = value.to_string(),
-        "strength" => state.strength = value.parse().unwrap_or(state.strength),
-        "reset" => state = State::default(),
+        "announce" => state.set("announce", value.as_bool()),
+        "mode" => state.set("mode", value.as_text()),
+        "strength" => state.set("strength", value.as_f64().round() as i64),
+        "reset" => {
+            state.set("announce", true);
+            state.set("mode", "auto");
+            state.set("strength", 60);
+        }
         _ => return false,
     }
 
-    state.save();
+    let _ = state.save();
     true
 }
 
-fn load_average() -> String {
-    std::fs::read_to_string("/proc/loadavg")
-        .ok()
-        .and_then(|text| text.split_whitespace().next().map(str::to_string))
-        .unwrap_or_else(|| "?".to_string())
+fn run(action: &str, target: Option<&str>) -> i32 {
+    match action {
+        "about" => println!("{} {} - example caelestia plugin", "Storm Palette Pack", api::VERSION),
+        "reload" => println!("Palette pack reloaded"),
+        "click" => match target {
+            Some("mem") => println!("Memory in use: {}%", memory_percent()),
+            Some("load") | None => println!("Load average: {}", load_average()),
+            Some(other) => println!("Unknown widget: {other}"),
+        },
+        _ => {
+            eprintln!("unknown action: {action}");
+            return 1;
+        }
+    }
+
+    0
 }
 
 fn main() -> ExitCode {
     let mut args = env::args().skip(1);
+    let command = args.next().unwrap_or_default();
 
-    match args.next().as_deref() {
-        Some("info") => {
-            println!("{INFO}");
-            ExitCode::SUCCESS
-        }
-        Some("schemes") => {
-            println!("{SCHEMES}");
-            ExitCode::SUCCESS
-        }
-        Some("actions") => {
-            println!("{ACTIONS}");
-            ExitCode::SUCCESS
-        }
-        Some("window") => {
-            println!("{}", window_descriptor());
-            ExitCode::SUCCESS
-        }
-        Some("event") => {
-            let control = args.next().unwrap_or_default();
-            let value = args.next().unwrap_or_default();
-            if apply_event(&control, &value) {
-                ExitCode::SUCCESS
-            } else {
-                eprintln!("unknown control: {control}");
-                ExitCode::FAILURE
-            }
-        }
-        Some("desktop") => {
-            println!("{}", desktop_descriptor());
-            ExitCode::SUCCESS
-        }
-        Some("widgets") => {
-            println!("{}", widgets());
-            ExitCode::SUCCESS
-        }
-        Some("run") => {
-            let action = args.next();
+    let output = match command.as_str() {
+        "info" => plugin().info(),
+        "schemes" => schemes(),
+        "actions" => actions(),
+        "widgets" => widgets(),
+        "desktop" => desktop(),
+        "window" => window(),
+        "run" => {
+            let action = args.next().unwrap_or_default();
             let target = args.next();
+            let status = run(&action, target.as_deref());
+            return if status == 0 { ExitCode::SUCCESS } else { ExitCode::FAILURE };
+        }
+        "event" => {
+            let rest: Vec<String> = args.collect();
+            let Some(event) = Event::parse(&rest) else {
+                eprintln!("usage: event <control> <json>");
+                return ExitCode::FAILURE;
+            };
 
-            match action.as_deref() {
-                Some("about") => {
-                    println!("Storm Palette Pack 0.4.0 - example caelestia plugin");
-                    ExitCode::SUCCESS
-                }
-                Some("reload") => {
-                    println!("Palette pack reloaded");
-                    ExitCode::SUCCESS
-                }
-                Some("click") => {
-                    if target.as_deref() == Some("mem") {
-                        println!("Memory in use: {}%", memory_percent());
-                    } else {
-                        println!("Load average: {}", load_average());
-                    }
-                    ExitCode::SUCCESS
-                }
-                other => {
-                    eprintln!("unknown action: {other:?}");
-                    ExitCode::FAILURE
-                }
+            if !apply_event(&event.control, &event.value) {
+                eprintln!("unknown control: {}", event.control);
+                return ExitCode::FAILURE;
             }
+
+            return ExitCode::SUCCESS;
         }
-        Some(other) => {
-            eprintln!("unknown command: {other}");
-            ExitCode::FAILURE
+        _ => {
+            eprintln!("usage: {ID} info|schemes|actions|widgets|desktop|window|event|run");
+            return ExitCode::FAILURE;
         }
-        None => {
-            eprintln!("usage: storm-palette-pack info|schemes|actions|widget|run <action>");
-            ExitCode::FAILURE
-        }
-    }
+    };
+
+    println!("{output}");
+    ExitCode::SUCCESS
 }
