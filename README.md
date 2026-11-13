@@ -51,10 +51,11 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 **Plugins**
 - Settings → **Plugins** lists executables from `~/.config/caelestia/plugins` (and
   `~/.local/share/caelestia/plugins`), each with an on/off switch;
-- a plugin is any executable answering `info` and `schemes` with JSON (drop an `icon.png` next to it
-  and the card shows it); a plugin scheme only has to
-  name a **seed colour** — the shell expands it into the full Material palette and applies it
-  system-wide (terminal, GTK, Qt, btop, …), same as `caelestia scheme set`;
+- a plugin is any executable answering JSON commands: `info`, `schemes`, `actions` + `run <id>`
+  and `widget` (a live value in the taskbar, refreshed every minute, clickable via `run click`);
+  drop an `icon.png` next to it and the card shows it;
+- a plugin scheme only has to name a **seed colour** — the shell expands it into the full Material
+  palette and applies it system-wide (terminal, GTK, Qt, btop, …), same as `caelestia scheme set`;
 - enabled plugin schemes appear in **Wallpaper & style → Colours → Plugin schemes**;
 - **import** installs a `.stormpack` (a zip with a custom extension) through a file picker, and a
   trash button removes a plugin after an inline confirmation

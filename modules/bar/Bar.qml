@@ -123,11 +123,47 @@ GridLayout {
     rowSpacing: Tokens.spacing.medium
     columnSpacing: Tokens.spacing.medium
 
+    // Configured entries plus one slot per widget-capable plugin (before the clock / status icons).
+    // Only the *set* of plugin widgets is part of the model, so polling their text does not rebuild
+    // the whole repeater.
+    readonly property var entries: {
+        const configured = root.Config.bar.entries.values.filter(entry => entry.enabled);
+        const signature = Plugins.widgetSignature;
+
+        if (!signature)
+            return configured;
+
+        const ids = signature.split(",");
+        const list = [];
+        let inserted = false;
+
+        for (const entry of configured) {
+            if (!inserted && (entry.id === "clock" || entry.id === "statusIcons")) {
+                for (const id of ids)
+                    list.push({
+                        id: "pluginWidget",
+                        pluginId: id
+                    });
+                inserted = true;
+            }
+            list.push(entry);
+        }
+
+        if (!inserted)
+            for (const id of ids)
+                list.push({
+                    id: "pluginWidget",
+                    pluginId: id
+                });
+
+        return list;
+    }
+
     Repeater {
         id: repeater
 
         model: ScriptModel {
-            values: root.Config.bar.entries.values.filter(e => e.enabled)
+            values: root.entries
         }
 
         DelegateChooser {
@@ -193,6 +229,15 @@ GridLayout {
                 }
             }
             DelegateChoice {
+                roleValue: "pluginWidget"
+                delegate: EntryWrapper {
+                    PluginWidget {
+                        anchors.fill: parent
+                        plugin: Plugins.widgetFor(modelData.pluginId)
+                    }
+                }
+            }
+            DelegateChoice {
                 roleValue: "power"
                 delegate: EntryWrapper {
                     Power {
@@ -201,6 +246,68 @@ GridLayout {
                     }
                 }
             }
+        }
+    }
+
+    component PluginWidget: Item {
+        id: widget
+
+        required property var plugin
+
+        readonly property string iconName: widget.plugin?.icon ?? ""
+        readonly property string label: widget.plugin?.text ?? ""
+        readonly property string pluginId: widget.plugin?.pluginId ?? ""
+
+        implicitWidth: root.vertical ? verticalContent.implicitWidth : horizontalContent.implicitWidth
+        implicitHeight: root.vertical ? verticalContent.implicitHeight : horizontalContent.implicitHeight
+
+        Row {
+            id: horizontalContent
+
+            visible: !root.vertical
+            anchors.centerIn: parent
+            spacing: Tokens.spacing.extraSmall
+
+            MaterialIcon {
+                text: widget.iconName
+                color: Colours.palette.m3onSurfaceVariant
+                fontStyle: Tokens.font.icon.small
+                animate: true
+            }
+
+            StyledText {
+                text: widget.label
+                color: Colours.palette.m3onSurfaceVariant
+                font: Tokens.font.label.small
+            }
+        }
+
+        Column {
+            id: verticalContent
+
+            visible: root.vertical
+            anchors.centerIn: parent
+            spacing: 0
+
+            MaterialIcon {
+                text: widget.iconName
+                color: Colours.palette.m3onSurfaceVariant
+                fontStyle: Tokens.font.icon.small
+                animate: true
+            }
+
+            StyledText {
+                text: widget.label
+                color: Colours.palette.m3onSurfaceVariant
+                font: Tokens.font.label.small
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+
+            onClicked: Plugins.runWidgetClick(widget.pluginId)
         }
     }
 
