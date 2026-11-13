@@ -125,6 +125,7 @@ PageBase {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
 
+                visible: !row.confirmingDelete
                 checked: row.plugin.enabled
                 background: null
 
@@ -195,9 +196,11 @@ PageBase {
                 StyledText {
                     width: parent.width
                     visible: row.confirmingDelete
-                    text: Tr.tr("Delete %1? The plugin files will be removed.").arg(row.plugin.name)
+                    text: Tr.tr("Delete %1?").arg(row.plugin.name)
                     color: Colours.palette.m3error
                     font: Tokens.font.label.small
+                    wrapMode: Text.Wrap
+                    maximumLineCount: 2
                     elide: Text.ElideRight
                 }
 
@@ -211,6 +214,8 @@ PageBase {
                     }
                     color: Colours.palette.m3outline
                     font: Tokens.font.label.small
+                    wrapMode: Text.Wrap
+                    maximumLineCount: 2
                     elide: Text.ElideRight
                 }
             }
