@@ -296,6 +296,8 @@ Or drop the fork entirely and go back to the stock config:
 
 ## Plugins
 
+- **Rule:** whenever the plugin protocol grows, extend `examples/rust-plugin/src/api.rs` in the same
+  change (builders, parsers, docs in its README) so plugin authors get the helper immediately.
 - Plugin API: `info`, `schemes`, `actions` + `run <action>`, `widgets` (a list of taskbar items, each
   clickable via `run click <widget id>`; the old single `widget` still works), and windows: `window` returns a descriptor (`title`, `pages[]` with `label`/`icon` and
   `sections[]`) rendered by `modules/nexus/PluginWindow.qml` with the shell's own components
