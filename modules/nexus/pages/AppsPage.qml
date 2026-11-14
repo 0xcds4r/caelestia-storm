@@ -158,15 +158,9 @@ PageBase {
         visible: row.registered.length > 0
         status: MimeDefaults.applicationName(MimeDefaults.current(row.type)) || Tr.tr("Not set")
 
-        keepPopupAsChild: {
-            if (root.nState.animatingContainer || root.opacity < 1)
-                return true;
-
-            let p = root.parent;
-            while (p && p.objectName !== "PageContainer")
-                p = p.parent;
-            return p?.opacity < 1;
-        }
+        // Keep the (closed) trigger button inside the page so it fades and clips together with the
+        // row; only the open popup is reparented to the window so it can overflow the list.
+        keepPopupAsChild: !row.popup.open || root.nState.animatingContainer || root.opacity < 1
         popup.topMovement: Math.max(Tokens.sizes.nexus.minPopupHeight - popupHeight, Tokens.padding.large)
 
         Loader {
@@ -236,15 +230,9 @@ PageBase {
 
         signal selected(app: DesktopEntry)
 
-        keepPopupAsChild: {
-            if (root.nState.animatingContainer || root.opacity < 1)
-                return true;
-
-            let p = root.parent;
-            while (p && p.objectName !== "PageContainer")
-                p = p.parent;
-            return p?.opacity < 1;
-        }
+        // Keep the (closed) trigger button inside the page so it fades and clips together with the
+        // row; only the open popup is reparented to the window so it can overflow the list.
+        keepPopupAsChild: !row.popup.open || root.nState.animatingContainer || root.opacity < 1
         popup.topMovement: Math.max(Tokens.sizes.nexus.minPopupHeight - popupHeight, Tokens.padding.large)
 
         Loader {
