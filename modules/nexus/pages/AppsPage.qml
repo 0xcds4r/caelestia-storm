@@ -171,7 +171,7 @@ PageBase {
                 id: list
 
                 implicitWidth: Tokens.sizes.nexus.popupWidth
-                implicitHeight: CUtils.clamp(row.popupHeight, Tokens.sizes.nexus.minPopupHeight, Tokens.sizes.nexus.maxPopupHeight)
+                implicitHeight: Math.min(contentHeight, CUtils.clamp(row.popupHeight, Tokens.sizes.nexus.minPopupHeight, Tokens.sizes.nexus.maxPopupHeight))
 
                 model: row.registered
 
@@ -243,7 +243,7 @@ PageBase {
                 id: list
 
                 implicitWidth: Tokens.sizes.nexus.popupWidth
-                implicitHeight: CUtils.clamp(row.popupHeight, Tokens.sizes.nexus.minPopupHeight, Tokens.sizes.nexus.maxPopupHeight)
+                implicitHeight: Math.min(contentHeight, CUtils.clamp(row.popupHeight, Tokens.sizes.nexus.minPopupHeight, Tokens.sizes.nexus.maxPopupHeight))
 
                 model: {
                     const apps = [...DesktopEntries.applications.values];
