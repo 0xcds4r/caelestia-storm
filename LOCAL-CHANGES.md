@@ -369,7 +369,10 @@ trigger a right margin: without it the column kept its full text width and pushe
 past the row's right edge (it was drawn over the card border and got clipped by the panel).
 `modules/nexus/Nexus.qml` — the pages are wrapped in a `ClippingRectangle` with the panel's rounding,
 so scrolling content can never draw outside the card's rounded corners.
-`modules/nexus/pages/AppsPage.qml` — the app picker list sizes to its content
+`modules/nexus/pages/AppsPage.qml` — the old "Default applications" section is now "Shell
+applications" (terminal / playback / file manager are used by the shell itself for launcher actions
+and recordings) and the dead "Audio" row was dropped; the system-wide handlers live in the
+"System handlers" section below. The app picker list sizes to its content
 (`min(contentHeight, available space)`) instead of always filling the maximum popup height, so a
 2-app list is two rows tall. `keepPopupAsChild: !popup.open`: a closed `PopupRow` used to be
 reparented to the window's interaction wrapper, which took the trigger button out of the flickable, so
