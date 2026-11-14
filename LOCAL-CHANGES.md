@@ -361,6 +361,9 @@ a placeholder, now it picks the scheme:
 `magnet`, `inode/directory`, `text/plain`, `video/mp4`, `audio/mpeg`, `image/png`,
 `application/pdf`) and writes changes back with `xdg-mime default`.
 
+`modules/nexus/common/BlobPopup.qml` — the popup trigger icon is `expand_more`: the previous
+`view_apps` glyph is missing from the bundled icon font and rendered as three tofu boxes that
+overflowed the circular button.
 `modules/nexus/pages/AppsPage.qml` — a "System handlers" section built from `PopupRow`: each row
 shows the current handler and opens a list of the registered apps (checkmark on the active one).
 Desktop-entry ids from mimeapps keep a `.desktop` suffix while Quickshell stores them without, so
