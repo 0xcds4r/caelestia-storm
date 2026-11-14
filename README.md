@@ -10,6 +10,14 @@ and a few quality-of-life patches.
 
 Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LOCAL-CHANGES.md).
 
+## Screenshots
+
+| Launcher & dashboard | Colours |
+|---|---|
+| [![Launcher with the workspace overview](assets/screenshots/launcher.webp)](assets/screenshots/launcher.webp) | [![Colour scheme picker](assets/screenshots/colours.webp)](assets/screenshots/colours.webp) |
+| **Taskbar** — position, drag-to-open, components | **Plugins** — Rust plugins with schemes, widgets and windows |
+| [![Taskbar settings with the top position](assets/screenshots/taskbar.webp)](assets/screenshots/taskbar.webp) | [![Plugin manager](assets/screenshots/plugins.webp)](assets/screenshots/plugins.webp) |
+
 ## What's changed
 
 **Bar (left panel by default)**
