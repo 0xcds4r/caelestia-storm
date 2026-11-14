@@ -24,10 +24,11 @@ PageBase {
         width: root.cappedWidth
         spacing: Tokens.spacing.extraSmall / 2
 
-        // Default applications
+        // Applications the shell itself launches (launcher actions, recordings); the system wide
+        // handlers live in the "System handlers" section below.
         SectionHeader {
             first: true
-            text: Tr.tr("Default applications")
+            text: Tr.tr("Shell applications")
         }
 
         DefaultRow {
@@ -36,13 +37,6 @@ PageBase {
             label: Tr.trCtx("Terminal", "default app category")
             status: GlobalConfig.general.apps.terminal.join(" ")
             onSelected: app => GlobalConfig.general.apps.terminal = app.command
-        }
-
-        DefaultRow {
-            icon: "volume_up"
-            label: Tr.trCtx("Audio", "default app category")
-            status: GlobalConfig.general.apps.audio.join(" ")
-            onSelected: app => GlobalConfig.general.apps.audio = app.command
         }
 
         DefaultRow {
