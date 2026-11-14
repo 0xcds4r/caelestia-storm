@@ -12,11 +12,10 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 
 ## Screenshots
 
-| Launcher & dashboard | Colours |
-|---|---|
-| [![Launcher with the workspace overview](assets/screenshots/launcher.webp)](assets/screenshots/launcher.webp) | [![Colour scheme picker](assets/screenshots/colours.webp)](assets/screenshots/colours.webp) |
-| **Taskbar** — position, drag-to-open, components | **Plugins** — Rust plugins with schemes, widgets and windows |
-| [![Taskbar settings with the top position](assets/screenshots/taskbar.webp)](assets/screenshots/taskbar.webp) | [![Plugin manager](assets/screenshots/plugins.webp)](assets/screenshots/plugins.webp) |
+|  |  |
+|:--:|:--:|
+| [![Launcher with the workspace overview](assets/screenshots/launcher.webp)](assets/screenshots/launcher.webp)<br>**Launcher & dashboard** — workspace overview with live previews, quick toggles | [![Colour scheme picker](assets/screenshots/colours.webp)](assets/screenshots/colours.webp)<br>**Colours** — schemes, flavours and palette variants |
+| [![Taskbar settings with the top position](assets/screenshots/taskbar.webp)](assets/screenshots/taskbar.webp)<br>**Taskbar** — position, drag-to-open, components | [![Plugin manager](assets/screenshots/plugins.webp)](assets/screenshots/plugins.webp)<br>**Plugins** — Rust plugins with schemes, widgets and windows |
 
 ## What's changed
 
