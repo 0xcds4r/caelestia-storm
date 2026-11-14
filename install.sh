@@ -20,11 +20,16 @@ usage() {
     cat <<'EOF'
 Caelestia Storm installer
 
-Usage: install.sh [-f|--force] [-n|--no-restart]
+Usage: install.sh [options]
 
+  -y, --yes         do not ask before installing missing packages
+      --no-deps     skip dependency installation
   -f, --force       overwrite ~/.config/caelestia/shell.json (a backup is kept)
   -n, --no-restart  do not restart the shell at the end
   -h, --help        show this help
+
+Dependencies (quickshell-git, caelestia-shell, caelestia-cli) are installed through paru/yay when
+they are missing. On non-Arch systems pass --no-deps and install them yourself.
 
 Run it from a git checkout (./install.sh) or pipe it from GitHub:
   curl -fsSL https://raw.githubusercontent.com/0xcds4r/caelestia-storm/main/install.sh | bash
@@ -33,8 +38,12 @@ EOF
 
 FORCE=0
 NO_RESTART=0
+ASSUME_YES=0
+NO_DEPS=0
 for arg in "$@"; do
     case "$arg" in
+        -y|--yes) ASSUME_YES=1 ;;
+        --no-deps) NO_DEPS=1 ;;
         -f|--force) FORCE=1 ;;
         -n|--no-restart) NO_RESTART=1 ;;
         -h|--help) usage; exit 0 ;;
@@ -42,27 +51,73 @@ for arg in "$@"; do
     esac
 done
 
+confirm() {
+    ((ASSUME_YES)) && return 0
+    if [[ -r /dev/tty ]]; then
+        local reply
+        read -r -p "$1 [Y/n] " reply < /dev/tty || true
+        [[ -z "${reply:-}" || "$reply" =~ ^[Yy] ]]
+    else
+        warn "no terminal to ask on — pass -y to install dependencies automatically"
+        return 1
+    fi
+}
+
 # --- dependencies -----------------------------------------------------------
-command -v git >/dev/null || die "git is required"
-
-if ! command -v quickshell >/dev/null && ! command -v qs >/dev/null; then
-    warn "quickshell not found — install it first:  paru -S quickshell-git"
-fi
-
-if ! command -v caelestia >/dev/null; then
-    warn "'caelestia' CLI not found (caelestia-cli). The shell will still be installed;"
-    warn "start it with:  qs -c caelestia -n -d"
-fi
+# Everything the shell needs comes from three packages; pacman pulls their own dependencies.
+DEPS=(quickshell-git caelestia-cli caelestia-shell)
 
 if command -v pacman >/dev/null; then
-    pkgs_missing=()
-    for p in ddcutil brightnessctl networkmanager lm_sensors aubio libqalculate swappy fish cliphist wl-clipboard; do
-        pacman -Q "$p" >/dev/null 2>&1 || pkgs_missing+=("$p")
+    missing=()
+    for p in "${DEPS[@]}"; do
+        pacman -Q "$p" >/dev/null 2>&1 || missing+=("$p")
     done
-    if ((${#pkgs_missing[@]})); then
-        warn "missing packages: ${pkgs_missing[*]}"
-        warn "install them with: sudo pacman -S --needed ${pkgs_missing[*]}"
+    command -v git >/dev/null || missing+=(git)
+
+    if ((${#missing[@]} == 0)); then
+        info "dependencies already installed"
+    elif ((NO_DEPS)); then
+        warn "missing packages: ${missing[*]} (--no-deps: not installing)"
+    else
+        warn "missing packages: ${missing[*]}"
+        if confirm "Install them now?"; then
+            helper=""
+            for h in paru yay; do
+                if command -v "$h" >/dev/null; then
+                    helper="$h"
+                    break
+                fi
+            done
+
+            needs_aur=0
+            for p in "${missing[@]}"; do
+                case "$p" in
+                    quickshell-git|caelestia-*) needs_aur=1 ;;
+                esac
+            done
+
+            if [[ -n "$helper" ]]; then
+                info "installing with $helper"
+                "$helper" -S --needed --noconfirm "${missing[@]}" || die "package installation failed"
+            elif ((needs_aur == 0)); then
+                info "installing with pacman"
+                sudo pacman -S --needed --noconfirm "${missing[@]}" || die "package installation failed"
+            else
+                die "no AUR helper found (paru or yay) — install ${missing[*]} manually, then re-run with --no-deps"
+            fi
+        else
+            warn "skipping dependencies — the shell will not start without ${missing[*]}"
+        fi
     fi
+else
+    warn "not an Arch system — install quickshell + caelestia-shell + caelestia-cli manually (see README)"
+fi
+
+if ! command -v quickshell >/dev/null && ! command -v qs >/dev/null; then
+    warn "quickshell not found — the shell cannot start"
+fi
+if ! command -v caelestia >/dev/null; then
+    warn "'caelestia' CLI not found (caelestia-cli) — some features (scheme, wallpaper) will not work"
 fi
 
 for bin in cliphist wl-copy; do
