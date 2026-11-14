@@ -45,6 +45,8 @@ ConnectedRect {
 
         ColumnLayout {
             Layout.fillWidth: true
+            // Let the labels shrink instead of pushing the trigger button past the row's edge
+            Layout.preferredWidth: 0
             spacing: 0
 
             StyledText {
@@ -70,6 +72,8 @@ ConnectedRect {
         Item {
             id: triggerArea
 
+            // Keep the trigger button clear of the card's right border
+            Layout.rightMargin: Tokens.padding.small
             implicitWidth: popup.implicitWidth
             implicitHeight: popup.implicitHeight
 

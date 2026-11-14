@@ -364,6 +364,11 @@ a placeholder, now it picks the scheme:
 `modules/nexus/common/BlobPopup.qml` — the popup trigger icon is `expand_more`: the previous
 `view_apps` glyph is missing from the bundled icon font and rendered as three tofu boxes that
 overflowed the circular button.
+`modules/nexus/common/PopupRow.qml` — the label column gets `Layout.preferredWidth: 0` and the
+trigger a right margin: without it the column kept its full text width and pushed the trigger button
+past the row's right edge (it was drawn over the card border and got clipped by the panel).
+`modules/nexus/Nexus.qml` — the pages are wrapped in a `ClippingRectangle` with the panel's rounding,
+so scrolling content can never draw outside the card's rounded corners.
 `modules/nexus/pages/AppsPage.qml` — a "System handlers" section built from `PopupRow`: each row
 shows the current handler and opens a list of the registered apps (checkmark on the active one).
 Desktop-entry ids from mimeapps keep a `.desktop` suffix while Quickshell stores them without, so
