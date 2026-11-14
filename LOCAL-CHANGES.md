@@ -354,6 +354,18 @@ a placeholder, now it picks the scheme:
   forcing `-m dark` produced mismatched palettes.
 - `services/Colours.qml` now also exposes `variant` (read from `scheme.json`).
 
+## Default handlers (Apps page)
+
+`services/MimeDefaults.qml` + `scripts/mime-defaults.sh` — reads `xdg-mime query default` /
+`gio mime` for a curated list of URI schemes and MIME types (`https`, `mailto`, `tg`, `tonsite`,
+`magnet`, `inode/directory`, `text/plain`, `video/mp4`, `audio/mpeg`, `image/png`,
+`application/pdf`) and writes changes back with `xdg-mime default`.
+
+`modules/nexus/pages/AppsPage.qml` — a "System handlers" section built from `PopupRow`: each row
+shows the current handler and opens a list of the registered apps (checkmark on the active one).
+Desktop-entry ids from mimeapps keep a `.desktop` suffix while Quickshell stores them without, so
+`entryFor()` tries both before falling back to the raw id.
+
 ## Drag-to-open switch
 
 `services/UiPrefs.qml` (new) — small persisted preferences (`~/.local/state/caelestia/ui-prefs.json`),
