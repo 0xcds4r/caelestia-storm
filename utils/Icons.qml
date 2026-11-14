@@ -212,6 +212,18 @@ Singleton {
             if (sub.id === id)
                 return sub.image ? Qt.resolvedUrl(sub.image) : Quickshell.iconPath(sub.icon);
 
+        // Tray icons arrive as image://icon/<name> URLs. Resolve them to real files here (GUI thread)
+        // instead of letting the image go through Quickshell's icon provider, which loads QIcon
+        // pixmaps on a worker thread where KDE's icon engine is not safe (it segfaulted the shell).
+        if (icon.startsWith("image://icon/")) {
+            const name = icon.slice("image://icon/".length);
+            if (name.startsWith("/"))
+                return `file://${name}`;
+            const resolved = Quickshell.iconPath(name, true);
+            if (resolved)
+                return resolved;
+        }
+
         if (icon.includes("?path=")) {
             const [name, path] = icon.split("?path=");
             const file = name.slice(name.lastIndexOf("/") + 1);
@@ -219,13 +231,10 @@ Singleton {
             return themed ? themed : Qt.resolvedUrl(`${path}/${file}`);
         }
 
-        // Resolve the themed name to a file here (GUI thread) instead of letting the image go through
-        // Quickshell's icon provider, which loads QIcon pixmaps on a worker thread — KDE's icon engine
-        // is not thread safe and used to segfault the shell under load.
         if (icon.startsWith("/") || icon.startsWith("file://"))
             return icon;
 
-        return Quickshell.iconPath(icon, true) || icon;
+        return icon;
     }
 
     function getBatteryIcon(percentage: real, charging = false): string {

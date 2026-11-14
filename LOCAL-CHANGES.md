@@ -377,9 +377,11 @@ The shell crashed (SIGSEGV) inside `KIconEngine::createPixmap`, from
 `IconImageProvider::requestPixmap` — Quickshell resolves `image://icon/<name>` on a worker thread
 while KDE's icon engine (loaded because `QT_QPA_PLATFORMTHEME=kde`) is not thread safe.
 
-`utils/Icons.qml` → `getTrayIcon()` now resolves themed names to a file path with
-`Quickshell.iconPath(name, true)` (GUI thread) instead of returning the bare name, so tray icons no
-longer go through the icon provider. Other name-based images (launcher apps, notifications) already
+`utils/Icons.qml` → `getTrayIcon()` now strips the `image://icon/` prefix from tray icons, turns
+absolute paths into `file://` URLs and resolves themed names to a file with
+`Quickshell.iconPath(name, true)` in the GUI thread, so tray icons no longer go through the icon
+provider. (The last tray update before the crash was nm-applet switching `nm-signal-75` →
+`nm-signal-100`.) Other name-based images (launcher apps, notifications) already
 used `Quickshell.iconPath`.
 
 If it ever recurs, run the shell without the KDE platform theme for that process:
