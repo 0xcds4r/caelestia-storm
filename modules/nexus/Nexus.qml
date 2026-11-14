@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell.Widgets
 import Caelestia.Blobs
 import Caelestia.Config
 import qs.components
@@ -100,7 +101,11 @@ Item {
         width: Math.min(Tokens.sizes.nexus.maxNavWidth, Math.round(root.width / 3))
     }
 
-    Pages {
+    // Clip the pages to the panel's rounded shape: without this, rows and their popup buttons can
+    // draw over the rounded corners (and outside the card) while scrolling.
+    ClippingRectangle {
+        id: pagesClip
+
         anchors.left: navPane.right
         anchors.right: parent.right
         anchors.top: parent.top
@@ -108,6 +113,12 @@ Item {
         anchors.leftMargin: navPane.anchors.margins + anchors.margins
         anchors.margins: Tokens.padding.extraLarge
 
-        nState: nState
+        radius: Tokens.rounding.large
+        color: "transparent"
+
+        Pages {
+            anchors.fill: parent
+            nState: nState
+        }
     }
 }
