@@ -28,15 +28,20 @@ Singleton {
     property string hostname
     property string firmware
 
-    // DMI vendor/model, combined into a single human-readable device name
+    // DMI vendor/model. Desktops often leave system_vendor/product_name as "To Be Filled By
+    // O.E.M." while the mainboard fields are filled in, so board_* wins and sys_* is the fallback.
     property string boardVendor
     property string boardName
+    property string systemVendor
+    property string systemName
     readonly property string device: {
-        if (!boardName)
-            return boardVendor;
-        if (!boardVendor || boardName.toLowerCase().startsWith(boardVendor.toLowerCase()))
-            return boardName;
-        return `${boardVendor} ${boardName}`;
+        const vendor = root.boardVendor || root.systemVendor;
+        const name = root.boardName || root.systemName;
+        if (!name)
+            return vendor;
+        if (!vendor || name.toLowerCase().startsWith(vendor.toLowerCase()))
+            return name;
+        return `${vendor} ${name}`;
     }
 
     // Strips the placeholder strings OEMs commonly leave in DMI fields
@@ -95,11 +100,23 @@ Singleton {
     FileView {
         path: "/sys/class/dmi/id/sys_vendor"
         printErrors: false
-        onLoaded: root.boardVendor = root.sanitiseDmi(text())
+        onLoaded: root.systemVendor = root.sanitiseDmi(text())
     }
 
     FileView {
         path: "/sys/class/dmi/id/product_name"
+        printErrors: false
+        onLoaded: root.systemName = root.sanitiseDmi(text())
+    }
+
+    FileView {
+        path: "/sys/class/dmi/id/board_vendor"
+        printErrors: false
+        onLoaded: root.boardVendor = root.sanitiseDmi(text())
+    }
+
+    FileView {
+        path: "/sys/class/dmi/id/board_name"
         printErrors: false
         onLoaded: root.boardName = root.sanitiseDmi(text())
     }

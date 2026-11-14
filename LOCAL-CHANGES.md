@@ -400,6 +400,13 @@ currently `panelsDragOpen` (default `true`).
 rate-limits, and without a retry the dashboard stayed on "No weather" until the next hourly refresh.
 Failed requests now retry with a 5 → 30 minute backoff (`fetchRetries`, `retryTimer`), reset on success.
 
+## About: device name
+
+`utils/SysInfo.qml` reads the mainboard DMI fields (`board_vendor` / `board_name`) first and falls
+back to `sys_vendor` / `product_name`: desktops commonly leave the system fields as "To Be Filled By
+O.E.M.", which `sanitiseDmi()` drops, so the Device row rendered empty. Version string bumped to
+`STORM 1.4`.
+
 ## Crash: KDE icon engine on the render thread
 
 The shell crashed (SIGSEGV) inside `KIconEngine::createPixmap`, from
