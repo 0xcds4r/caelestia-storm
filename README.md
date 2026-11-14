@@ -82,7 +82,9 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 
 ## Install
 
-Requires `caelestia-shell` 2.5.0 from the AUR (or a compatible version) and `quickshell-git`.
+Requires the Caelestia packages (AUR): `quickshell-git`, `caelestia-shell` 2.5.0 and
+`caelestia-cli`. The original config from `caelestia-dots/shell` is **not** needed — this repo
+replaces it (the packages only provide the C++ QML plugin and the `caelestia` CLI).
 
 **Quick install**
 
@@ -90,9 +92,13 @@ Requires `caelestia-shell` 2.5.0 from the AUR (or a compatible version) and `qui
 curl -fsSL https://raw.githubusercontent.com/0xcds4r/caelestia-storm/main/install.sh | bash
 ```
 
-The script checks dependencies, backs up the existing config
+The script installs anything missing (`quickshell-git`, `caelestia-shell`, `caelestia-cli`, `git`)
+through `paru`/`yay`, then backs up the existing config
 (`~/.local/state/caelestia-storm/backups/`), clones/updates the shell config, installs
-`shell.json` and restarts the shell. Options: `-f` overwrite `shell.json`, `-n` don't restart.
+`shell.json` and restarts the shell.
+
+Options: `-y` don't ask before installing packages, `--no-deps` skip dependency installation
+(needed on non-Arch systems), `-f` overwrite `shell.json`, `-n` don't restart.
 
 Or from a checkout:
 

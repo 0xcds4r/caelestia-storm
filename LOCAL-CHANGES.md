@@ -400,6 +400,14 @@ currently `panelsDragOpen` (default `true`).
 rate-limits, and without a retry the dashboard stayed on "No weather" until the next hourly refresh.
 Failed requests now retry with a 5 → 30 minute backoff (`fetchRetries`, `retryTimer`), reset on success.
 
+## Installer dependencies
+
+`install.sh` now installs its own dependencies: `quickshell-git`, `caelestia-shell`, `caelestia-cli`
+(plus `git`) are checked with `pacman -Q` and installed through `paru`/`yay` after a confirmation
+(`-y` skips the prompt, `--no-deps` skips this step, non-Arch systems use `--no-deps`).
+The old "missing packages" warnings for individual libraries are gone — they come as dependencies of
+`caelestia-shell`/`caelestia-cli`.
+
 ## About: device name
 
 `utils/SysInfo.qml` reads the mainboard DMI fields (`board_vendor` / `board_name`) first and falls
