@@ -216,9 +216,16 @@ Singleton {
             const [name, path] = icon.split("?path=");
             const file = name.slice(name.lastIndexOf("/") + 1);
             const themed = Quickshell.iconPath(file, true);
-            icon = themed ? themed : Qt.resolvedUrl(`${path}/${file}`);
+            return themed ? themed : Qt.resolvedUrl(`${path}/${file}`);
         }
-        return icon;
+
+        // Resolve the themed name to a file here (GUI thread) instead of letting the image go through
+        // Quickshell's icon provider, which loads QIcon pixmaps on a worker thread — KDE's icon engine
+        // is not thread safe and used to segfault the shell under load.
+        if (icon.startsWith("/") || icon.startsWith("file://"))
+            return icon;
+
+        return Quickshell.iconPath(icon, true) || icon;
     }
 
     function getBatteryIcon(percentage: real, charging = false): string {

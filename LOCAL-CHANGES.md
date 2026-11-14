@@ -371,6 +371,21 @@ currently `panelsDragOpen` (default `true`).
 rate-limits, and without a retry the dashboard stayed on "No weather" until the next hourly refresh.
 Failed requests now retry with a 5 → 30 minute backoff (`fetchRetries`, `retryTimer`), reset on success.
 
+## Crash: KDE icon engine on the render thread
+
+The shell crashed (SIGSEGV) inside `KIconEngine::createPixmap`, from
+`IconImageProvider::requestPixmap` — Quickshell resolves `image://icon/<name>` on a worker thread
+while KDE's icon engine (loaded because `QT_QPA_PLATFORMTHEME=kde`) is not thread safe.
+
+`utils/Icons.qml` → `getTrayIcon()` now resolves themed names to a file path with
+`Quickshell.iconPath(name, true)` (GUI thread) instead of returning the bare name, so tray icons no
+longer go through the icon provider. Other name-based images (launcher apps, notifications) already
+used `Quickshell.iconPath`.
+
+If it ever recurs, run the shell without the KDE platform theme for that process:
+`hl.exec_cmd("env QT_QPA_PLATFORMTHEME= caelestia shell -d")` in `hyprland/execs.lua` — Qt's own
+icon loader is mutex-protected, at the cost of KDE-specific icon lookup.
+
 ## Verification checklist (read before touching the bar)
 
 Learned the hard way — never leave the machine in a half-tested state.
