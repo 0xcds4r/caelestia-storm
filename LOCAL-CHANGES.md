@@ -369,6 +369,10 @@ trigger a right margin: without it the column kept its full text width and pushe
 past the row's right edge (it was drawn over the card border and got clipped by the panel).
 `modules/nexus/Nexus.qml` — the pages are wrapped in a `ClippingRectangle` with the panel's rounding,
 so scrolling content can never draw outside the card's rounded corners.
+`modules/nexus/pages/AppsPage.qml` — `keepPopupAsChild: !popup.open`: a closed `PopupRow` used to be
+reparented to the window's interaction wrapper, which took the trigger button out of the flickable, so
+it neither faded nor clipped at the top/bottom edge while scrolling. Now only the open popup is
+reparented.
 `modules/nexus/pages/AppsPage.qml` — a "System handlers" section built from `PopupRow`: each row
 shows the current handler and opens a list of the registered apps (checkmark on the active one).
 Desktop-entry ids from mimeapps keep a `.desktop` suffix while Quickshell stores them without, so
