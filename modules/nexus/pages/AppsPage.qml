@@ -60,6 +60,78 @@ PageBase {
             onSelected: app => GlobalConfig.general.apps.explorer = app.command
         }
 
+        // System handlers (xdg-mime defaults)
+        SectionHeader {
+            visible: MimeDefaults.entries.length > 0
+            text: Tr.tr("System handlers")
+        }
+
+        HandlerRow {
+            type: "x-scheme-handler/https"
+            icon: "public"
+            label: Tr.tr("Web browser")
+        }
+
+        HandlerRow {
+            type: "x-scheme-handler/mailto"
+            icon: "mail"
+            label: Tr.tr("Email")
+        }
+
+        HandlerRow {
+            type: "x-scheme-handler/tg"
+            icon: "chat"
+            label: Tr.tr("Telegram links")
+        }
+
+        HandlerRow {
+            type: "x-scheme-handler/tonsite"
+            icon: "chat_bubble"
+            label: Tr.tr("Telegram site links")
+        }
+
+        HandlerRow {
+            type: "x-scheme-handler/magnet"
+            icon: "download"
+            label: Tr.tr("Torrents")
+        }
+
+        HandlerRow {
+            type: "inode/directory"
+            icon: "folder"
+            label: Tr.tr("File manager")
+        }
+
+        HandlerRow {
+            type: "text/plain"
+            icon: "edit_document"
+            label: Tr.tr("Text editor")
+        }
+
+        HandlerRow {
+            type: "video/mp4"
+            icon: "movie"
+            label: Tr.tr("Video")
+        }
+
+        HandlerRow {
+            type: "audio/mpeg"
+            icon: "music_note"
+            label: Tr.tr("Music")
+        }
+
+        HandlerRow {
+            type: "image/png"
+            icon: "image"
+            label: Tr.tr("Images")
+        }
+
+        HandlerRow {
+            type: "application/pdf"
+            icon: "picture_as_pdf"
+            label: Tr.tr("PDF")
+        }
+
         // Library
         SectionHeader {
             text: Tr.trCtx("Library", "app library")
@@ -72,6 +144,88 @@ PageBase {
             text: Tr.tr("All apps")
             subtext: Tr.tr("Browse installed apps, set favourites and hidden")
             onClicked: root.nState.openSubPage(1)
+        }
+    }
+
+    component HandlerRow: PopupRow {
+        id: row
+
+        required property string type
+
+        readonly property var registered: MimeDefaults.registered(row.type)
+        readonly property int popupHeight: root.flickable.height - y + root.flickable.contentY - Tokens.padding.large - Tokens.padding.extraExtraLarge
+
+        visible: row.registered.length > 0
+        status: MimeDefaults.applicationName(MimeDefaults.current(row.type)) || Tr.tr("Not set")
+
+        keepPopupAsChild: {
+            if (root.nState.animatingContainer || root.opacity < 1)
+                return true;
+
+            let p = root.parent;
+            while (p && p.objectName !== "PageContainer")
+                p = p.parent;
+            return p?.opacity < 1;
+        }
+        popup.topMovement: Math.max(Tokens.sizes.nexus.minPopupHeight - popupHeight, Tokens.padding.large)
+
+        Loader {
+            anchors.centerIn: parent
+            active: row.popup.animDriver > 0
+
+            sourceComponent: VerticalFadeListView {
+                id: list
+
+                implicitWidth: Tokens.sizes.nexus.popupWidth
+                implicitHeight: CUtils.clamp(row.popupHeight, Tokens.sizes.nexus.minPopupHeight, Tokens.sizes.nexus.maxPopupHeight)
+
+                model: row.registered
+
+                delegate: StateLayer {
+                    id: handlerItem
+
+                    required property var modelData
+
+                    anchors.fill: undefined
+                    anchors.left: list.contentItem.left
+                    anchors.right: list.contentItem.right
+                    implicitHeight: handlerLayout.implicitHeight + handlerLayout.anchors.margins * 2
+                    radius: Tokens.rounding.small
+
+                    onClicked: {
+                        row.popup.open = false;
+                        MimeDefaults.setDefault(row.type, handlerItem.modelData);
+                    }
+
+                    RowLayout {
+                        id: handlerLayout
+
+                        anchors.fill: parent
+                        anchors.margins: Tokens.padding.medium
+                        spacing: Tokens.spacing.medium
+
+                        IconImage {
+                            asynchronous: true
+                            implicitSize: Math.round(Tokens.font.icon.large.pointSize * 1.8)
+                            source: MimeDefaults.applicationIcon(handlerItem.modelData)
+                        }
+
+                        StyledText {
+                            Layout.fillWidth: true
+                            text: MimeDefaults.applicationName(handlerItem.modelData)
+                            font: Tokens.font.body.medium
+                            elide: Text.ElideRight
+                        }
+
+                        MaterialIcon {
+                            visible: handlerItem.modelData === MimeDefaults.current(row.type)
+                            text: "check"
+                            color: Colours.palette.m3primary
+                            fontStyle: Tokens.font.icon.small
+                        }
+                    }
+                }
+            }
         }
     }
 

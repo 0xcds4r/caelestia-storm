@@ -72,6 +72,9 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - Panels → *Open by dragging* — hold and drag from the top or bottom screen edge to reveal the
   dashboard / launcher (can be turned off, the edges then stay fully clickable);
 - *Keep awake* survives shell restarts (`~/.local/state/caelestia/idle-inhibited`);
+- Nexus → Apps → **System handlers**: pick the default application for links and files (browser,
+  mail, Telegram links, torrents, file manager, editor, video, music, images, PDF) — it writes the
+  same `~/.config/mimeapps.list` entries `xdg-mime` uses;
 - Nexus → About: “Caelestia Storm”, custom logo, `v2.5.0 | STORM 1.3`;
 - Wallpaper & style → **Colours**: pick a colour scheme (`dynamic` from the wallpaper or any bundled
   one), its flavour and palette variant, or roll a random scheme;
