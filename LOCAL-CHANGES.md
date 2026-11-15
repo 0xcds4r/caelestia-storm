@@ -47,8 +47,12 @@ workspaces (`hl.dsp.window.move`), click on a window (focus) and on a workspace 
   tiles without touching the focused window.
 - `walk`-free drag: the preview position is set only by Qt, so the cursor never feeds back
   into the geometry; behaviour animations are disabled while `dragArea.drag.active`.
-- After a drop the preview snaps straight to its new tile for ~450 ms (`preview.landing`):
-  Hyprland reports the old geometry for a moment, and animating through it looked broken.
+- After a drop the preview snaps straight to its new tile (`preview.landing`, 450 ms): Hyprland
+  reports the old geometry for a moment, and animating through it looked broken.
+- Live captures kept painting the buffer they held before the swap (wrong window content and a
+  black band along the bottom of the tile) until the overview was reopened. The preview tree now
+  lives in a `Loader` (`previewComponent`) and `recapturePreviews()` drops it for 150 ms after
+  every drop, which rebuilds the previews the same way reopening did.
 - Swapping or moving a window refocuses it and Hyprland yanks the cursor to the centre of
   the new layout. Warping is disabled for the drop with Lua `hl.config({ cursor = {
   no_warps = true } })` (`beginNoWarp()`) and restored 700 ms later from the value read at

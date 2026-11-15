@@ -97,6 +97,25 @@ Item {
         return wsWindows[0];
     }
 
+    // After a swap the live captures keep painting the frame they held before the windows were
+    // retiled. Reopening the overview always cleared that up, so the previews are rebuilt the same
+    // way shortly after a drop.
+    property bool previewsOn: true
+
+    Timer {
+        id: recaptureTimer
+
+        interval: 150
+        repeat: false
+
+        onTriggered: root.previewsOn = true
+    }
+
+    function recapturePreviews(): void {
+        root.previewsOn = false;
+        recaptureTimer.restart();
+    }
+
     // Swapping or moving a window refocuses it, and Hyprland then yanks the cursor to the centre of
     // the new layout. Warping is switched off for the duration of the drop and restored afterwards.
     property bool noWarpsDefault: false
@@ -132,8 +151,13 @@ Item {
 
     // Finds the preview of another window in the same workspace under the given scene point
     function previewUnder(px: real, py: real, wsId: int, except: Item): Item {
-        for (let i = 0; i < root.children.length; i++) {
-            const child = root.children[i];
+        const container = previewLoader.item;
+
+        if (!container)
+            return null;
+
+        for (let i = 0; i < container.children.length; i++) {
+            const child = container.children[i];
             if (!child || child === except || typeof child.homeX !== "number")
                 continue;
             if ((child.hypr?.workspace?.id ?? -1) !== wsId)
@@ -344,221 +368,258 @@ Item {
         border.color: Colours.palette.m3primary
     }
 
-    Repeater {
-        model: ScriptModel {
-            values: root.windows
-        }
+    Loader {
+        id: previewLoader
 
-        Item {
-            id: preview
+        anchors.fill: parent
+        active: root.previewsOn
+        sourceComponent: previewComponent
+    }
 
-            required property var modelData
+    Component {
+        id: previewComponent
 
-            readonly property var hypr: root.hyprFor(modelData)
-            readonly property var ipc: hypr?.lastIpcObject
-            readonly property var mon: Hypr.monitors.values.find(m => (m.lastIpcObject?.id ?? -1) === (ipc?.monitor ?? -1)) ?? null
-            readonly property int index: (hypr?.workspace?.id ?? 1) - root.baseWs
-            readonly property real cellX: root.pad + (index % root.columns) * (root.cellWidth + root.cellSpacing)
-            readonly property real cellY: root.pad + Math.floor(index / root.columns) * (root.cellHeight + root.cellSpacing)
-            readonly property var reserved: mon?.lastIpcObject?.reserved ?? [0, 0, 0, 0]
-            readonly property real usableX: (mon?.x ?? 0) + (reserved[0] ?? 0)
-            readonly property real usableY: (mon?.y ?? 0) + (reserved[1] ?? 0)
-            readonly property real usableW: Math.max(1, (mon?.width ?? 1) - (reserved[0] ?? 0) - (reserved[2] ?? 0))
-            readonly property real usableH: Math.max(1, (mon?.height ?? 1) - (reserved[1] ?? 0) - (reserved[3] ?? 0))
-            readonly property real relX: ipc?.at ? Math.max(0, (ipc.at[0] - usableX) / usableW) : 0
-            readonly property real relY: ipc?.at ? Math.max(0, (ipc.at[1] - usableY) / usableH) : 0
-            readonly property real innerX: Math.min(relX * root.cellWidth, root.cellWidth - preview.inset)
-            readonly property real innerY: Math.min(relY * root.cellHeight, root.cellHeight - preview.inset)
-            readonly property real inset: 24
-            // 0 = none, 1 = maximized, 2 = fullscreen, 3 = maximized + fullscreen
-            readonly property int fsState: ipc?.fullscreen ?? 0
-            readonly property bool fillsCell: preview.fsState === 1 || preview.fsState === 2 || preview.fsState === 3
-
-            readonly property real homeX: preview.fillsCell ? cellX : cellX + innerX
-            readonly property real homeY: preview.fillsCell ? cellY : cellY + innerY
-            readonly property real homeWidth: preview.fillsCell ? root.cellWidth : Math.max(preview.inset, Math.min(ipc?.size ? (ipc.size[0] / usableW) * root.cellWidth : root.cellWidth * 0.5, root.cellWidth - innerX))
-            readonly property real homeHeight: preview.fillsCell ? root.cellHeight : Math.max(preview.inset, Math.min(ipc?.size ? (ipc.size[1] / usableH) * root.cellHeight : root.cellHeight * 0.5, root.cellHeight - innerY))
-
-            property bool dragging: false
-            // Set right after a drop: the preview jumps to its new tile instead of gliding through
-            // the stale geometry Hyprland reports for a moment
-            property bool landing: false
-
-            Timer {
-                id: landTimer
-
-                interval: 450
-                repeat: false
-
-                onTriggered: preview.landing = false
+        Repeater {
+            model: ScriptModel {
+                values: root.windows
             }
-
-
-            Behavior on x {
-                enabled: !dragArea.drag.active && !preview.landing
-
-                Anim {
-                    type: Anim.FastSpatial
-                }
-            }
-
-            Behavior on y {
-                enabled: !dragArea.drag.active && !preview.landing
-
-                Anim {
-                    type: Anim.FastSpatial
-                }
-            }
-
-
-
-
-            x: homeX
-            y: homeY
-            width: homeWidth
-            height: homeHeight
-            z: dragging ? 1000 : 10
-
-            onHomeXChanged: if (!dragging)
-                x = homeX
-            onHomeYChanged: if (!dragging)
-                y = homeY
 
             Item {
-                id: frame
+                id: preview
 
-                anchors.fill: parent
-                layer.enabled: true
-                layer.effect: Mask {
-                    maskSource: maskRect
-                }
+                required property var modelData
 
-                Rectangle {
-                    id: maskRect
+                readonly property var hypr: root.hyprFor(modelData)
+                readonly property var ipc: hypr?.lastIpcObject
+                readonly property var mon: Hypr.monitors.values.find(m => (m.lastIpcObject?.id ?? -1) === (ipc?.monitor ?? -1)) ?? null
+                readonly property int index: (hypr?.workspace?.id ?? 1) - root.baseWs
+                readonly property real cellX: root.pad + (index % root.columns) * (root.cellWidth + root.cellSpacing)
+                readonly property real cellY: root.pad + Math.floor(index / root.columns) * (root.cellHeight + root.cellSpacing)
+                readonly property var reserved: mon?.lastIpcObject?.reserved ?? [0, 0, 0, 0]
+                readonly property real usableX: (mon?.x ?? 0) + (reserved[0] ?? 0)
+                readonly property real usableY: (mon?.y ?? 0) + (reserved[1] ?? 0)
+                readonly property real usableW: Math.max(1, (mon?.width ?? 1) - (reserved[0] ?? 0) - (reserved[2] ?? 0))
+                readonly property real usableH: Math.max(1, (mon?.height ?? 1) - (reserved[1] ?? 0) - (reserved[3] ?? 0))
+                readonly property real relX: ipc?.at ? Math.max(0, (ipc.at[0] - usableX) / usableW) : 0
+                readonly property real relY: ipc?.at ? Math.max(0, (ipc.at[1] - usableY) / usableH) : 0
+                readonly property real innerX: Math.min(relX * root.cellWidth, root.cellWidth - preview.inset)
+                readonly property real innerY: Math.min(relY * root.cellHeight, root.cellHeight - preview.inset)
+                readonly property real inset: 24
+                // 0 = none, 1 = maximized, 2 = fullscreen, 3 = maximized + fullscreen
+                readonly property int fsState: ipc?.fullscreen ?? 0
+                readonly property bool fillsCell: preview.fsState === 1 || preview.fsState === 2 || preview.fsState === 3
 
-                    anchors.fill: parent
-                    radius: Tokens.rounding.large
-                    color: "black"
-                    visible: false
-                    layer.enabled: true
-                }
+                readonly property real homeX: preview.fillsCell ? cellX : cellX + innerX
+                readonly property real homeY: preview.fillsCell ? cellY : cellY + innerY
+                readonly property real homeWidth: preview.fillsCell ? root.cellWidth : Math.max(preview.inset, Math.min(ipc?.size ? (ipc.size[0] / usableW) * root.cellWidth : root.cellWidth * 0.5, root.cellWidth - innerX))
+                readonly property real homeHeight: preview.fillsCell ? root.cellHeight : Math.max(preview.inset, Math.min(ipc?.size ? (ipc.size[1] / usableH) * root.cellHeight : root.cellHeight * 0.5, root.cellHeight - innerY))
 
-                Rectangle {
-                    anchors.fill: parent
-                    radius: Tokens.rounding.large
-                    color: "#000000"
-                }
+                property bool dragging: false
+                // Set right after a drop: the preview jumps to its new tile instead of gliding through
+                // the stale geometry Hyprland reports for a moment
+                property bool landing: false
+                property bool capturePaused: false
 
-                ScreencopyView {
-                    anchors.fill: parent
-                    captureSource: root.live ? preview.modelData : null
-                    live: true
-                    paintCursor: false
-                }
-
-                Image {
-                    anchors.left: parent.left
-                    anchors.top: parent.top
-                    anchors.margins: 6
-                    width: Math.max(14, Math.min(parent.width, parent.height) * 0.16)
-                    height: width
-                    sourceSize.width: width * 2
-                    sourceSize.height: height * 2
-                    fillMode: Image.PreserveAspectFit
-                    visible: status === Image.Ready
-                    opacity: 0.9
-                    source: Icons.getAppIcon(preview.ipc?.class ?? "", "application-x-executable")
-                }
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: Tokens.rounding.large
-                color: "transparent"
-                border.width: preview.dragging || preview.isActiveWindow ? 3 : 1
-                border.color: preview.dragging || preview.isActiveWindow ? Colours.palette.m3primary : Qt.rgba(1, 1, 1, 0.08)
-            }
-
-            MouseArea {
-                id: dragArea
-
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-
-                // Qt moves the preview itself, so the cursor never feeds back into the position
-                drag.target: preview
-                drag.threshold: 6
-
-                property bool dragged: false
-                property bool suppressClick: false
-
-                onPressed: {
-                    dragArea.dragged = false;
-                    dragArea.suppressClick = false;
-                }
-
-                onPositionChanged: {
-                    if (drag.active && !dragArea.dragged) {
-                        dragArea.dragged = true;
-                        preview.dragging = true;
-                    }
-                }
-
-                onReleased: mouse => {
-                    const wasDragging = dragArea.dragged;
-                    dragArea.dragged = false;
-                    dragArea.suppressClick = wasDragging;
-                    preview.dragging = false;
-
-                    if (!wasDragging) {
-                        preview.x = preview.homeX;
-                        preview.y = preview.homeY;
+                function restartCapture(): void {
+                    if (preview.capturePaused)
                         return;
+
+                    preview.capturePaused = true;
+                    captureRestart.restart();
+                }
+
+                Timer {
+                    id: captureRestart
+
+                    interval: 120
+                    repeat: false
+
+                    onTriggered: preview.capturePaused = false
+                }
+
+                Timer {
+                    id: landTimer
+
+                    interval: 450
+                    repeat: false
+
+                    onTriggered: preview.landing = false
+                }
+
+
+                Behavior on x {
+                    enabled: !dragArea.drag.active && !preview.landing
+
+                    Anim {
+                        type: Anim.FastSpatial
+                    }
+                }
+
+                Behavior on y {
+                    enabled: !dragArea.drag.active && !preview.landing
+
+                    Anim {
+                        type: Anim.FastSpatial
+                    }
+                }
+
+
+
+
+                x: homeX
+                y: homeY
+                width: homeWidth
+                height: homeHeight
+                z: dragging ? 1000 : 10
+
+                onHomeXChanged: if (!dragging)
+                    x = homeX
+                onHomeYChanged: if (!dragging)
+                    y = homeY
+
+                Item {
+                    id: frame
+
+                    anchors.fill: parent
+                    layer.enabled: true
+                    layer.effect: Mask {
+                        maskSource: maskRect
                     }
 
-                    const dropX = preview.x + preview.width / 2;
-                    const dropY = preview.y + preview.height / 2;
-                    const col = Math.max(0, Math.min(root.columns - 1, Math.floor(dropX / (root.cellWidth + root.cellSpacing))));
-                    const row = Math.max(0, Math.min(root.rows - 1, Math.floor(dropY / (root.cellHeight + root.cellSpacing))));
-                    const targetWs = root.baseWs + row * root.columns + col;
-                    const addr = preview.ipc?.address;
-                    const currentWs = preview.hypr?.workspace?.id ?? -1;
+                    Rectangle {
+                        id: maskRect
 
-                    if (targetWs !== currentWs && addr) {
-                        if (Hypr.usingLua) {
-                            root.beginNoWarp();
-                            Hypr.dispatch(`hl.dsp.window.move({ workspace = ${targetWs}, window = "address:${addr}", follow = false })`);
-                        } else
-                            Hypr.dispatch(`movetoworkspacesilent ${targetWs},address:${addr}`);
-                    } else if (targetWs === currentWs) {
-                        // Dropped inside its own cell: swap with the window under the cursor. A swap
-                        // keeps the focus untouched, so Hyprland does not warp the pointer.
-                        const target = root.previewUnder(dropX, dropY, currentWs, preview);
-                        if (target) {
-                            root.swapWith(preview, target);
-                        } else {
-                            root.moveWithinCell(preview, dropX, dropY);
+                        anchors.fill: parent
+                        radius: Tokens.rounding.large
+                        color: "black"
+                        visible: false
+                        layer.enabled: true
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Tokens.rounding.large
+                        color: "#000000"
+                    }
+
+                    Loader {
+                        anchors.fill: parent
+                        active: root.live && !preview.capturePaused
+
+                        sourceComponent: ScreencopyView {
+                            captureSource: preview.modelData
+                            live: true
+                            paintCursor: false
+
+                            onStopped: preview.restartCapture()
                         }
                     }
 
-                    preview.landing = true;
-                    landTimer.restart();
-                    preview.x = preview.homeX;
-                    preview.y = preview.homeY;
+                    Image {
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.margins: 6
+                        width: Math.max(14, Math.min(parent.width, parent.height) * 0.16)
+                        height: width
+                        sourceSize.width: width * 2
+                        sourceSize.height: height * 2
+                        fillMode: Image.PreserveAspectFit
+                        visible: status === Image.Ready
+                        opacity: 0.9
+                        source: Icons.getAppIcon(preview.ipc?.class ?? "", "application-x-executable")
+                    }
                 }
 
-                onClicked: mouse => {
-                    if (dragArea.suppressClick) {
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Tokens.rounding.large
+                    color: "transparent"
+                    border.width: preview.dragging || preview.isActiveWindow ? 3 : 1
+                    border.color: preview.dragging || preview.isActiveWindow ? Colours.palette.m3primary : Qt.rgba(1, 1, 1, 0.08)
+                }
+
+                MouseArea {
+                    id: dragArea
+
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+
+                    // Qt moves the preview itself, so the cursor never feeds back into the position
+                    drag.target: preview
+                    drag.threshold: 6
+
+                    property bool dragged: false
+                    property bool suppressClick: false
+
+                    onPressed: {
+                        dragArea.dragged = false;
                         dragArea.suppressClick = false;
-                        return;
                     }
 
-                    const addr = preview.ipc?.address;
-                    if (!addr)
-                        return;
-                    const pos = preview.mapToGlobal(mouse.x, mouse.y);
-                    root.windowChosen();
-                    root.focusWindow(addr, [pos.x, pos.y]);
+                    onPositionChanged: {
+                        if (drag.active && !dragArea.dragged) {
+                            dragArea.dragged = true;
+                            preview.dragging = true;
+                        }
+                    }
+
+                    onReleased: mouse => {
+                        const wasDragging = dragArea.dragged;
+                        dragArea.dragged = false;
+                        dragArea.suppressClick = wasDragging;
+                        preview.dragging = false;
+
+                        if (!wasDragging) {
+                            preview.x = preview.homeX;
+                            preview.y = preview.homeY;
+                            return;
+                        }
+
+                        const dropX = preview.x + preview.width / 2;
+                        const dropY = preview.y + preview.height / 2;
+                        const col = Math.max(0, Math.min(root.columns - 1, Math.floor(dropX / (root.cellWidth + root.cellSpacing))));
+                        const row = Math.max(0, Math.min(root.rows - 1, Math.floor(dropY / (root.cellHeight + root.cellSpacing))));
+                        const targetWs = root.baseWs + row * root.columns + col;
+                        const addr = preview.ipc?.address;
+                        const currentWs = preview.hypr?.workspace?.id ?? -1;
+
+                        if (targetWs !== currentWs && addr) {
+                            if (Hypr.usingLua) {
+                                root.beginNoWarp();
+                                Hypr.dispatch(`hl.dsp.window.move({ workspace = ${targetWs}, window = "address:${addr}", follow = false })`);
+                            } else
+                                Hypr.dispatch(`movetoworkspacesilent ${targetWs},address:${addr}`);
+                        } else if (targetWs === currentWs) {
+                            // Dropped inside its own cell: swap with the window under the cursor. A swap
+                            // keeps the focus untouched, so Hyprland does not warp the pointer.
+                            const target = root.previewUnder(dropX, dropY, currentWs, preview);
+                            if (target) {
+                                root.swapWith(preview, target);
+                            } else {
+                                root.moveWithinCell(preview, dropX, dropY);
+                            }
+                        }
+
+                        root.recapturePreviews();
+                        preview.landing = true;
+                        landTimer.restart();
+                        preview.x = preview.homeX;
+                        preview.y = preview.homeY;
+                    }
+
+                    onClicked: mouse => {
+                        if (dragArea.suppressClick) {
+                            dragArea.suppressClick = false;
+                            return;
+                        }
+
+                        const addr = preview.ipc?.address;
+                        if (!addr)
+                            return;
+                        const pos = preview.mapToGlobal(mouse.x, mouse.y);
+                        root.windowChosen();
+                        root.focusWindow(addr, [pos.x, pos.y]);
+                    }
                 }
             }
         }
