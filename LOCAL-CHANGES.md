@@ -436,7 +436,7 @@ The old "missing packages" warnings for individual libraries are gone — they c
 `utils/SysInfo.qml` reads the mainboard DMI fields (`board_vendor` / `board_name`) first and falls
 back to `sys_vendor` / `product_name`: desktops commonly leave the system fields as "To Be Filled By
 O.E.M.", which `sanitiseDmi()` drops, so the Device row rendered empty. Version string bumped to
-`STORM 1.4`.
+`STORM 1.4` (now `STORM 1.5`).
 
 ## Crash: KDE icon engine on the render thread
 
@@ -476,3 +476,9 @@ Learned the hard way — never leave the machine in a half-tested state.
   - no drawers/popouts left open;
   - `hyprctl monitors` → `reserved` matches the bar side;
   - screenshot both orientations when the bar layout changed.
+
+## Version 1.5
+
+Bumped to `STORM 1.5` for the overview work: mouse drag inside a workspace cell
+(`hl.dsp.window.swap`), capture restarts after a drop without blanking the tiles, and
+maximized/fullscreen windows shown alone in their cell.
