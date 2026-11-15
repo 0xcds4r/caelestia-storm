@@ -50,9 +50,11 @@ workspaces (`hl.dsp.window.move`), click on a window (focus) and on a workspace 
 - After a drop the preview snaps straight to its new tile (`preview.landing`, 450 ms): Hyprland
   reports the old geometry for a moment, and animating through it looked broken.
 - Live captures kept painting the buffer they held before the swap (wrong window content and a
-  black band along the bottom of the tile) until the overview was reopened. The preview tree now
-  lives in a `Loader` (`previewComponent`) and `recapturePreviews()` drops it for 150 ms after
-  every drop, which rebuilds the previews the same way reopening did.
+  black band along the bottom of the tile) until the overview was reopened. Every preview now keeps
+  two `ScreencopyView`s (`captureA`/`captureB`): `recaptureRev` is bumped 180 ms after a drop, the
+  hidden view is created next to the visible one and the two are swapped only once the new view has
+  reported `hasContent`. Rebuilding in place (what opening the overview did) fixed the captures but
+  blacked the tiles out for a moment, hence the warm spare.
 - Swapping or moving a window refocuses it and Hyprland yanks the cursor to the centre of
   the new layout. Warping is disabled for the drop with Lua `hl.config({ cursor = {
   no_warps = true } })` (`beginNoWarp()`) and restored 700 ms later from the value read at

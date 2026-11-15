@@ -98,21 +98,20 @@ Item {
     }
 
     // After a swap the live captures keep painting the frame they held before the windows were
-    // retiled. Reopening the overview always cleared that up, so the previews are rebuilt the same
-    // way shortly after a drop.
-    property bool previewsOn: true
+    // retiled. Reopening the overview always cleared that up, so every preview restarts its capture
+    // a moment after a drop. The restart is done with a second, hidden view so nothing goes black.
+    property int recaptureRev: 0
 
     Timer {
         id: recaptureTimer
 
-        interval: 150
+        interval: 180
         repeat: false
 
-        onTriggered: root.previewsOn = true
+        onTriggered: root.recaptureRev++
     }
 
     function recapturePreviews(): void {
-        root.previewsOn = false;
         recaptureTimer.restart();
     }
 
@@ -372,7 +371,7 @@ Item {
         id: previewLoader
 
         anchors.fill: parent
-        active: root.previewsOn
+        active: root.live
         sourceComponent: previewComponent
     }
 
@@ -418,23 +417,66 @@ Item {
                 // Set right after a drop: the preview jumps to its new tile instead of gliding through
                 // the stale geometry Hyprland reports for a moment
                 property bool landing: false
-                property bool capturePaused: false
+                // Two capture views are kept so a restart can warm the spare one before showing it
+                property bool captureAOn: true
+                property bool captureBOn: false
+                property bool captureShowB: false
+                property bool captureSwapping: false
+                property int captureTries: 0
+
+                Connections {
+                    target: root
+
+                    function onRecaptureRevChanged(): void {
+                        preview.restartCapture();
+                    }
+                }
 
                 function restartCapture(): void {
-                    if (preview.capturePaused)
+                    if (preview.captureSwapping)
                         return;
 
-                    preview.capturePaused = true;
-                    captureRestart.restart();
+                    preview.captureSwapping = true;
+                    preview.captureTries = 0;
+
+                    if (preview.captureShowB)
+                        preview.captureAOn = true;
+                    else
+                        preview.captureBOn = true;
+
+                    captureSwapTimer.restart();
+                }
+
+                function captureReady(): bool {
+                    const loader = preview.captureShowB ? captureA : captureB;
+
+                    return !loader.item || loader.item.hasContent;
+                }
+
+                function finishCaptureSwap(): void {
+                    preview.captureShowB = !preview.captureShowB;
+
+                    if (preview.captureShowB)
+                        preview.captureAOn = false;
+                    else
+                        preview.captureBOn = false;
+
+                    preview.captureSwapping = false;
                 }
 
                 Timer {
-                    id: captureRestart
+                    id: captureSwapTimer
 
-                    interval: 120
-                    repeat: false
+                    interval: 60
+                    repeat: true
 
-                    onTriggered: preview.capturePaused = false
+                    onTriggered: {
+                        if (!preview.captureReady() && ++preview.captureTries < 15)
+                            return;
+
+                        stop();
+                        preview.finishCaptureSwap();
+                    }
                 }
 
                 Timer {
@@ -503,10 +545,27 @@ Item {
                     }
 
                     Loader {
-                        anchors.fill: parent
-                        active: root.live && !preview.capturePaused
+                        id: captureA
 
-                        sourceComponent: ScreencopyView {
+                        anchors.fill: parent
+                        active: root.live && preview.captureAOn
+                        visible: !preview.captureShowB
+                        sourceComponent: captureComponent
+                    }
+
+                    Loader {
+                        id: captureB
+
+                        anchors.fill: parent
+                        active: root.live && preview.captureBOn
+                        visible: preview.captureShowB
+                        sourceComponent: captureComponent
+                    }
+
+                    Component {
+                        id: captureComponent
+
+                        ScreencopyView {
                             captureSource: preview.modelData
                             live: true
                             paintCursor: false
