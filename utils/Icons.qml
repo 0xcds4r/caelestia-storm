@@ -207,22 +207,30 @@ Singleton {
         return !isMuted && volume > 0 ? "mic" : "mic_off";
     }
 
+    // Resolves an "image://icon/<name>" URL to a real file (GUI thread). Going through the icon
+    // provider loads QIcon pixmaps on a worker thread where KDE's icon engine is not safe.
+    function resolveIcon(icon: string): string {
+        if (!icon)
+            return "";
+
+        if (icon.startsWith("image://icon/")) {
+            const name = icon.slice("image://icon/".length);
+            if (name.startsWith("/"))
+                return `file://${name}`;
+            return Quickshell.iconPath(name, true) || "";
+        }
+
+        return icon;
+    }
+
     function getTrayIcon(id: string, icon: string): string {
         for (const sub of GlobalConfig.bar.tray.iconSubs.values)
             if (sub.id === id)
                 return sub.image ? Qt.resolvedUrl(sub.image) : Quickshell.iconPath(sub.icon);
 
-        // Tray icons arrive as image://icon/<name> URLs. Resolve them to real files here (GUI thread)
-        // instead of letting the image go through Quickshell's icon provider, which loads QIcon
-        // pixmaps on a worker thread where KDE's icon engine is not safe (it segfaulted the shell).
-        if (icon.startsWith("image://icon/")) {
-            const name = icon.slice("image://icon/".length);
-            if (name.startsWith("/"))
-                return `file://${name}`;
-            const resolved = Quickshell.iconPath(name, true);
-            if (resolved)
-                return resolved;
-        }
+        const resolved = root.resolveIcon(icon);
+        if (resolved !== icon)
+            return resolved;
 
         if (icon.includes("?path=")) {
             const [name, path] = icon.split("?path=");

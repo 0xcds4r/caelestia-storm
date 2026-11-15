@@ -428,6 +428,10 @@ provider. (The last tray update before the crash was nm-applet switching `nm-sig
 `nm-signal-100`.) Other name-based images (launcher apps, notifications) already
 used `Quickshell.iconPath`.
 
+The remaining `image://icon/...` sources were the tray **menu**, notification images and
+`CachingIconImage`; they all go through `Icons.resolveIcon()` now, which turns the URL into a real
+file (or into `""` when the theme has no such icon) in the GUI thread.
+
 If it ever recurs, run the shell without the KDE platform theme for that process:
 `hl.exec_cmd("env QT_QPA_PLATFORMTHEME= caelestia shell -d")` in `hyprland/execs.lua` — Qt's own
 icon loader is mutex-protected, at the cost of KDE-specific icon lookup.
