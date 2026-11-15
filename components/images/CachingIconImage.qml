@@ -37,7 +37,7 @@ Item {
         id: iconImage
 
         IconImage {
-            source: root.source
+            source: Icons.resolveIcon(root.source.toString())
             asynchronous: true
         }
     }
