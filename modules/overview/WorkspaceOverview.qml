@@ -157,7 +157,7 @@ Item {
 
         for (let i = 0; i < container.children.length; i++) {
             const child = container.children[i];
-            if (!child || child === except || typeof child.homeX !== "number")
+            if (!child || child === except || !child.visible || typeof child.homeX !== "number")
                 continue;
             if ((child.hypr?.workspace?.id ?? -1) !== wsId)
                 continue;
@@ -408,6 +408,22 @@ Item {
                 readonly property int fsState: ipc?.fullscreen ?? 0
                 readonly property bool fillsCell: preview.fsState === 1 || preview.fsState === 2 || preview.fsState === 3
 
+                // A maximized or fullscreen window covers everything else on its workspace, so the
+                // cell shows only that window
+                readonly property var coveringWindow: {
+                    const ws = preview.hypr?.workspace?.id ?? -1;
+
+                    if (ws < 0)
+                        return null;
+
+                    return root.windows.find(t => {
+                        const h = root.hyprFor(t);
+
+                        return (h?.workspace?.id ?? -1) === ws && ((h?.lastIpcObject?.fullscreen ?? 0) !== 0);
+                    }) ?? null;
+                }
+                readonly property bool covered: preview.coveringWindow !== null && preview.coveringWindow !== preview.modelData
+
                 readonly property real homeX: preview.fillsCell ? cellX : cellX + innerX
                 readonly property real homeY: preview.fillsCell ? cellY : cellY + innerY
                 readonly property real homeWidth: preview.fillsCell ? root.cellWidth : Math.max(preview.inset, Math.min(ipc?.size ? (ipc.size[0] / usableW) * root.cellWidth : root.cellWidth * 0.5, root.cellWidth - innerX))
@@ -513,6 +529,7 @@ Item {
                 width: homeWidth
                 height: homeHeight
                 z: dragging ? 1000 : 10
+                visible: !preview.covered
 
                 onHomeXChanged: if (!dragging)
                     x = homeX

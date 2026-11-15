@@ -60,8 +60,10 @@ workspaces (`hl.dsp.window.move`), click on a window (focus) and on a workspace 
   no_warps = true } })` (`beginNoWarp()`) and restored 700 ms later from the value read at
   startup (`hyprctl getoption cursor:no_warps`), because `keyword cursor:no_warps` does not
   work with the Lua config parser.
-- Preview previews for maximized/fullscreen windows (`ipc.fullscreen != 0`) fill the whole
-  cell (`fillsCell`) instead of being placed by their captured geometry.
+- Previews for maximized/fullscreen windows (`ipc.fullscreen != 0`) fill the whole cell
+  (`fillsCell`) instead of being placed by their captured geometry, and the cell shows *only*
+  that window: every other preview of the same workspace is hidden (`coveringWindow` /
+  `covered`), because the compositor stacks the maximized window above them.
 
 Navigation (`modules/launcher/Content.qml` + `WorkspaceOverview.qml`):
 
