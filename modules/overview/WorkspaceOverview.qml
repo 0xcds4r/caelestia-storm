@@ -97,6 +97,90 @@ Item {
         return wsWindows[0];
     }
 
+    // Swapping or moving a window refocuses it, and Hyprland then yanks the cursor to the centre of
+    // the new layout. Warping is switched off for the duration of the drop and restored afterwards.
+    property bool noWarpsDefault: false
+
+    Process {
+        id: readNoWarps
+
+        command: ["hyprctl", "getoption", "cursor:no_warps"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: root.noWarpsDefault = text.includes("bool: true")
+        }
+    }
+
+    Timer {
+        id: restoreWarps
+
+        interval: 700
+        repeat: false
+
+        onTriggered: if (Hypr.usingLua)
+            Hypr.extras.batchMessage([`eval hl.config({ cursor = { no_warps = ${root.noWarpsDefault} } })`])
+    }
+
+    function beginNoWarp(): void {
+        if (!Hypr.usingLua)
+            return;
+
+        Hypr.extras.batchMessage(['eval hl.config({ cursor = { no_warps = true } })']);
+        restoreWarps.restart();
+    }
+
+    // Finds the preview of another window in the same workspace under the given scene point
+    function previewUnder(px: real, py: real, wsId: int, except: Item): Item {
+        for (let i = 0; i < root.children.length; i++) {
+            const child = root.children[i];
+            if (!child || child === except || typeof child.homeX !== "number")
+                continue;
+            if ((child.hypr?.workspace?.id ?? -1) !== wsId)
+                continue;
+            if (px >= child.homeX && px < child.homeX + child.homeWidth && py >= child.homeY && py < child.homeY + child.homeHeight)
+                return child;
+        }
+        return null;
+    }
+
+    // Swaps two windows directly. Unlike focus + move this never changes the focused window, so
+    // Hyprland does not warp the pointer away from the drop point.
+    function swapWith(moved: Item, target: Item): void {
+        const movedAddr = moved.ipc?.address;
+        const targetAddr = target.ipc?.address;
+        if (!movedAddr || !targetAddr || movedAddr === targetAddr)
+            return;
+
+        root.beginNoWarp();
+        Hypr.dispatch(`hl.dsp.window.swap({ window = "address:${movedAddr}", target = "address:${targetAddr}" })`);
+    }
+
+    // Reorders a dragged window inside its own cell: focus it and nudge it towards the dropped spot
+    function moveWithinCell(moved: Item, dropX: real, dropY: real): void {
+        const movedAddr = moved.ipc?.address;
+        if (!movedAddr)
+            return;
+
+        const fromX = moved.homeX + moved.homeWidth / 2;
+        const fromY = moved.homeY + moved.homeHeight / 2;
+        const dx = dropX - fromX;
+        const dy = dropY - fromY;
+
+        if (Math.abs(dx) < moved.homeWidth * 0.25 && Math.abs(dy) < moved.homeHeight * 0.25)
+            return;
+
+        const horizontal = Math.abs(dx) >= Math.abs(dy);
+        const dir = horizontal ? (dx > 0 ? "r" : "l") : (dy > 0 ? "d" : "u");
+        const tile = horizontal ? moved.homeWidth : moved.homeHeight;
+        const steps = Math.max(1, Math.min(3, Math.round(Math.abs(horizontal ? dx : dy) / Math.max(1, tile))));
+
+        root.beginNoWarp();
+        Hypr.dispatch(`hl.dsp.focus({ window = "address:${movedAddr}" })`);
+        for (let i = 0; i < steps; i++)
+            Hypr.dispatch(`hl.dsp.window.move({ direction = "${dir}" })`);
+    }
+
     function moveVertical(dir: int): void {
         if (selectedCell < 0) {
             selectedCell = Math.max(0, Math.min(cellCount - 1, activeWs - baseWs));
@@ -286,12 +370,47 @@ Item {
             readonly property real innerX: Math.min(relX * root.cellWidth, root.cellWidth - preview.inset)
             readonly property real innerY: Math.min(relY * root.cellHeight, root.cellHeight - preview.inset)
             readonly property real inset: 24
-            readonly property real homeX: cellX + innerX
-            readonly property real homeY: cellY + innerY
-            readonly property real homeWidth: Math.max(preview.inset, Math.min(ipc?.size ? (ipc.size[0] / usableW) * root.cellWidth : root.cellWidth * 0.5, root.cellWidth - innerX))
-            readonly property real homeHeight: Math.max(preview.inset, Math.min(ipc?.size ? (ipc.size[1] / usableH) * root.cellHeight : root.cellHeight * 0.5, root.cellHeight - innerY))
+            // 0 = none, 1 = maximized, 2 = fullscreen, 3 = maximized + fullscreen
+            readonly property int fsState: ipc?.fullscreen ?? 0
+            readonly property bool fillsCell: preview.fsState === 1 || preview.fsState === 2 || preview.fsState === 3
+
+            readonly property real homeX: preview.fillsCell ? cellX : cellX + innerX
+            readonly property real homeY: preview.fillsCell ? cellY : cellY + innerY
+            readonly property real homeWidth: preview.fillsCell ? root.cellWidth : Math.max(preview.inset, Math.min(ipc?.size ? (ipc.size[0] / usableW) * root.cellWidth : root.cellWidth * 0.5, root.cellWidth - innerX))
+            readonly property real homeHeight: preview.fillsCell ? root.cellHeight : Math.max(preview.inset, Math.min(ipc?.size ? (ipc.size[1] / usableH) * root.cellHeight : root.cellHeight * 0.5, root.cellHeight - innerY))
 
             property bool dragging: false
+            // Set right after a drop: the preview jumps to its new tile instead of gliding through
+            // the stale geometry Hyprland reports for a moment
+            property bool landing: false
+
+            Timer {
+                id: landTimer
+
+                interval: 450
+                repeat: false
+
+                onTriggered: preview.landing = false
+            }
+
+
+            Behavior on x {
+                enabled: !dragArea.drag.active && !preview.landing
+
+                Anim {
+                    type: Anim.FastSpatial
+                }
+            }
+
+            Behavior on y {
+                enabled: !dragArea.drag.active && !preview.landing
+
+                Anim {
+                    type: Anim.FastSpatial
+                }
+            }
+
+
 
 
             x: homeX
@@ -361,37 +480,79 @@ Item {
             }
 
             MouseArea {
+                id: dragArea
+
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                drag.target: preview
 
+                // Qt moves the preview itself, so the cursor never feeds back into the position
+                drag.target: preview
                 drag.threshold: 6
 
-                onPressed: preview.dragging = false
-                onPositionChanged: if (drag.active)
-                    preview.dragging = true
-                onReleased: {
-                    if (!preview.dragging) {
+                property bool dragged: false
+                property bool suppressClick: false
+
+                onPressed: {
+                    dragArea.dragged = false;
+                    dragArea.suppressClick = false;
+                }
+
+                onPositionChanged: {
+                    if (drag.active && !dragArea.dragged) {
+                        dragArea.dragged = true;
+                        preview.dragging = true;
+                    }
+                }
+
+                onReleased: mouse => {
+                    const wasDragging = dragArea.dragged;
+                    dragArea.dragged = false;
+                    dragArea.suppressClick = wasDragging;
+                    preview.dragging = false;
+
+                    if (!wasDragging) {
                         preview.x = preview.homeX;
                         preview.y = preview.homeY;
                         return;
                     }
 
-                    const col = Math.max(0, Math.min(root.columns - 1, Math.floor((preview.x + preview.width / 2) / (root.cellWidth + root.cellSpacing))));
-                    const row = Math.max(0, Math.min(root.rows - 1, Math.floor((preview.y + preview.height / 2) / (root.cellHeight + root.cellSpacing))));
+                    const dropX = preview.x + preview.width / 2;
+                    const dropY = preview.y + preview.height / 2;
+                    const col = Math.max(0, Math.min(root.columns - 1, Math.floor(dropX / (root.cellWidth + root.cellSpacing))));
+                    const row = Math.max(0, Math.min(root.rows - 1, Math.floor(dropY / (root.cellHeight + root.cellSpacing))));
                     const targetWs = root.baseWs + row * root.columns + col;
                     const addr = preview.ipc?.address;
+                    const currentWs = preview.hypr?.workspace?.id ?? -1;
 
-                    preview.dragging = false;
+                    if (targetWs !== currentWs && addr) {
+                        if (Hypr.usingLua) {
+                            root.beginNoWarp();
+                            Hypr.dispatch(`hl.dsp.window.move({ workspace = ${targetWs}, window = "address:${addr}", follow = false })`);
+                        } else
+                            Hypr.dispatch(`movetoworkspacesilent ${targetWs},address:${addr}`);
+                    } else if (targetWs === currentWs) {
+                        // Dropped inside its own cell: swap with the window under the cursor. A swap
+                        // keeps the focus untouched, so Hyprland does not warp the pointer.
+                        const target = root.previewUnder(dropX, dropY, currentWs, preview);
+                        if (target) {
+                            root.swapWith(preview, target);
+                        } else {
+                            root.moveWithinCell(preview, dropX, dropY);
+                        }
+                    }
 
-                    if (targetWs !== (preview.hypr?.workspace?.id ?? -1) && addr)
-                        Hypr.dispatch(Hypr.usingLua ? `hl.dsp.window.move({ workspace = ${targetWs}, window = "address:${addr}", follow = false })` : `movetoworkspacesilent ${targetWs},address:${addr}`);
-
+                    preview.landing = true;
+                    landTimer.restart();
                     preview.x = preview.homeX;
                     preview.y = preview.homeY;
                 }
 
                 onClicked: mouse => {
+                    if (dragArea.suppressClick) {
+                        dragArea.suppressClick = false;
+                        return;
+                    }
+
                     const addr = preview.ipc?.address;
                     if (!addr)
                         return;

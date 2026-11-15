@@ -41,6 +41,21 @@ workspaces (`hl.dsp.window.move`), click on a window (focus) and on a workspace 
   it bled through translucent windows (Hyprland puts the backdrop into the toplevel buffer).
 - The active window of the current workspace gets a bold 3px outline (`activeWindowAddress`
   via `focusHistoryID`); the mask, backdrop and outline all use `Tokens.rounding.large`.
+- Windows can be dragged inside a cell with the mouse: the preview follows the pointer
+  (`MouseArea.drag.target`, `drag.threshold: 6`, no position bindings while dragging) and a
+  drop on a sibling calls `hl.dsp.window.swap({ window, target })`, which reorders the
+  tiles without touching the focused window.
+- `walk`-free drag: the preview position is set only by Qt, so the cursor never feeds back
+  into the geometry; behaviour animations are disabled while `dragArea.drag.active`.
+- After a drop the preview snaps straight to its new tile for ~450 ms (`preview.landing`):
+  Hyprland reports the old geometry for a moment, and animating through it looked broken.
+- Swapping or moving a window refocuses it and Hyprland yanks the cursor to the centre of
+  the new layout. Warping is disabled for the drop with Lua `hl.config({ cursor = {
+  no_warps = true } })` (`beginNoWarp()`) and restored 700 ms later from the value read at
+  startup (`hyprctl getoption cursor:no_warps`), because `keyword cursor:no_warps` does not
+  work with the Lua config parser.
+- Preview previews for maximized/fullscreen windows (`ipc.fullscreen != 0`) fill the whole
+  cell (`fillsCell`) instead of being placed by their captured geometry.
 
 Navigation (`modules/launcher/Content.qml` + `WorkspaceOverview.qml`):
 
