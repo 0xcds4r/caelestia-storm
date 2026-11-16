@@ -110,7 +110,7 @@ access to control values, and `State` is a `key=value` store in `$XDG_STATE_HOME
 ## Build and install
 
 ```sh
-cargo build --release
+cd plugins && cargo build --release
 mkdir -p ~/.config/caelestia/plugins/storm-pallete
 install -m755 ../target/release/storm-pallete ~/.config/caelestia/plugins/storm-pallete/plugin
 install -m644 icon.png ~/.config/caelestia/plugins/storm-pallete/icon.png
