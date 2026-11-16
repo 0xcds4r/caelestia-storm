@@ -53,6 +53,7 @@ fn preset(id: &str) -> Option<Preset> {
 
 struct Settings {
     enabled: bool,
+    overlay: bool,
     preset: String,
     density: f64,
     wind: f64,
@@ -68,6 +69,7 @@ impl Settings {
 
         Self {
             enabled: state.bool("enabled", true),
+            overlay: state.bool("overlay", false),
             preset: preset_id,
             density: state.number("density", fallback.density),
             wind: state.number("wind", fallback.wind),
@@ -79,6 +81,7 @@ impl Settings {
     fn save(&self) {
         let mut state = State::load(ID);
         state.set("enabled", self.enabled);
+        state.set("overlay", self.overlay);
         state.set("preset", &self.preset);
         state.set("density", self.density);
         state.set("wind", self.wind);
@@ -107,6 +110,7 @@ fn effects() -> String {
     }
 
     api::effects(&[Effect::shader("snow", "shaders/snow.frag.qsb")
+        .text("layer", if settings.overlay { "overlay" } else { "background" })
         .time_scale(settings.speed)
         .uniform("density", settings.density)
         .uniform("wind", settings.wind)
@@ -136,6 +140,12 @@ fn window() -> String {
                 label: "Snow on the desktop",
                 subtext: "Falls behind the windows",
                 value: settings.enabled,
+            },
+            Row::Toggle {
+                id: "overlay",
+                label: "Above the windows",
+                subtext: "Draws over everything, including fullscreen",
+                value: settings.overlay,
             },
             Row::Choice {
                 id: "preset",
@@ -168,14 +178,16 @@ fn run(action: &str) -> i32 {
             println!("Snow {}", if settings.enabled { "on" } else { "off" });
         }
         "status" => println!(
-            "Snow {} · density {:.2} · wind {:.2}",
+            "Snow {} · {} · density {:.2} · wind {:.2}",
             if settings.enabled { "on" } else { "off" },
+            if settings.overlay { "overlay" } else { "background" },
             settings.density,
             settings.wind
         ),
         "reset" => {
             let mut state = State::load(ID);
             state.set("enabled", true);
+            state.set("overlay", false);
             state.set("preset", "even");
             state.set("density", PRESETS[1].density);
             state.set("wind", PRESETS[1].wind);
@@ -198,6 +210,7 @@ fn apply_event(control: &str, value: &EventValue) -> bool {
 
     match control {
         "enabled" => settings.enabled = value.as_bool(),
+        "overlay" => settings.overlay = value.as_bool(),
         "preset" => settings.apply_preset(&value.as_text()),
         "density" => {
             settings.density = value.as_f64().clamp(0.0, 1.0);

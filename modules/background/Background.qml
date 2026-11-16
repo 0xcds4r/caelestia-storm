@@ -61,8 +61,10 @@ Variants {
             anchors.fill: parent
         }
 
-        BackgroundEffects {
+        EffectLayer {
             anchors.fill: parent
+            effectLayer: "background"
+            screenName: win.modelData.name
         }
 
         Loader {

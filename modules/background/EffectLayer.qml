@@ -1,13 +1,28 @@
 import QtQuick
 import qs.services
 
-// Background effects contributed by plugins (`effects` command). Rendered on the wallpaper, below
-// every window, so the snow falls behind the windows. Every effect is a fragment shader
-// (`{"type": "shader", "fragment": "..."}`); the shell only provides time/resolution.
+// Plugin effects for one screen and one layer. Every effect is a fragment shader
+// (`{"type": "shader", "fragment": "..."}`); `layer` picks the surface it is drawn in:
+//
+//   "background" — on the wallpaper, below every window (default)
+//   "overlay"    — in a click-through overlay window above everything, including fullscreen
+//
+// `monitors` in the descriptor restricts the effect to the listed connectors (empty = every screen).
 Item {
     id: root
 
-    anchors.fill: parent
+    property string effectLayer: "background"
+    property string screenName: ""
+
+    function matches(effect: var): bool {
+        if ((effect.layer ?? "background") !== root.effectLayer)
+            return false;
+
+        if (!Plugins.effectOnScreen(effect, root.screenName))
+            return false;
+
+        return true;
+    }
 
     Repeater {
         model: Plugins.effects
@@ -18,7 +33,7 @@ Item {
             required property var modelData
 
             anchors.fill: parent
-            visible: effectHost.modelData.type === "shader"
+            visible: effectHost.matches(effectHost.modelData)
 
             Loader {
                 anchors.fill: parent
@@ -29,6 +44,10 @@ Item {
             }
 
             onModelDataChanged: effectHost.sync(children[0]?.item ?? null)
+
+            function matches(effect: var): bool {
+                return root.matches(effect);
+            }
 
             function sync(item): void {
                 if (!item)

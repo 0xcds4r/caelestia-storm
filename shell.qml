@@ -28,6 +28,7 @@ ShellRoot {
     ServiceLoader {}
 
     Background {}
+    EffectOverlay {}
     Drawers {}
     AreaPicker {}
     Lock {
