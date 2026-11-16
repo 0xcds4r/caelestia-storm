@@ -61,6 +61,10 @@ Variants {
             anchors.fill: parent
         }
 
+        BackgroundEffects {
+            anchors.fill: parent
+        }
+
         Loader {
             id: clockLoader
 

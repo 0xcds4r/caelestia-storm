@@ -17,6 +17,7 @@ Singleton {
     property var schemes: []
     property var widgets: []
     property var desktopWidgets: []
+    property var effects: []
     // Stable key for the set of widget plugins, so the bar's repeater is not rebuilt on every poll
     property string widgetSignature: ""
     property bool scanning: false
@@ -57,6 +58,7 @@ Singleton {
         root.widgets = root.widgets.filter(widget => widget.pluginId !== pluginId);
         root.widgetSignature = root.widgets.map(widget => widget.key).join(",");
         root.desktopWidgets = root.desktopWidgets.filter(widget => widget.pluginId !== pluginId);
+        root.effects = root.effects.filter(effect => effect.pluginId !== pluginId);
         root.pluginDisabled(pluginId);
 
         if (!UiPrefs.appliedPluginScheme.startsWith(`${pluginId}:`))
@@ -119,6 +121,9 @@ Singleton {
 
         if (!desktopPoll.running)
             desktopPoll.running = true;
+
+        if (!effectsPoll.running)
+            effectsPoll.running = true;
     }
 
     function applyDesktop(text: string): void {
@@ -167,6 +172,60 @@ Singleton {
         }
 
         root.desktopWidgets = list;
+    }
+
+    // Background effects (snow, ...) declared by plugins: one line per plugin, `id <TAB> json`.
+    function applyEffects(text: string): void {
+        const list = [];
+
+        for (const line of text.split("\n")) {
+            if (!line.trim())
+                continue;
+
+            const separator = line.indexOf("\t");
+            if (separator < 0)
+                continue;
+
+            const id = line.slice(0, separator);
+            if (!root.isEnabled(id))
+                continue;
+
+            let data;
+            try {
+                data = JSON.parse(line.slice(separator + 1));
+            } catch (error) {
+                continue;
+            }
+
+            const effects = data?.effects ?? [];
+            for (let index = 0; index < effects.length; index++) {
+                const effect = effects[index] ?? {};
+                const type = effect.type ?? "";
+
+                if (!type)
+                    continue;
+
+                list.push({
+                    key: `${id}:${type}:${index}`,
+                    pluginId: id,
+                    type: type,
+                    density: effect.density ?? 1,
+                    wind: effect.wind ?? 0,
+                    speed: effect.speed ?? 1,
+                    size: effect.size ?? 1,
+                    opacity: effect.opacity ?? 1
+                });
+            }
+        }
+
+        root.effects = list;
+    }
+
+    function refreshEffects(): void {
+        if (effectsPoll.running)
+            return;
+
+        effectsPoll.running = true;
     }
 
     function applyWidgets(text: string): void {
@@ -376,6 +435,16 @@ Singleton {
     }
 
     Process {
+        id: effectsPoll
+
+        command: ["sh", Quickshell.shellPath("scripts/plugins-effects.sh")]
+
+        stdout: StdioCollector {
+            onStreamFinished: root.applyEffects(text)
+        }
+    }
+
+    Process {
         id: widgetPoll
 
         command: ["sh", Quickshell.shellPath("scripts/plugins-widgets.sh")]
@@ -399,6 +468,8 @@ Singleton {
         }
 
         onExited: {
+            root.refreshEffects();
+
             if (actionProc.pendingPluginId) {
                 root.eventFinished(actionProc.pendingPluginId);
                 actionProc.pendingPluginId = "";

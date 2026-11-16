@@ -1,0 +1,14 @@
+[package]
+name = "storm-snow"
+version = "1.0.0"
+edition = "2021"
+description = "Snowfall for the Caelestia Storm desktop"
+
+[[bin]]
+name = "snow"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true
