@@ -408,11 +408,52 @@ pub fn desktop(widgets: &[Desktop<'_>]) -> String {
 pub struct Effect<'a> {
     pub kind: &'a str,
     params: Vec<(String, String)>,
+    uniforms: Vec<(String, String)>,
 }
 
 impl<'a> Effect<'a> {
     pub fn new(kind: &'a str) -> Self {
-        Self { kind, params: Vec::new() }
+        Self { kind, params: Vec::new(), uniforms: Vec::new() }
+    }
+
+    /// A fragment shader shipped by the plugin. `fragment` is relative to the plugin executable and
+    /// has to be baked for Qt's RHI (`qsb --qt6 -o effect.frag.qsb effect.frag`).
+    ///
+    /// The shell always binds `time` (seconds) and `resolution` (pixels); everything else is up to
+    /// the plugin and goes through `uniform*`.
+    pub fn shader(id: &'a str, fragment: &'a str) -> Self {
+        Self::new("shader").text("id", id).text("fragment", fragment)
+    }
+
+    /// Multiplier for the `time` uniform (1 = real seconds).
+    pub fn time_scale(mut self, value: f64) -> Self {
+        self.params.push(("timeScale".to_string(), number(value)));
+        self
+    }
+
+    /// Numeric uniform (`float` in the shader).
+    pub fn uniform(mut self, key: &str, value: f64) -> Self {
+        self.uniforms.push((key.to_string(), number(value)));
+        self
+    }
+
+    /// `vec2`/`vec3`/`vec4` uniform; 2–4 values.
+    pub fn uniform_vec(mut self, key: &str, values: &[f64]) -> Self {
+        let items: Vec<String> = values.iter().map(|value| number(*value)).collect();
+        self.uniforms.push((key.to_string(), array(&items)));
+        self
+    }
+
+    /// Colour uniform (`vec4` in the shader), given as `#rrggbb` or `#aarrggbb`.
+    pub fn uniform_colour(mut self, key: &str, value: &str) -> Self {
+        self.uniforms.push((key.to_string(), string(value)));
+        self
+    }
+
+    /// Boolean uniform (arrives as `true`/`false`).
+    pub fn uniform_bool(mut self, key: &str, value: bool) -> Self {
+        self.uniforms.push((key.to_string(), value.to_string()));
+        self
     }
 
     /// Numeric parameter (e.g. `density`, `wind`, `speed`).
@@ -438,6 +479,15 @@ impl<'a> Effect<'a> {
 
         for (key, value) in &self.params {
             fields = fields.raw(key, value.clone());
+        }
+
+        if !self.uniforms.is_empty() {
+            let items: Vec<String> = self
+                .uniforms
+                .iter()
+                .map(|(key, value)| format!("{}: {}", string(key), value))
+                .collect();
+            fields = fields.raw("uniforms", format!("{{ {} }}", items.join(", ")));
         }
 
         fields.build()
