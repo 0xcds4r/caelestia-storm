@@ -398,8 +398,7 @@ Or drop the fork entirely and go back to the stock config:
   store). Plugins depend on it by path (`plugins/Cargo.toml` is their workspace); it used to be a
   copy-pasted `api.rs` inside the example.
 - `plugins/snow/` — the Snow plugin as its own Rust crate: presets (Light / Even / Blizzard / Custom), sliders for
-  density, wind, fall speed and flake size in a Nexus window, a taskbar widget (`ac_unit`, click
-  toggles) and `run toggle|status|reset`. Presets overwrite the sliders, moving a slider switches
+  density, wind, fall speed and flake size in a Nexus window and `run toggle|status|reset`. Presets overwrite the sliders, moving a slider switches
   the preset to Custom; state lives in `$XDG_STATE_HOME/snow.conf`. `plugins/snow/install.sh`
   builds it and installs the binary into `~/.config/caelestia/plugins/snow`.
 - `plugins/api/src/lib.rs` — `Capability::Effects`, an `Effect` builder (`.num`, `.bool`,

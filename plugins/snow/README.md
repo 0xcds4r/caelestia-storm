@@ -9,12 +9,11 @@ comes from there.
 The shell does the drawing (`modules/background/Snow.qml` + a fragment shader on the
 background layer, behind the windows); this executable only owns the settings:
 
-- `info` — manifest (`effects`, `window`, `actions`, `widget` capabilities);
+- `info` — manifest (`effects`, `window`, `actions` capabilities);
 - `effects` — `{"effects": [{"type": "snow", "density": ..., "wind": ...}]}`, empty when off;
 - `window` — the settings page rendered by Nexus (toggle, presets, sliders);
 - `event <control> <json>` — a control changed, persisted to `~/.local/state/snow.conf`;
-- `run toggle` / `run click snow` — flip the snow on the taskbar widget;
-- `widgets` — a snowflake entry for the taskbar.
+- `run toggle` / `run status` / `run reset` — flip, report or reset the snow.
 
 ## Install
 
@@ -24,8 +23,8 @@ background layer, behind the windows); this executable only owns the settings:
 
 (The crate is part of the `plugins/` cargo workspace, so the binary ends up in `plugins/target/release`.)
 
-Then open Nexus → Plugins, find “Snow” and press the tune button for the settings page. The
-plugin is enabled by default; the taskbar widget toggles it with one click.
+Then open Nexus → Plugins, find “Snow” and press the open button for the settings page. The plugin
+is enabled by default and keeps no taskbar widget — everything lives in that window.
 
 ## Presets
 

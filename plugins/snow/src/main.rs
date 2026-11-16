@@ -9,11 +9,10 @@
 //!   `event <id>`   -> a control changed, persist it
 //!   `actions`      -> "Toggle snow"
 //!   `run <action>` -> toggle / report
-//!   `widget`       -> a snowflake in the taskbar that toggles the snow on click
 
 use storm_plugin_api as api;
 
-use api::{Action, Capability, Effect, Event, EventValue, Page, Plugin, Row, State, Widget, choice};
+use api::{Action, Capability, Effect, Event, EventValue, Page, Plugin, Row, State, choice};
 use std::env;
 use std::process::ExitCode;
 
@@ -29,7 +28,6 @@ fn plugin() -> Plugin {
             Capability::Effects,
             Capability::Window,
             Capability::Actions,
-            Capability::Widget,
         ])
 }
 
@@ -159,16 +157,7 @@ fn window() -> String {
         .json()
 }
 
-fn widgets() -> String {
-    let settings = Settings::load();
-
-    api::widgets(&[Widget::new("snow")
-        .icon("ac_unit")
-        .text(if settings.enabled { "on" } else { "off" })
-        .tooltip("Snow — click to toggle")])
-}
-
-fn run(action: &str, target: Option<&str>) -> i32 {
+fn run(action: &str) -> i32 {
     let mut settings = Settings::load();
 
     match action {
@@ -177,17 +166,6 @@ fn run(action: &str, target: Option<&str>) -> i32 {
             settings.save();
             println!("Snow {}", if settings.enabled { "on" } else { "off" });
         }
-        "click" => match target {
-            Some("snow") | None => {
-                settings.enabled = !settings.enabled;
-                settings.save();
-                println!("Snow {}", if settings.enabled { "on" } else { "off" });
-            }
-            Some(other) => {
-                eprintln!("unknown widget: {other}");
-                return 1;
-            }
-        },
         "status" => println!(
             "Snow {} · density {:.2} · wind {:.2}",
             if settings.enabled { "on" } else { "off" },
@@ -260,12 +238,10 @@ fn main() -> ExitCode {
         "schemes" => api::schemes(&[]),
         "actions" => actions(),
         "effects" => effects(),
-        "widgets" => widgets(),
         "window" => window(),
         "run" => {
             let action = args.next().unwrap_or_default();
-            let target = args.next();
-            let status = run(&action, target.as_deref());
+            let status = run(&action);
             return if status == 0 { ExitCode::SUCCESS } else { ExitCode::FAILURE };
         }
         "event" => {
@@ -283,7 +259,7 @@ fn main() -> ExitCode {
             return ExitCode::SUCCESS;
         }
         _ => {
-            eprintln!("usage: {ID} info|effects|window|widgets|actions|event|run");
+            eprintln!("usage: {ID} info|effects|window|actions|event|run");
             return ExitCode::FAILURE;
         }
     };
