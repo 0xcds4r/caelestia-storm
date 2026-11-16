@@ -319,7 +319,7 @@ Or drop the fork entirely and go back to the stock config:
 
 ## Plugins
 
-- **Rule:** whenever the plugin protocol grows, extend `examples/rust-plugin/src/api.rs` in the same
+- **Rule:** whenever the plugin protocol grows, extend `plugins/api/src/lib.rs` in the same
   change (builders, parsers, docs in its README) so plugin authors get the helper immediately.
 - Plugin API: `info`, `schemes`, `actions` + `run <action>`, `widgets` (a list of taskbar items, each
   clickable via `run click <widget id>`; the old single `widget` still works), and windows: `window` returns a descriptor (`title`, `pages[]` with `label`/`icon` and
@@ -360,7 +360,7 @@ Or drop the fork entirely and go back to the stock config:
 - `modules/nexus/pages/wallandstyle/ColourSelect.qml` — "Plugin schemes" chips; the applied one is
   tracked in `UiPrefs.appliedPluginScheme` and cleared when a built-in scheme is picked.
 - `services/UiPrefs.qml` — persists `disabledPlugins` and `appliedPluginScheme`.
-- `examples/rust-plugin/` — buildable Rust example (`cargo build --release`) with `src/api.rs`, a
+- `plugins/pallete/` — buildable Rust example (`cargo build --release`) with the helper crate, a
   dependency-free helper module: JSON `Fields` builder, `Plugin`/`Scheme`/`Action`/`Widget`/
   `Desktop`/`Window`+`Page`+`Row` builders, `Event` parsing and a `key=value` `State` store.
 
@@ -402,8 +402,9 @@ Or drop the fork entirely and go back to the stock config:
   toggles) and `run toggle|status|reset`. Presets overwrite the sliders, moving a slider switches
   the preset to Custom; state lives in `$XDG_STATE_HOME/snow.conf`. `plugins/snow/install.sh`
   builds it and installs the binary into `~/.config/caelestia/plugins/snow`.
-- `examples/rust-plugin/src/api.rs` — `Capability::Effects`, an `Effect` builder (`.num`, `.bool`,
-  `.text`) and `effects()`; the example README documents the new command.
+- `plugins/api/src/lib.rs` — `Capability::Effects`, an `Effect` builder (`.num`, `.bool`,
+  `.text`) and `effects()`; the example README documents the new command. The example itself moved to `plugins/pallete` and is now
+  called `StormPallete`.
 
 ## Colour scheme picker
 

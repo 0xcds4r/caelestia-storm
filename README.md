@@ -73,7 +73,7 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - **import** installs a `.stormpack` (a zip with a custom extension) through a file picker, and a
   trash button removes a plugin after an inline confirmation
   (`scripts/plugin-pack.py` can still pack plugins from the command line);
-- a working Rust example with the protocol lives in [`examples/rust-plugin`](./examples/rust-plugin).
+- a working Rust example with the protocol lives in [`plugins/pallete`](./plugins/pallete), and the helper crate in [`plugins/api`](./plugins/api).
 
 **Other**
 - Panels → *Open by dragging* — hold and drag from the top or bottom screen edge to reveal the

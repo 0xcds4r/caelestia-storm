@@ -16,10 +16,10 @@ use api::{Action, Capability, Desktop, Event, EventValue, Page, Plugin, Row, Sch
 use std::env;
 use std::process::ExitCode;
 
-const ID: &str = "storm-palette-pack";
+const ID: &str = "storm-pallete";
 
 fn plugin() -> Plugin {
-    Plugin::new("Storm Palette Pack", env!("CARGO_PKG_VERSION"))
+    Plugin::new("StormPallete", env!("CARGO_PKG_VERSION"))
         .id(ID)
         .description("Example plugin: colour schemes, actions, widgets and a window")
         .capabilities([
@@ -108,7 +108,7 @@ fn window() -> String {
     let strength = state.number("strength", 60.0);
     let state_file = api::state_dir().join(format!("{ID}.conf")).display().to_string();
 
-    api::Window::new("Storm Palette Pack")
+    api::Window::new("StormPallete")
         .icon("palette")
         .size(560.0, 500.0)
         .pages(vec![
@@ -187,7 +187,7 @@ fn apply_event(control: &str, value: &EventValue) -> bool {
 
 fn run(action: &str, target: Option<&str>) -> i32 {
     match action {
-        "about" => println!("{} {} - example caelestia plugin", "Storm Palette Pack", env!("CARGO_PKG_VERSION")),
+        "about" => println!("{} {} - example caelestia plugin", "StormPallete", env!("CARGO_PKG_VERSION")),
         "reload" => println!("Palette pack reloaded"),
         "click" => match target {
             Some("mem") => println!("Memory in use: {}%", memory_percent()),

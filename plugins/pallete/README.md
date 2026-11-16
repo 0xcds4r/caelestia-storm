@@ -1,4 +1,4 @@
-# Example plugin: Storm Palette Pack
+# StormPallete — example plugin
 
 A minimal Rust plugin for the Caelestia Storm shell. It exposes three colour
 schemes that show up in **Settings → Wallpaper & style → Colours → Plugin schemes**.
@@ -112,7 +112,7 @@ access to control values, and `State` is a `key=value` store in `$XDG_STATE_HOME
 ```sh
 cargo build --release
 mkdir -p ~/.config/caelestia/plugins
-cp target/release/storm-palette-pack ~/.config/caelestia/plugins/
+cp ../target/release/storm-pallete ~/.config/caelestia/plugins/storm-pallete/plugin
 ```
 
 The crate is not published on crates.io; depend on it by path (or vendor `plugins/api` next to your
