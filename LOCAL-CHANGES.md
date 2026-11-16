@@ -372,6 +372,15 @@ Or drop the fork entirely and go back to the stock config:
   scripts), `services/Plugins.qml` keeps `Plugins.effects` and re-reads them when a plugin event
   finishes, on the minute timer and after the scan; `forgetPlugin()` drops the effects of a
   disabled/removed plugin so nothing is left animating.
+- **Custom shaders:** besides the built-in `snow`, a plugin can ship a fragment shader of its own:
+  `{"type": "shader", "id": "...", "fragment": "effect.frag.qsb", "timeScale": 1,
+  "uniforms": {"speed": 0.6, "tint": "#66ccff", "offset": [0.1, 0.3]}}`. The path is relative to
+  the plugin executable; the shell binds `time`, `resolution` and `qt_Opacity`, and maps the
+  uniforms (number → `float`, `true/false` → `bool`, `#rrggbb` → `vec4`, 2–4 numbers → `vecN`).
+  `modules/background/PluginShader.qml` builds the `ShaderEffect` for the descriptor (rebuilding
+  only when the uniform *names* change, otherwise writing the values through) and drives `time`
+  with a `FrameAnimation`. Shaders must be baked (`qsb --qt6 -o x.frag.qsb x.frag`) and return
+  premultiplied colour.
 - `modules/background/Snow.qml` — procedural snow in a fragment shader
   (`shaders/snow.frag`, baked to `snow.frag.qsb` with `qsb --qt6`, needs `qt6-shadertools`):
   three layers of hashed cells, every flake falling and wrapping inside its own cell, so density /
