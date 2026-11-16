@@ -367,26 +367,26 @@ Or drop the fork entirely and go back to the stock config:
 ## Background effects (plugins) + StormSnow
 
 - **Protocol:** a plugin declares the `effects` capability and answers `effects` with
-  `{"effects": [{"type": "snow", "density": 0.35, "wind": 0.3, "speed": 1, "size": 1}]}`.
+  `{"effects": [{"type": "shader", "fragment": "shaders/snow.frag.qsb", "timeScale": 1,
+  "uniforms": {"density": 0.35, "wind": 0.3}}]}`; only `shader` is understood, everything else is
+  ignored so an older shell survives a newer plugin.
   `scripts/plugins-effects.sh` polls effect-capable plugins (same discovery as the other
   scripts), `services/Plugins.qml` keeps `Plugins.effects` and re-reads them when a plugin event
   finishes, on the minute timer and after the scan; `forgetPlugin()` drops the effects of a
   disabled/removed plugin so nothing is left animating.
-- **Custom shaders:** besides the built-in `snow`, a plugin can ship a fragment shader of its own:
-  `{"type": "shader", "id": "...", "fragment": "effect.frag.qsb", "timeScale": 1,
-  "uniforms": {"speed": 0.6, "tint": "#66ccff", "offset": [0.1, 0.3]}}`. The path is relative to
-  the plugin executable; the shell binds `time`, `resolution` and `qt_Opacity`, and maps the
+- **Shaders:** the shell binds `time`, `resolution` and `qt_Opacity` and maps the descriptor's
   uniforms (number → `float`, `true/false` → `bool`, `#rrggbb` → `vec4`, 2–4 numbers → `vecN`).
   `modules/background/PluginShader.qml` builds the `ShaderEffect` for the descriptor (rebuilding
   only when the uniform *names* change, otherwise writing the values through) and drives `time`
-  with a `FrameAnimation`. Shaders must be baked (`qsb --qt6 -o x.frag.qsb x.frag`) and return
-  premultiplied colour.
-- `modules/background/Snow.qml` — procedural snow in a fragment shader
-  (`shaders/snow.frag`, baked to `snow.frag.qsb` with `qsb --qt6`, needs `qt6-shadertools`):
-  three layers of hashed cells, every flake falling and wrapping inside its own cell, so density /
-  wind / speed change without rebuilding anything. The output is **premultiplied** — a
-  ShaderEffect returning `vec4(1,1,1,a)` is blended by Qt Quick as solid white (premultiplied
-  alpha), the white has to be scaled by the alpha.
+  with a `FrameAnimation`. Shaders must be baked (`qsb --qt6 -o x.frag.qsb x.frag`, needs
+  `qt6-shadertools`) and return premultiplied colour.
+- `plugins/snow/shaders/snow.frag` — the snowfall itself: three layers of hashed cells, every flake
+  falling and wrapping inside its own cell, so density / wind / speed change without rebuilding
+  anything. Its uniforms are `density`, `wind`, `flakeSize` and `strength`; the fall speed is the
+  descriptor's `timeScale`. The output is **premultiplied** — a ShaderEffect returning
+  `vec4(1,1,1,a)` is blended by Qt Quick as solid white (premultiplied alpha), the white has to be
+  scaled by the alpha. The shell used to carry its own `Snow.qml`/`snow` effect type; that is gone,
+  the plugin now ships the shader through the generic `shader` effect.
 - `modules/background/BackgroundEffects.qml` — hosts the effects right after `DesktopWidgets`, so
   the snow falls behind the windows and in front of the desktop cards. It is a background-layer
   effect: it can’t draw on top of windows, a maximized/fullscreen window simply covers it.
@@ -406,7 +406,8 @@ Or drop the fork entirely and go back to the stock config:
   `Plugin`/`Scheme`/`Effect`/`Widget`/`Window` builders, `Event` parsing, the `key=value` state
   store). Plugins depend on it by path (`plugins/Cargo.toml` is their workspace); it used to be a
   copy-pasted `api.rs` inside the example.
-- `plugins/snow/` — the StormSnow plugin (id `storm-snow`) as its own Rust crate: presets (Light / Even / Blizzard / Custom), sliders for
+- `plugins/snow/` — the StormSnow plugin (id `storm-snow`) as its own Rust crate, shipped with its
+  shader in `shaders/`: presets (Light / Even / Blizzard / Custom), sliders for
   density, wind, fall speed and flake size in a Nexus window and `run toggle|status|reset`. Presets overwrite the sliders, moving a slider switches
   the preset to Custom; state lives in `$XDG_STATE_HOME/snow.conf`. `plugins/snow/install.sh`
   builds it and installs the binary into `~/.config/caelestia/plugins/snow`.

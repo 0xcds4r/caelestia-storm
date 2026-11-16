@@ -106,11 +106,12 @@ fn effects() -> String {
         return api::effects(&[]);
     }
 
-    api::effects(&[Effect::new("snow")
-        .num("density", settings.density)
-        .num("wind", settings.wind)
-        .num("speed", settings.speed)
-        .num("size", settings.size)])
+    api::effects(&[Effect::shader("snow", "shaders/snow.frag.qsb")
+        .time_scale(settings.speed)
+        .uniform("density", settings.density)
+        .uniform("wind", settings.wind)
+        .uniform("flakeSize", settings.size)
+        .uniform("strength", 1.0)])
 }
 
 fn options() -> Vec<api::Choice<'static>> {

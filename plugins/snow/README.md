@@ -41,6 +41,12 @@ so they survive shell restarts and plugin updates.
 
 - The snow is drawn on the wallpaper layer, so it falls *behind* windows (like the reference
   GNOME extension does on the desktop); it never covers your windows and takes no input.
-- Flakes are procedural (three shader layers of hashed cells), so density, wind and speed
-  change without rebuilding anything. The shader is precompiled:
-  `/usr/lib/qt6/bin/qsb --qt6 -o snow.frag.qsb snow.frag` (needs `qt6-shadertools`).
+- The snowfall itself is `shaders/snow.frag`, shipped with the plugin and rendered by the shell's
+  generic shader effect. Its uniforms are `density`, `wind`, `flakeSize` and `strength`; the fall
+  speed is the effect's `timeScale`. Changing any of them writes the value straight into the
+  running shader, nothing is rebuilt.
+- Rebuild the baked shader after editing the source (needs `qt6-shadertools`):
+
+  ```sh
+  cd shaders && qsb --qt6 -o snow.frag.qsb snow.frag && ./../install.sh
+  ```
