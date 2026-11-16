@@ -15,8 +15,15 @@ Item {
     property string fragment: ""
     property var uniforms: ({})
     property real timeScale: 1
+    // 1 = render at native size; 0.5 renders a quarter of the pixels and scales up (cheap, softer)
+    property real renderScale: 1
+    // a full-screen shader on the overlay layer is recomposited by the compositor on every frame,
+    // so the effect is only pushed at this rate by default
+    property real fps: 30
 
     property real elapsed: 0
+    property real wallTime: 0
+    property real pushedAt: 0
 
     // signature of the compiled effect, so a reload only rebuilds when the shader really changed
     readonly property string signature: {
@@ -53,7 +60,15 @@ Item {
         running: root.visible && root.fragment.length > 0
 
         onTriggered: {
-            root.elapsed += Math.min(frameTime, 0.1) * root.timeScale;
+            const step = Math.min(frameTime, 0.1);
+
+            root.elapsed += step * root.timeScale;
+            root.wallTime += step;
+
+            if (root.fps > 0 && root.wallTime - root.pushedAt < 1 / root.fps)
+                return;
+
+            root.pushedAt = root.wallTime;
             root.update();
         }
     }
@@ -87,10 +102,14 @@ Item {
         if (!root.fragment)
             return;
 
+        const scale = Math.max(0.25, Math.min(1, root.renderScale));
         const lines = [
             "import QtQuick",
             "ShaderEffect {",
-            "anchors.fill: parent",
+            `width: Math.max(1, Math.round(parent.width * ${scale}))`,
+            `height: Math.max(1, Math.round(parent.height * ${scale}))`,
+            `scale: ${1 / scale}`,
+            "transformOrigin: Item.TopLeft",
             "property real time: 0",
             "property vector2d resolution: Qt.vector2d(1, 1)"
         ];
@@ -158,6 +177,6 @@ Item {
             return;
 
         root.shaderItem.time = root.elapsed;
-        root.shaderItem.resolution = Qt.vector2d(root.width, root.height);
+        root.shaderItem.resolution = Qt.vector2d(root.shaderItem.width, root.shaderItem.height);
     }
 }

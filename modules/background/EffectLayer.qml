@@ -55,6 +55,7 @@ Item {
 
                 item.uniforms = effectHost.modelData.uniforms ?? ({});
                 item.timeScale = effectHost.modelData.timeScale ?? 1;
+                item.renderScale = effectHost.modelData.renderScale ?? 1;
                 item.fragment = effectHost.modelData.fragment ?? "";
             }
         }

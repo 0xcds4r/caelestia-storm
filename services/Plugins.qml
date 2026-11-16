@@ -227,6 +227,7 @@ Singleton {
                     fragment: fragment.startsWith("file:") || !fragment ? fragment : `file://${fragment}`,
                     uniforms: effect.uniforms ?? {},
                     timeScale: effect.timeScale ?? 1,
+                    renderScale: effect.renderScale ?? 1,
                     layer: effect.layer === "overlay" ? "overlay" : "background",
                     monitors: Array.isArray(effect.monitors) ? effect.monitors : []
                 });
