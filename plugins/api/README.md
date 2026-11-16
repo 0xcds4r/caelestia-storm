@@ -49,6 +49,35 @@ fn main() {
 }
 ```
 
+## Keyboard shortcuts
+
+Declare the `binds` capability, answer `binds` and the shell registers a Hyprland bind for every
+entry; pressing it runs `run bind <id>` on the plugin:
+
+```rust
+use api::{Bind, Capability};
+
+let plugin = Plugin::new("demo", env!("CARGO_PKG_VERSION"))
+    .capabilities([Capability::Binds]);
+
+println!("{}", api::binds(&[
+    Bind::new("toggle", "CTRL + SUPER + SHIFT + S").description("Toggle the thing"),
+]));
+```
+
+```rust
+// `run bind <id>`
+match target {
+    Some("toggle") => toggle_the_thing(),
+    _ => return 1,
+}
+```
+
+The shell registers `hl.dsp.global("caelestia:plugin:<plugin id>:<bind id>")` through
+`hl.bind(...)` and removes it again when the plugin is disabled or removed. Keys use Hyprland's
+syntax (`SUPER + SHIFT + S`, `mouse:272`, ...); a bind that collides with an existing one wins for
+the plugin's command. Requires the Lua Hyprland config (the shell falls back to nothing otherwise).
+
 ## Shader effects
 
 Background effects are fragment shaders shipped by plugins (the StormSnow plugin is the reference
@@ -124,6 +153,7 @@ shader must be premultiplied, otherwise Qt Quick blends them as opaque.
 | `Widget`, `widgets()` | taskbar entries, polled every minute |
 | `Desktop`, `desktop()` | cards on the wallpaper (text or a render-only web view) |
 | `Effect`, `effects()` | animated background effects: your own fragment shader plus its uniforms |
+| `Bind`, `binds()` | global keyboard shortcuts, sent back as `run bind <id>` |
 | `Window`, `Page`, `Row`, `slider()`, `choice()` | the window descriptor Nexus renders |
 | `Event`, `EventValue` | parsing `event <control> <json>` |
 | `State` | `key=value` store in `$XDG_STATE_HOME/<id>.conf` |

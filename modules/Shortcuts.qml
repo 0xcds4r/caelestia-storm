@@ -12,6 +12,20 @@ Scope {
     property bool launcherInterrupted
     readonly property bool hasFullscreen: Hypr.focusedWorkspace?.toplevels.values.some(t => t.lastIpcObject.fullscreen > 1) ?? false
 
+    // Global shortcuts declared by plugins (`binds` capability).
+    Instantiator {
+        model: Plugins.binds
+
+        delegate: CustomShortcut {
+            required property var modelData
+
+            name: modelData.name
+            description: modelData.description
+
+            onPressed: Plugins.runBind(modelData.pluginId, modelData.bindId)
+        }
+    }
+
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type

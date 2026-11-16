@@ -12,7 +12,7 @@
 
 use storm_plugin_api as api;
 
-use api::{Action, Capability, Effect, Event, EventValue, Page, Plugin, Row, State, choice};
+use api::{Action, Bind, Capability, Effect, Event, EventValue, Page, Plugin, Row, State, choice};
 use std::env;
 use std::process::ExitCode;
 
@@ -28,6 +28,7 @@ fn plugin() -> Plugin {
             Capability::Effects,
             Capability::Window,
             Capability::Actions,
+            Capability::Binds,
         ])
 }
 
@@ -168,7 +169,7 @@ fn window() -> String {
         .json()
 }
 
-fn run(action: &str) -> i32 {
+fn run(action: &str, target: Option<&str>) -> i32 {
     let mut settings = Settings::load();
 
     match action {
@@ -177,6 +178,17 @@ fn run(action: &str) -> i32 {
             settings.save();
             println!("Snow {}", if settings.enabled { "on" } else { "off" });
         }
+        "bind" => match target {
+            Some("toggle") | None => {
+                settings.enabled = !settings.enabled;
+                settings.save();
+                println!("Snow {}", if settings.enabled { "on" } else { "off" });
+            }
+            Some(other) => {
+                eprintln!("unknown bind: {other}");
+                return 1;
+            }
+        },
         "status" => println!(
             "Snow {} · {} · density {:.2} · wind {:.2}",
             if settings.enabled { "on" } else { "off" },
@@ -239,6 +251,10 @@ fn apply_event(control: &str, value: &EventValue) -> bool {
     true
 }
 
+fn binds() -> String {
+    api::binds(&[Bind::new("toggle", "CTRL + SUPER + SHIFT + S").description("Toggle snow")])
+}
+
 fn actions() -> String {
     api::actions(&[Action::new("toggle", "Toggle snow"), Action::new("reset", "Reset settings")])
 }
@@ -251,11 +267,13 @@ fn main() -> ExitCode {
         "info" => plugin().info(),
         "schemes" => api::schemes(&[]),
         "actions" => actions(),
+        "binds" => binds(),
         "effects" => effects(),
         "window" => window(),
         "run" => {
             let action = args.next().unwrap_or_default();
-            let status = run(&action);
+            let target = args.next();
+            let status = run(&action, target.as_deref());
             return if status == 0 { ExitCode::SUCCESS } else { ExitCode::FAILURE };
         }
         "event" => {
@@ -273,7 +291,7 @@ fn main() -> ExitCode {
             return ExitCode::SUCCESS;
         }
         _ => {
-            eprintln!("usage: {ID} info|effects|window|actions|event|run");
+            eprintln!("usage: {ID} info|effects|window|actions|binds|event|run");
             return ExitCode::FAILURE;
         }
     };

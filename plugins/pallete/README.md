@@ -17,6 +17,7 @@ A plugin is just an executable that answers two commands:
 | `run click <id>` | sent when a taskbar widget is clicked |
 | `desktop` | `{"widgets": [{"id": "...", "anchor": "bottom-right", "icon": "...", "title": "...", "text": "...", "subtext": "...", "url": "https://…", "height": 180}]}` — cards on the wallpaper; with `url` the card becomes a render-only web view |
 | `effects` | `{"effects": [{"type": "shader", "fragment": "shaders/effect.frag.qsb", "timeScale": 1, "uniforms": {"speed": 0.6, "tint": "#66ccff"}}]}` — fragment shaders drawn on the wallpaper, behind the windows; re-read after `/plugins/events` and every minute. The path is relative to the plugin executable, unknown types are ignored |
+| `binds` | `[{"id": "toggle", "key": "CTRL + SUPER + SHIFT + S", "description": "..."}]` — global shortcuts; pressing one runs `run bind <id>` |
 | `window` | window descriptor (see below) |
 | `event <id> <json>` | a control in that window changed |
 
