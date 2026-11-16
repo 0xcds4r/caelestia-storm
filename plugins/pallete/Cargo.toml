@@ -1,0 +1,11 @@
+[package]
+name = "storm-pallete"
+version = "0.5.0"
+edition = "2021"
+
+[dependencies]
+storm-plugin-api = { path = "../api" }
+
+[[bin]]
+name = "storm-pallete"
+path = "src/main.rs"

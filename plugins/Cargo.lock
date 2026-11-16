@@ -3,6 +3,13 @@
 version = 4
 
 [[package]]
+name = "storm-pallete"
+version = "0.5.0"
+dependencies = [
+ "storm-plugin-api",
+]
+
+[[package]]
 name = "storm-plugin-api"
 version = "0.1.0"
 

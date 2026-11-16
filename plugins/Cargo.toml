@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["api", "snow"]
+members = ["api", "pallete", "snow"]
 
 [profile.release]
 opt-level = "z"

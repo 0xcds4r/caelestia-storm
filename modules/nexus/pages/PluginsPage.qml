@@ -119,7 +119,7 @@ PageBase {
         StyledText {
             Layout.topMargin: Tokens.spacing.medium
             Layout.fillWidth: true
-            text: Tr.tr("A plugin is an executable that answers `info` and `schemes` with JSON. The bundled example lives in examples/rust-plugin of the shell repository.")
+            text: Tr.tr("A plugin is an executable that answers `info` and `schemes` with JSON. The bundled example lives in plugins/pallete of the shell repository.")
             color: Colours.palette.m3onSurfaceVariant
             font: Tokens.font.label.small
             wrapMode: Text.WordWrap

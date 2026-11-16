@@ -62,5 +62,5 @@ fn main() {
 | `State` | `key=value` store in `$XDG_STATE_HOME/<id>.conf` |
 | `Fields`, `escape`, `string`, `number`, `array` | building arbitrary JSON by hand |
 
-The protocol itself is documented in `examples/rust-plugin/README.md`; the shell side lives in
+The protocol itself is documented in `plugins/pallete/README.md`; the shell side lives in
 `services/Plugins.qml` and `modules/nexus/PluginWindow.qml`.
