@@ -390,12 +390,14 @@ FloatingWindow {
 
                                 readonly property real low: modelData.min ?? 0
                                 readonly property real high: modelData.max ?? 100
+                                // the descriptor can ask for a precision; otherwise guess from the range
+                                readonly property int decimals: modelData.decimals !== undefined && modelData.decimals !== null ? modelData.decimals : (high - low <= 2 ? 2 : (high - low <= 20 ? 1 : 0))
 
                                 first: true
                                 last: true
                                 icon: modelData.icon ?? ""
                                 label: modelData.label ?? modelData.id
-                                valueLabel: Math.round(low + value * (high - low)).toString()
+                                valueLabel: (low + shownValue * (high - low)).toFixed(decimals)
                                 value: (win.rowValue(modelData.id ?? "", index, modelData.value ?? 0) - low) / Math.max(1, high - low)
 
                                 onMoved: value => win.sendThrottled(modelData.id, low + value * (high - low))

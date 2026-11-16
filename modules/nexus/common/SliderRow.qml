@@ -26,6 +26,8 @@ ConnectedRect {
     property bool holding: false
 
     readonly property bool dragging: slider.dragging
+    // what the handle shows right now (the local value while held, the external one otherwise)
+    readonly property real shownValue: dragging || holding ? localValue : value
 
     onDraggingChanged: {
         if (dragging) {
@@ -114,7 +116,7 @@ ConnectedRect {
                     // the handle already follows the pointer, animating the fill made every
                     // descriptor reload look like the slider was starting over
                     animateFill: false
-                    value: root.dragging || root.holding ? root.localValue : root.value
+                    value: root.shownValue
                     enabled: root.enabled
 
                     onInteraction: v => {

@@ -461,6 +461,18 @@ pub fn choice<'a>(value: &'a str, text: &'a str) -> Choice<'a> {
     Choice { value, text }
 }
 
+/// Shorthand for `Row::Slider` (the shell picks the number of decimals from the range).
+pub fn slider<'a>(
+    id: &'a str,
+    label: &'a str,
+    min: f64,
+    max: f64,
+    value: f64,
+    decimals: Option<u8>,
+) -> Row<'a> {
+    Row::Slider { id, label, min: Some(min), max: Some(max), value, decimals }
+}
+
 /// One control row in a plugin window.
 pub enum Row<'a> {
     Section(&'a str),
@@ -494,6 +506,8 @@ pub enum Row<'a> {
         min: Option<f64>,
         max: Option<f64>,
         value: f64,
+        /// Digits after the decimal point; the shell guesses from the range when `None`.
+        decimals: Option<u8>,
     },
     Choice {
         id: &'a str,
@@ -539,13 +553,14 @@ impl Row<'_> {
                 .text("value", value)
                 .text("placeholder", placeholder)
                 .build(),
-            Row::Slider { id, label, min, max, value } => Fields::new()
+            Row::Slider { id, label, min, max, value, decimals } => Fields::new()
                 .text("type", "slider")
                 .text("id", id)
                 .text("label", label)
                 .opt_num("min", *min)
                 .opt_num("max", *max)
                 .num("value", *value)
+                .opt_num("decimals", decimals.map(f64::from))
                 .build(),
             Row::Webview { url, height } => Fields::new()
                 .text("type", "webview")
