@@ -85,7 +85,19 @@ void main() {
 }
 ```
 
-Declare it with `Effect::shader()`; the path is relative to the plugin executable:
+Declare it with `Effect::shader()`; the path is relative to the plugin executable. Two optional
+descriptor fields control where it is drawn:
+
+- `"layer": "background"` (default) paints on the wallpaper, below the windows;
+- `"layer": "overlay"` paints in a full-screen click-through window above everything, including
+  fullscreen windows and the shell's own panels;
+- `"monitors": ["HDMI-A-1"]` restricts the effect to those connectors (empty/absent = every
+  screen).
+
+With `overlay` the compositor may blur the surface because of a catch-all layer rule (Hyprland's
+`layerrule = xray`), which looks wrong for an effect — add
+`hl.layer_rule({ match = { namespace = "caelestia-effect-overlay" }, blur = false, xray = false })`
+to the Hyprland config.
 
 ```rust
 api::effects(&[

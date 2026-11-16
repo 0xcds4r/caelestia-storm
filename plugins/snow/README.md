@@ -39,8 +39,14 @@ so they survive shell restarts and plugin updates.
 
 ## Notes
 
-- The snow is drawn on the wallpaper layer, so it falls *behind* windows (like the reference
-  GNOME extension does on the desktop); it never covers your windows and takes no input.
+- By default the snow is drawn on the wallpaper layer, so it falls *behind* windows. The
+  “Above the windows” toggle switches the effect to the overlay layer: a full-screen click-through
+  surface above everything, including fullscreen windows.
+- The overlay needs one Hyprland rule, otherwise the catch-all `xray` layerrule blurs it:
+
+  ```lua
+  hl.layer_rule({ match = { namespace = "caelestia-effect-overlay" }, blur = false, xray = false })
+  ```
 - The snowfall itself is `shaders/snow.frag`, shipped with the plugin and rendered by the shell's
   generic shader effect. Its uniforms are `density`, `wind`, `flakeSize` and `strength`; the fall
   speed is the effect's `timeScale`. Changing any of them writes the value straight into the

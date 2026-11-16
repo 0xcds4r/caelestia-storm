@@ -374,6 +374,13 @@ Or drop the fork entirely and go back to the stock config:
   scripts), `services/Plugins.qml` keeps `Plugins.effects` and re-reads them when a plugin event
   finishes, on the minute timer and after the scan; `forgetPlugin()` drops the effects of a
   disabled/removed plugin so nothing is left animating.
+- **Placement:** `"layer": "overlay"` draws the effect in its own full-screen surface above every
+  window (`modules/background/EffectOverlay.qml`: overlay layer, `ExclusionMode.Ignore`,
+  `WlrKeyboardFocus.None`, empty `WlrLayershell.mask`, so it is click-through), `"background"`
+  (default) keeps it on the wallpaper. `"monitors": ["HDMI-A-1"]` restricts an effect to some
+  connectors — `EffectLayer` filters by `screenName` (`Plugins.effectOnScreen`).
+  Hyprland's catch-all `layerrule = xray` blurs every layer surface, so the overlay namespace needs
+  `blur = false, xray = false` in the compositor config, otherwise the desktop looks smeared.
 - **Shaders:** the shell binds `time`, `resolution` and `qt_Opacity` and maps the descriptor's
   uniforms (number → `float`, `true/false` → `bool`, `#rrggbb` → `vec4`, 2–4 numbers → `vecN`).
   `modules/background/PluginShader.qml` builds the `ShaderEffect` for the descriptor (rebuilding

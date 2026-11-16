@@ -220,12 +220,24 @@ Singleton {
                     type: type,
                     fragment: fragment.startsWith("file:") || !fragment ? fragment : `file://${fragment}`,
                     uniforms: effect.uniforms ?? {},
-                    timeScale: effect.timeScale ?? 1
+                    timeScale: effect.timeScale ?? 1,
+                    layer: effect.layer === "overlay" ? "overlay" : "background",
+                    monitors: Array.isArray(effect.monitors) ? effect.monitors : []
                 });
             }
         }
 
         root.effects = list;
+    }
+
+    // True when the effect should be drawn on this screen (empty `monitors` = everywhere).
+    function effectOnScreen(effect: var, screenName: string): bool {
+        const monitors = effect?.monitors ?? [];
+
+        if (!Array.isArray(monitors) || monitors.length === 0)
+            return true;
+
+        return monitors.indexOf(screenName) !== -1;
     }
 
     function refreshEffects(): void {
