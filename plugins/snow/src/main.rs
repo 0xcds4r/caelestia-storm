@@ -1,4 +1,4 @@
-//! Snow — a plugin that makes it snow on the desktop.
+//! StormSnow — a plugin that makes it snow on the desktop.
 //!
 //! The shell does the drawing (`modules/background/Snow.qml`); this executable only decides what
 //! the snow looks like:
@@ -16,12 +16,12 @@ use api::{Action, Capability, Effect, Event, EventValue, Page, Plugin, Row, Stat
 use std::env;
 use std::process::ExitCode;
 
-const ID: &str = "snow";
+const ID: &str = "storm-snow";
 /// The plugin's own version; `api::VERSION` is the version of the helper crate.
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn plugin() -> Plugin {
-    Plugin::new("Snow", VERSION)
+    Plugin::new("StormSnow", VERSION)
         .id(ID)
         .description("Snowfall on the desktop, with presets, wind and density")
         .capabilities([
@@ -125,7 +125,7 @@ fn window() -> String {
     let settings = Settings::load();
     let flakes = (settings.density * 2400.0).round() as i64;
 
-    api::Window::new("Snow")
+    api::Window::new("StormSnow")
         .icon("ac_unit")
         .size(520.0, 560.0)
         .pages(vec![Page::new("snow", "Snowfall").rows(vec![
