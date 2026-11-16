@@ -133,6 +133,7 @@ fn window() -> String {
                     min: Some(0.0),
                     max: Some(100.0),
                     value: strength,
+                    decimals: None,
                 },
                 Row::Section("Notes"),
                 Row::Text("These settings live in the plugin's own state file — the shell only renders this window and forwards events."),

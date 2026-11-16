@@ -390,6 +390,9 @@ Or drop the fork entirely and go back to the stock config:
   same array and only a freshly built `rowValues` map (`id`/`#index` → value) is replaced, so the
   delegates re-read their value without a flash. Rebuilding the `Repeater` on every plugin answer
   was what made all sliders blink after a single move.
+- Slider values are formatted from `decimals` in the descriptor (new: `Row::Slider { decimals }` /
+  `api::slider(..)`) or guessed from the range (≤2 → 2 digits, ≤20 → 1, else integer), and
+  `SliderRow.shownValue` feeds the label while the handle is held so it counts up live.
 - `plugins/snow/` — the Snow plugin as its own Rust crate (`mod api` reuses
   `examples/rust-plugin/src/api.rs`): presets (Light / Even / Blizzard / Custom), sliders for
   density, wind, fall speed and flake size in a Nexus window, a taskbar widget (`ac_unit`, click
