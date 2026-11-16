@@ -1,0 +1,12 @@
+[package]
+name = "storm-plugin-api"
+version = "0.1.0"
+edition = "2021"
+description = "Helpers for writing Caelestia Storm plugins in Rust"
+license = "MIT"
+repository = "https://github.com/0xcds4r/caelestia-storm"
+keywords = ["caelestia", "quickshell", "plugin"]
+
+[lib]
+name = "storm_plugin_api"
+path = "src/lib.rs"

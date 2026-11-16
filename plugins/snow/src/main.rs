@@ -11,17 +11,18 @@
 //!   `run <action>` -> toggle / report
 //!   `widget`       -> a snowflake in the taskbar that toggles the snow on click
 
-#[path = "../../../examples/rust-plugin/src/api.rs"]
-mod api;
+use storm_plugin_api as api;
 
 use api::{Action, Capability, Effect, Event, EventValue, Page, Plugin, Row, State, Widget, choice};
 use std::env;
 use std::process::ExitCode;
 
 const ID: &str = "snow";
+/// The plugin's own version; `api::VERSION` is the version of the helper crate.
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn plugin() -> Plugin {
-    Plugin::new("Snow", api::VERSION)
+    Plugin::new("Snow", VERSION)
         .id(ID)
         .description("Snowfall on the desktop, with presets, wind and density")
         .capabilities([

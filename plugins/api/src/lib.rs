@@ -1,12 +1,13 @@
 #![allow(dead_code)]
 
-//! Small helper library for writing caelestia plugins in Rust.
+//! Small helper library for writing Caelestia Storm plugins in Rust.
 //!
 //! No dependencies: everything the shell expects (JSON on stdout, `key=value` state files) is built
 //! here, so a plugin is usually just `match` on the command plus a few builders from this module.
 //!
 //! ```no_run
-//! use crate::api::{Action, Capability, Event, Fields, Plugin, State, Widget};
+//! use storm_plugin_api as api;
+//! use storm_plugin_api::{Action, Capability, Event, Fields, Plugin, State, Widget};
 //!
 //! fn main() {
 //!     let plugin = Plugin::new("demo", "0.1.0")
@@ -24,7 +25,7 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-/// Version of the plugin crate (set by cargo).
+/// Version of this helper crate (the API itself, not the plugin using it).
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // --- JSON output ------------------------------------------------------------------------------

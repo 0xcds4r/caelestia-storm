@@ -3,5 +3,12 @@
 version = 4
 
 [[package]]
+name = "storm-plugin-api"
+version = "0.1.0"
+
+[[package]]
 name = "storm-snow"
 version = "1.0.0"
+dependencies = [
+ "storm-plugin-api",
+]

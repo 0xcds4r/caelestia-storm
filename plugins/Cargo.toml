@@ -1,0 +1,8 @@
+[workspace]
+resolver = "2"
+members = ["api", "snow"]
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true

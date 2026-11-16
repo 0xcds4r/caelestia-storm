@@ -10,7 +10,8 @@ command -v cargo >/dev/null 2>&1 || {
     exit 1
 }
 
+# the binaries land in the workspace target directory (plugins/target)
 cargo build --release --manifest-path "$here/Cargo.toml"
 mkdir -p "$dest"
-install -m755 "$here/target/release/snow" "$dest/plugin"
+install -m755 "$here/../target/release/snow" "$dest/plugin"
 echo "installed $dest/plugin"
