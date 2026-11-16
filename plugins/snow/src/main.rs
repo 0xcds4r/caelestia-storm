@@ -113,6 +113,7 @@ fn effects() -> String {
     api::effects(&[Effect::shader("snow", "shaders/snow.frag.qsb")
         .text("layer", if settings.overlay { "overlay" } else { "background" })
         .time_scale(settings.speed)
+        .render_scale(0.5)
         .uniform("density", settings.density)
         .uniform("wind", settings.wind)
         .uniform("flakeSize", settings.size)

@@ -123,6 +123,11 @@ descriptor fields control where it is drawn:
 - `"monitors": ["HDMI-A-1"]` restricts the effect to those connectors (empty/absent = every
   screen).
 
+`Effect::render_scale(0.5)` renders a quarter of the pixels and scales the result up — much
+cheaper for a full-screen effect, slightly softer. The shell also pushes the shader at most 30
+times a second by default (a full-screen layer is recomposited by the compositor on every frame,
+so 60 fps buys little and costs a lot).
+
 With `overlay` the compositor may blur the surface because of a catch-all layer rule (Hyprland's
 `layerrule = xray`), which looks wrong for an effect — add
 `hl.layer_rule({ match = { namespace = "caelestia-effect-overlay" }, blur = false, xray = false })`

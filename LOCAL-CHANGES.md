@@ -382,6 +382,11 @@ Or drop the fork entirely and go back to the stock config:
   scripts), `services/Plugins.qml` keeps `Plugins.effects` and re-reads them when a plugin event
   finishes, on the minute timer and after the scan; `forgetPlugin()` drops the effects of a
   disabled/removed plugin so nothing is left animating.
+- **Cost:** `PluginShader` renders at `renderScale` (descriptor field, `Effect::render_scale()`,
+  0.5 = a quarter of the pixels) and pushes a frame at most 30 times a second; StormSnow ships
+  `0.5`. Measured on a 1080p screen with an RTX 2070: idle shell 23 %, snow on the wallpaper
+  +3–5 %, snow on the overlay +8–12 % (the compositor recomposites a full-screen layer every frame,
+  which is why the overlay is opt-in).
 - **Placement:** `"layer": "overlay"` draws the effect in its own full-screen surface above every
   window (`modules/background/EffectOverlay.qml`: overlay layer, `ExclusionMode.Ignore`,
   `WlrKeyboardFocus.None`, empty `WlrLayershell.mask`, so it is click-through), `"background"`
@@ -542,6 +547,13 @@ Learned the hard way — never leave the machine in a half-tested state.
   - no drawers/popouts left open;
   - `hyprctl monitors` → `reserved` matches the bar side;
   - screenshot both orientations when the bar layout changed.
+
+## Visualiser: only while something plays
+
+`modules/background/Visualiser.qml` — cava keeps emitting frames in silence, so the bars repainted
+the whole wallpaper around the clock (13 % of the GPU at 1080p). `shouldBeActive` now also needs
+`audible`, which is driven by `Audio.cava.values` (> 0.01) and released 2 s after the last
+non-zero frame.
 
 ## Version 1.6
 

@@ -427,6 +427,13 @@ impl<'a> Effect<'a> {
         Self::new("shader").text("id", id).text("fragment", fragment)
     }
 
+    /// Render scale of the effect surface: 1 = native, 0.5 = a quarter of the pixels scaled up
+    /// (much cheaper, slightly softer).
+    pub fn render_scale(mut self, value: f64) -> Self {
+        self.params.push(("renderScale".to_string(), number(value)));
+        self
+    }
+
     /// Multiplier for the `time` uniform (1 = real seconds).
     pub fn time_scale(mut self, value: f64) -> Self {
         self.params.push(("timeScale".to_string(), number(value)));

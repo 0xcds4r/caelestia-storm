@@ -15,7 +15,31 @@ Item {
     required property ShellScreen screen
     required property Item wallpaper
 
-    readonly property bool shouldBeActive: Config.background.visualiser.enabled && (!Config.background.visualiser.autoHide || (Hypr.monitorFor(screen)?.activeWorkspace?.toplevels?.values.every(t => t.lastIpcObject?.floating) ?? true))
+    // Cava keeps emitting frames even in silence, so the bars were repainting the whole wallpaper
+    // around the clock (~13 % of the GPU on a 1080p screen). The visualiser now only exists while
+    // something is actually audible.
+    readonly property bool sounding: Audio.cava.values.some(value => value > 0.01)
+    property bool audible: false
+
+    onSoundingChanged: {
+        if (sounding) {
+            audible = true;
+            silenceTimer.stop();
+        } else {
+            silenceTimer.restart();
+        }
+    }
+
+    Timer {
+        id: silenceTimer
+
+        interval: 2000
+        repeat: false
+
+        onTriggered: root.audible = false
+    }
+
+    readonly property bool shouldBeActive: Config.background.visualiser.enabled && audible && (!Config.background.visualiser.autoHide || (Hypr.monitorFor(screen)?.activeWorkspace?.toplevels?.values.every(t => t.lastIpcObject?.floating) ?? true))
     property real offset: shouldBeActive ? 0 : screen.height * 0.2
 
     opacity: shouldBeActive ? 1 : 0
