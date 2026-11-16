@@ -150,7 +150,7 @@ PageBase {
                 id: pluginSwitch
 
                 anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.top: parent.top
 
                 visible: !row.confirmingDelete
                 checked: row.plugin.enabled
@@ -164,7 +164,7 @@ PageBase {
 
                 anchors.right: pluginSwitch.left
                 anchors.rightMargin: Tokens.spacing.small
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.top: parent.top
 
                 visible: !row.confirmingDelete
                 type: IconButton.Text
@@ -177,7 +177,7 @@ PageBase {
                 id: confirmRow
 
                 anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.top: parent.top
                 spacing: Tokens.spacing.small
 
                 visible: row.confirmingDelete
@@ -207,7 +207,7 @@ PageBase {
                 id: iconImage
 
                 anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.top: parent.top
 
                 visible: row.plugin.icon.length > 0
                 implicitSize: Tokens.padding.extraLarge * 2
@@ -221,7 +221,7 @@ PageBase {
                 anchors.leftMargin: iconImage.visible ? Tokens.spacing.small : 0
                 anchors.right: row.confirmingDelete ? confirmRow.left : removeButton.left
                 anchors.rightMargin: Tokens.spacing.small
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.top: parent.top
 
                 spacing: 0
 
