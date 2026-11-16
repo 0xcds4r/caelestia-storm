@@ -381,6 +381,11 @@ Or drop the fork entirely and go back to the stock config:
 - `modules/background/BackgroundEffects.qml` — hosts the effects right after `DesktopWidgets`, so
   the snow falls behind the windows and in front of the desktop cards. It is a background-layer
   effect: it can’t draw on top of windows, a maximized/fullscreen window simply covers it.
+- `modules/nexus/common/SliderRow.qml` — sliders in plugin windows own their value while the
+  handle is held (`localValue` + 400 ms hold): the descriptor reload after every event used to
+  snap the slider back and replay the fill animation. `PluginWindow` debounces those reloads
+  (220 ms), defers them while a slider is dragged and throttles slider events to one plugin call
+  per 45 ms. `StyledSlider.animateFill` (off in `SliderRow`) drops the fill animation.
 - `plugins/snow/` — the Snow plugin as its own Rust crate (`mod api` reuses
   `examples/rust-plugin/src/api.rs`): presets (Light / Even / Blizzard / Custom), sliders for
   density, wind, fall speed and flake size in a Nexus window, a taskbar widget (`ac_unit`, click
