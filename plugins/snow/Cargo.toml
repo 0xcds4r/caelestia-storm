@@ -8,5 +8,5 @@ description = "Snowfall for the Caelestia Storm desktop"
 storm-plugin-api = { path = "../api" }
 
 [[bin]]
-name = "snow"
+name = "storm-snow"
 path = "src/main.rs"

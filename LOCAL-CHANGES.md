@@ -364,7 +364,7 @@ Or drop the fork entirely and go back to the stock config:
   dependency-free helper module: JSON `Fields` builder, `Plugin`/`Scheme`/`Action`/`Widget`/
   `Desktop`/`Window`+`Page`+`Row` builders, `Event` parsing and a `key=value` `State` store.
 
-## Background effects (plugins) + Snow
+## Background effects (plugins) + StormSnow
 
 - **Protocol:** a plugin declares the `effects` capability and answers `effects` with
   `{"effects": [{"type": "snow", "density": 0.35, "wind": 0.3, "speed": 1, "size": 1}]}`.
@@ -397,7 +397,7 @@ Or drop the fork entirely and go back to the stock config:
   `Plugin`/`Scheme`/`Effect`/`Widget`/`Window` builders, `Event` parsing, the `key=value` state
   store). Plugins depend on it by path (`plugins/Cargo.toml` is their workspace); it used to be a
   copy-pasted `api.rs` inside the example.
-- `plugins/snow/` — the Snow plugin as its own Rust crate: presets (Light / Even / Blizzard / Custom), sliders for
+- `plugins/snow/` — the StormSnow plugin (id `storm-snow`) as its own Rust crate: presets (Light / Even / Blizzard / Custom), sliders for
   density, wind, fall speed and flake size in a Nexus window and `run toggle|status|reset`. Presets overwrite the sliders, moving a slider switches
   the preset to Custom; state lives in `$XDG_STATE_HOME/snow.conf`. `plugins/snow/install.sh`
   builds it and installs the binary into `~/.config/caelestia/plugins/snow`.
@@ -520,7 +520,7 @@ Learned the hard way — never leave the machine in a half-tested state.
 
 ## Version 1.6
 
-Background effects for plugins and the Snow plugin — procedural snowfall on the wallpaper with
+Background effects for plugins and the StormSnow plugin — procedural snowfall on the wallpaper with
 presets, wind and density, controlled from a Nexus window or a taskbar widget.
 
 ## Version 1.5

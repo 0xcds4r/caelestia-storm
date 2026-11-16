@@ -1,4 +1,4 @@
-# Snow
+# StormSnow
 
 A Caelestia Storm plugin that makes it snow on the desktop.
 
@@ -23,7 +23,7 @@ background layer, behind the windows); this executable only owns the settings:
 
 (The crate is part of the `plugins/` cargo workspace, so the binary ends up in `plugins/target/release`.)
 
-Then open Nexus → Plugins, find “Snow” and press the open button for the settings page. The plugin
+Then open Nexus → Plugins, find “StormSnow” and press the open button for the settings page. The plugin
 is enabled by default and keeps no taskbar widget — everything lives in that window.
 
 ## Presets
