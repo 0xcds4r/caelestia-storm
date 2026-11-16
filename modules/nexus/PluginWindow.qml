@@ -21,6 +21,60 @@ FloatingWindow {
     property var descriptor: null
     property string currentPage: ""
 
+    // Rows of the current page. The array is kept alive across descriptor reloads: rebuilding the
+    // Repeater made every row flash after each slider move. Only the values live in a separate map,
+    // which is replaced wholesale on every reload so the bindings re-evaluate without a rebuild.
+    property var sections: []
+    property var rowValues: ({})
+
+    onCurrentPageChanged: win.applySections()
+
+    function sectionsFor(pageId: string): var {
+        const page = (win.descriptor?.pages ?? []).find(item => item.id === pageId);
+
+        return page?.sections ?? [];
+    }
+
+    function sameStructure(current: var, next: var): bool {
+        if (!Array.isArray(current) || current.length !== next.length)
+            return false;
+
+        for (let index = 0; index < next.length; index++) {
+            const a = current[index] ?? {};
+            const b = next[index] ?? {};
+
+            if ((a.type ?? "") !== (b.type ?? "") || (a.id ?? "") !== (b.id ?? ""))
+                return false;
+        }
+
+        return true;
+    }
+
+    function rowKey(row: var, index: int): string {
+        return row?.id ? `${row.id}` : `#${index}`;
+    }
+
+    function rowValue(id: string, index: int, fallback: var): var {
+        const key = id ? `${id}` : `#${index}`;
+
+        return Object.prototype.hasOwnProperty.call(win.rowValues, key) ? win.rowValues[key] : fallback;
+    }
+
+    function applySections(): void {
+        const next = win.sectionsFor(win.currentPage);
+
+        if (!win.sameStructure(win.sections, next))
+            win.sections = next.map(row => Object.assign({}, row));
+
+        const values = {};
+        for (let index = 0; index < next.length; index++) {
+            const row = next[index] ?? {};
+            values[win.rowKey(row, index)] = row.value;
+        }
+
+        win.rowValues = values;
+    }
+
     readonly property var pages: win.descriptor?.pages ?? []
     readonly property var page: win.pages.find(p => p.id === win.currentPage) ?? win.pages[0] ?? null
     readonly property color surface: Colours.tPalette.m3surface
@@ -135,6 +189,8 @@ FloatingWindow {
                     win.descriptor = JSON.parse(text);
                     if (!win.pages.some(page => page.id === win.currentPage))
                         win.currentPage = win.pages[0]?.id ?? "";
+
+                    win.applySections();
                 } catch (error) {
                     console.warn(`plugin ${win.plugin.id}: invalid window descriptor: ${error}`);
                 }
@@ -235,7 +291,7 @@ FloatingWindow {
                 spacing: Tokens.spacing.extraSmall / 2
 
                 Repeater {
-                    model: win.page?.sections ?? []
+                    model: win.sections
 
                     DelegateChooser {
                         role: "type"
@@ -268,12 +324,13 @@ FloatingWindow {
                             roleValue: "info"
                             delegate: InfoRow {
                                 required property var modelData
+                                required property int index
 
                                 first: true
                                 last: true
                                 label: modelData.label ?? ""
                                 subtext: modelData.subtext ?? ""
-                                value: modelData.value ?? ""
+                                value: win.rowValue(modelData.id ?? "", index, modelData.value ?? "")
                             }
                         }
 
@@ -281,12 +338,13 @@ FloatingWindow {
                             roleValue: "toggle"
                             delegate: ToggleRow {
                                 required property var modelData
+                                required property int index
 
                                 first: true
                                 last: true
                                 text: modelData.label ?? modelData.id
                                 subtext: modelData.subtext ?? ""
-                                checked: modelData.value === true
+                                checked: win.rowValue(modelData.id ?? "", index, modelData.value) === true
 
                                 onToggled: Plugins.sendEvent(win.plugin, modelData.id, checked)
                             }
@@ -311,13 +369,14 @@ FloatingWindow {
                             roleValue: "textfield"
                             delegate: TextFieldRow {
                                 required property var modelData
+                                required property int index
 
                                 first: true
                                 last: true
                                 label: modelData.label ?? modelData.id
                                 subtext: modelData.subtext ?? ""
                                 placeholderText: modelData.placeholder ?? ""
-                                value: modelData.value ?? ""
+                                value: win.rowValue(modelData.id ?? "", index, modelData.value ?? "")
 
                                 onEditingFinished: value => Plugins.sendEvent(win.plugin, modelData.id, value)
                             }
@@ -327,6 +386,7 @@ FloatingWindow {
                             roleValue: "slider"
                             delegate: SliderRow {
                                 required property var modelData
+                                required property int index
 
                                 readonly property real low: modelData.min ?? 0
                                 readonly property real high: modelData.max ?? 100
@@ -336,7 +396,7 @@ FloatingWindow {
                                 icon: modelData.icon ?? ""
                                 label: modelData.label ?? modelData.id
                                 valueLabel: Math.round(low + value * (high - low)).toString()
-                                value: ((modelData.value ?? 0) - low) / Math.max(1, high - low)
+                                value: (win.rowValue(modelData.id ?? "", index, modelData.value ?? 0) - low) / Math.max(1, high - low)
 
                                 onMoved: value => win.sendThrottled(modelData.id, low + value * (high - low))
                                 onDragStarted: win.activeDrags++
@@ -373,6 +433,7 @@ FloatingWindow {
                                 id: choiceRoot
 
                                 required property var modelData
+                                required property int index
 
                                 first: true
                                 last: true
@@ -404,7 +465,7 @@ FloatingWindow {
                                             TextButton {
                                                 required property var modelData
 
-                                                readonly property bool active: (choiceRoot.modelData.value ?? "") === (modelData.value ?? "")
+                                                readonly property bool active: win.rowValue(choiceRoot.modelData.id ?? "", choiceRoot.index, choiceRoot.modelData.value ?? "") === (modelData.value ?? "")
 
                                                 type: active ? TextButton.Filled : TextButton.Text
                                                 text: modelData.text ?? modelData.value ?? ""
