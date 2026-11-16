@@ -111,8 +111,9 @@ access to control values, and `State` is a `key=value` store in `$XDG_STATE_HOME
 
 ```sh
 cargo build --release
-mkdir -p ~/.config/caelestia/plugins
-cp ../target/release/storm-pallete ~/.config/caelestia/plugins/storm-pallete/plugin
+mkdir -p ~/.config/caelestia/plugins/storm-pallete
+install -m755 ../target/release/storm-pallete ~/.config/caelestia/plugins/storm-pallete/plugin
+install -m644 icon.png ~/.config/caelestia/plugins/storm-pallete/icon.png
 ```
 
 The crate is not published on crates.io; depend on it by path (or vendor `plugins/api` next to your
