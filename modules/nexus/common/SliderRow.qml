@@ -17,6 +17,36 @@ ConnectedRect {
     property real value
 
     signal moved(value: real)
+    signal dragStarted()
+    signal dragFinished()
+
+    // While the handle is held the slider owns its value: plugins rewrite their descriptor after
+    // every event, and rebinding `value` mid-drag made the slider jump back and re-animate.
+    property real localValue: 0
+    property bool holding: false
+
+    readonly property bool dragging: slider.dragging
+
+    onDraggingChanged: {
+        if (dragging) {
+            localValue = value;
+            holding = true;
+            dragStarted();
+        } else {
+            holdTimer.restart();
+            dragFinished();
+        }
+    }
+
+    Timer {
+        id: holdTimer
+
+        // long enough for the plugin round-trip to land
+        interval: 400
+        repeat: false
+
+        onTriggered: root.holding = false
+    }
 
     Layout.fillWidth: true
     implicitHeight: rowLayout.implicitHeight + rowLayout.anchors.margins + rowLayout.anchors.topMargin
@@ -73,15 +103,24 @@ ConnectedRect {
                 implicitHeight: Tokens.padding.medium * 2
 
                 StyledSlider {
+                    id: slider
+
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     implicitHeight: parent.implicitHeight
 
                     radius: Tokens.rounding.small
-                    value: root.value
+                    // the handle already follows the pointer, animating the fill made every
+                    // descriptor reload look like the slider was starting over
+                    animateFill: false
+                    value: root.dragging || root.holding ? root.localValue : root.value
                     enabled: root.enabled
-                    onInteraction: v => root.moved(v)
+
+                    onInteraction: v => {
+                        root.localValue = v;
+                        root.moved(v);
+                    }
                 }
             }
         }

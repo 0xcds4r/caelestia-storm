@@ -29,6 +29,71 @@ FloatingWindow {
         loadProc.running = true;
     }
 
+    // Slider drags fire on every mouse move; spawning the plugin for each of them made the drag
+    // feel stuck, so the latest value is sent at most every 45 ms (the last one is never dropped).
+    property string pendingControl: ""
+    property var pendingValue: null
+
+    function sendThrottled(control: string, value: var): void {
+        win.pendingControl = control;
+        win.pendingValue = value;
+
+        if (!throttleTimer.running)
+            throttleTimer.start();
+    }
+
+    Timer {
+        id: throttleTimer
+
+        interval: 45
+        repeat: false
+
+        onTriggered: {
+            if (!win.pendingControl)
+                return;
+
+            const control = win.pendingControl;
+            const value = win.pendingValue;
+            win.pendingControl = "";
+            win.pendingValue = null;
+            Plugins.sendEvent(win.plugin, control, value);
+        }
+    }
+
+    // The plugin answers every control change by rewriting its descriptor. Reloading immediately
+    // rebuilt the sliders mid-drag (the press was lost and the value jumped back), so reloads are
+    // collected and applied once the user stops fiddling.
+    // Never rebuild the rows while a slider is held: the delegate would be destroyed mid-drag.
+    property int activeDrags: 0
+    property bool reloadPending: false
+
+    function scheduleReload(): void {
+        if (win.activeDrags > 0) {
+            win.reloadPending = true;
+            return;
+        }
+
+        reloadTimer.restart();
+    }
+
+    function endDrag(): void {
+        win.activeDrags = Math.max(0, win.activeDrags - 1);
+
+        if (win.activeDrags === 0 && win.reloadPending) {
+            win.reloadPending = false;
+            win.scheduleReload();
+        }
+    }
+
+    Timer {
+        id: reloadTimer
+
+        interval: 220
+        repeat: false
+
+        onTriggered: win.reload()
+    }
+
     title: win.descriptor?.title ?? win.plugin.name
     color: win.surface
     surfaceFormat.opaque: false
@@ -48,7 +113,7 @@ FloatingWindow {
     Connections {
         function onEventFinished(pluginId: string): void {
             if (pluginId === win.plugin.id)
-                win.reload();
+                win.scheduleReload();
         }
 
         function onPluginDisabled(pluginId: string): void {
@@ -273,7 +338,9 @@ FloatingWindow {
                                 valueLabel: Math.round(low + value * (high - low)).toString()
                                 value: ((modelData.value ?? 0) - low) / Math.max(1, high - low)
 
-                                onMoved: value => Plugins.sendEvent(win.plugin, modelData.id, low + value * (high - low))
+                                onMoved: value => win.sendThrottled(modelData.id, low + value * (high - low))
+                                onDragStarted: win.activeDrags++
+                                onDragFinished: win.endDrag()
                             }
                         }
 

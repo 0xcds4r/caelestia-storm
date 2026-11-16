@@ -17,6 +17,7 @@ Slider {
     property int waveDuration: 1000
     property int radius: Tokens.rounding.medium
     property bool interactionOnMove: true
+    property bool animateFill: true
     readonly property bool dragging: mouse.pressed
 
     property color fgColour: enabled ? Colours.palette.m3primary : Qt.alpha(Colours.palette.m3onSurface, 0.38)
@@ -188,6 +189,7 @@ Slider {
     Behavior on filledWidth {
         id: widthBehavior
 
+        enabled: root.animateFill
         Anim {}
     }
 }
