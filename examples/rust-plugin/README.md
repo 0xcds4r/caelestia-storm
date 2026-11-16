@@ -58,13 +58,19 @@ Drop an `icon.png` (or `.svg`/`.jpg`/`.webp`) next to the binary to give the plu
 `fidelity`, `fruitsalad`, `monochrome`, `neutral`, `rainbow`, `content`) are optional
 and default to the current ones.
 
-## `api.rs`
+## `storm-plugin-api`
 
-The example ships a dependency-free helper module (`src/api.rs`) so a plugin does not have to hand
+The helpers live in a small dependency-free crate (`plugins/api`) so a plugin does not have to hand
 write JSON:
 
+```toml
+# Cargo.toml
+[dependencies]
+storm-plugin-api = { path = "../../plugins/api" }
+```
+
 ```rust
-mod api;
+use storm_plugin_api as api;
 use api::{Action, Capability, Desktop, Effect, Event, Page, Plugin, Row, Scheme, State, Widget};
 
 let plugin = Plugin::new("demo", api::VERSION)
@@ -108,6 +114,9 @@ cargo build --release
 mkdir -p ~/.config/caelestia/plugins
 cp target/release/storm-palette-pack ~/.config/caelestia/plugins/
 ```
+
+The crate is not published on crates.io; depend on it by path (or vendor `plugins/api` next to your
+plugin and point the `path` there).
 
 Then open Settings → Plugins and hit **Rescan plugins** (or restart the shell).
 A plugin can also be a directory containing an executable named `plugin`.

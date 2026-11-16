@@ -11,8 +11,7 @@
 //!   `event <id> <json>`  -> a control in that window changed
 //!   `desktop`            -> cards drawn on the desktop
 
-mod api;
-
+use storm_plugin_api as api;
 use api::{Action, Capability, Desktop, Event, EventValue, Page, Plugin, Row, Scheme, State, Widget, choice};
 use std::env;
 use std::process::ExitCode;
@@ -20,7 +19,7 @@ use std::process::ExitCode;
 const ID: &str = "storm-palette-pack";
 
 fn plugin() -> Plugin {
-    Plugin::new("Storm Palette Pack", api::VERSION)
+    Plugin::new("Storm Palette Pack", env!("CARGO_PKG_VERSION"))
         .id(ID)
         .description("Example plugin: colour schemes, actions, widgets and a window")
         .capabilities([
@@ -149,7 +148,7 @@ fn window() -> String {
                 Row::Info {
                     label: "Version",
                     subtext: "Example plugin",
-                    value: api::VERSION,
+                    value: env!("CARGO_PKG_VERSION"),
                 },
                 Row::Info {
                     label: "State file",
@@ -188,7 +187,7 @@ fn apply_event(control: &str, value: &EventValue) -> bool {
 
 fn run(action: &str, target: Option<&str>) -> i32 {
     match action {
-        "about" => println!("{} {} - example caelestia plugin", "Storm Palette Pack", api::VERSION),
+        "about" => println!("{} {} - example caelestia plugin", "Storm Palette Pack", env!("CARGO_PKG_VERSION")),
         "reload" => println!("Palette pack reloaded"),
         "click" => match target {
             Some("mem") => println!("Memory in use: {}%", memory_percent()),
