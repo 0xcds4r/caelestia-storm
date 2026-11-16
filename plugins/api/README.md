@@ -25,7 +25,9 @@ fn main() {
             Widget::new("load").icon("speed").text("0.42"),
         ])),
         Some("effects") => println!("{}", api::effects(&[
-            Effect::new("snow").num("density", 0.35).num("wind", 0.3),
+            Effect::shader("plasma", "shaders/plasma.frag.qsb")
+                .uniform("speed", 0.6)
+                .uniform_colour("tint", "#66ccff"),
         ])),
         Some("window") => println!("{}", api::Window::new("Demo")
             .size(520.0, 420.0)
@@ -49,8 +51,8 @@ fn main() {
 
 ## Shader effects
 
-A plugin can ship its own fragment shader instead of the built-in snow. Bake it for Qt's RHI
-(`qt6-shadertools` ships `qsb`):
+Background effects are fragment shaders shipped by plugins (the StormSnow plugin is the reference
+implementation). Bake the shader for Qt's RHI (`qt6-shadertools` ships `qsb`):
 
 ```sh
 qsb --qt6 -o plasma.frag.qsb plasma.frag
@@ -109,7 +111,7 @@ shader must be premultiplied, otherwise Qt Quick blends them as opaque.
 | `Action`, `actions()` | buttons on the plugin card |
 | `Widget`, `widgets()` | taskbar entries, polled every minute |
 | `Desktop`, `desktop()` | cards on the wallpaper (text or a render-only web view) |
-| `Effect`, `effects()` | animated background effects: the built-in `snow` or your own fragment shader |
+| `Effect`, `effects()` | animated background effects: your own fragment shader plus its uniforms |
 | `Window`, `Page`, `Row`, `slider()`, `choice()` | the window descriptor Nexus renders |
 | `Event`, `EventValue` | parsing `event <control> <json>` |
 | `State` | `key=value` store in `$XDG_STATE_HOME/<id>.conf` |

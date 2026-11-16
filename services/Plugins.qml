@@ -202,39 +202,25 @@ Singleton {
                 const effect = effects[index] ?? {};
                 const type = effect.type ?? "";
 
-                if (!type)
+                if (type !== "shader")
                     continue;
 
-                if (type === "shader") {
-                    // shader paths are relative to the plugin executable
-                    const plugin = root.plugins.find(item => item.id === id);
-                    const executable = plugin?.path ?? "";
-                    const directory = executable.includes("/") ? executable.slice(0, executable.lastIndexOf("/")) : "";
-                    let fragment = effect.fragment ?? "";
+                // shader paths are relative to the plugin executable
+                const plugin = root.plugins.find(item => item.id === id);
+                const executable = plugin?.path ?? "";
+                const directory = executable.includes("/") ? executable.slice(0, executable.lastIndexOf("/")) : "";
+                let fragment = effect.fragment ?? "";
 
-                    if (fragment && !fragment.startsWith("/") && !fragment.startsWith("file:") && directory)
-                        fragment = `${directory}/${fragment}`;
-
-                    list.push({
-                        key: `${id}:${type}:${index}`,
-                        pluginId: id,
-                        type: type,
-                        fragment: fragment.startsWith("file:") || !fragment ? fragment : `file://${fragment}`,
-                        uniforms: effect.uniforms ?? {},
-                        timeScale: effect.timeScale ?? 1
-                    });
-                    continue;
-                }
+                if (fragment && !fragment.startsWith("/") && !fragment.startsWith("file:") && directory)
+                    fragment = `${directory}/${fragment}`;
 
                 list.push({
                     key: `${id}:${type}:${index}`,
                     pluginId: id,
                     type: type,
-                    density: effect.density ?? 1,
-                    wind: effect.wind ?? 0,
-                    speed: effect.speed ?? 1,
-                    size: effect.size ?? 1,
-                    opacity: effect.opacity ?? 1
+                    fragment: fragment.startsWith("file:") || !fragment ? fragment : `file://${fragment}`,
+                    uniforms: effect.uniforms ?? {},
+                    timeScale: effect.timeScale ?? 1
                 });
             }
         }
