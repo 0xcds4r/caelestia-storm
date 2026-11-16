@@ -14,4 +14,5 @@ command -v cargo >/dev/null 2>&1 || {
 cargo build --release --manifest-path "$here/Cargo.toml"
 mkdir -p "$dest"
 install -m755 "$here/../target/release/storm-snow" "$dest/plugin"
+[ -f "$here/icon.png" ] && install -m644 "$here/icon.png" "$dest/icon.png"
 echo "installed $dest/plugin"
