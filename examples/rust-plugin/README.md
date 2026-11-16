@@ -16,6 +16,7 @@ A plugin is just an executable that answers two commands:
 | `widgets` | `[{"id": "load", "icon": "speed", "text": "0.42", "tooltip": "..."}]` — taskbar items, polled every minute (a single `widget` object also works) |
 | `run click <id>` | sent when a taskbar widget is clicked |
 | `desktop` | `{"widgets": [{"id": "...", "anchor": "bottom-right", "icon": "...", "title": "...", "text": "...", "subtext": "...", "url": "https://…", "height": 180}]}` — cards on the wallpaper; with `url` the card becomes a render-only web view |
+| `effects` | `{"effects": [{"type": "snow", "density": 0.35, "wind": 0.3, "speed": 1, "size": 1}]}` — animated background effects drawn on the wallpaper, behind the windows; re-read after `/plugins/events` and every minute. `snow` is understood today, unknown types are ignored |
 | `window` | window descriptor (see below) |
 | `event <id> <json>` | a control in that window changed |
 
@@ -64,7 +65,7 @@ write JSON:
 
 ```rust
 mod api;
-use api::{Action, Capability, Desktop, Event, Page, Plugin, Row, Scheme, State, Widget};
+use api::{Action, Capability, Desktop, Effect, Event, Page, Plugin, Row, Scheme, State, Widget};
 
 let plugin = Plugin::new("demo", api::VERSION)
     .description("Demo plugin")
@@ -75,6 +76,7 @@ api::schemes(&[Scheme::new("sunset", "Sunset", "#ff7a18").variant("vibrant")]);
 api::actions(&[Action::new("about", "About")]);
 api::widgets(&[Widget::new("load").icon("speed").text("0.42").tooltip("load average")]);
 api::desktop(&[Desktop::new("load", "Load average", "0.42").anchor("top-left").margin(64.0)]);
+api::effects(&[Effect::new("snow").num("density", 0.35).num("wind", 0.3)]);
 api::Window::new("Demo").size(560.0, 420.0).pages(vec![
     Page::new("general", "General").rows(vec![
         Row::Section("Behaviour"),

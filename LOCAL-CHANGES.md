@@ -364,6 +364,32 @@ Or drop the fork entirely and go back to the stock config:
   dependency-free helper module: JSON `Fields` builder, `Plugin`/`Scheme`/`Action`/`Widget`/
   `Desktop`/`Window`+`Page`+`Row` builders, `Event` parsing and a `key=value` `State` store.
 
+## Background effects (plugins) + Snow
+
+- **Protocol:** a plugin declares the `effects` capability and answers `effects` with
+  `{"effects": [{"type": "snow", "density": 0.35, "wind": 0.3, "speed": 1, "size": 1}]}`.
+  `scripts/plugins-effects.sh` polls effect-capable plugins (same discovery as the other
+  scripts), `services/Plugins.qml` keeps `Plugins.effects` and re-reads them when a plugin event
+  finishes, on the minute timer and after the scan; `forgetPlugin()` drops the effects of a
+  disabled/removed plugin so nothing is left animating.
+- `modules/background/Snow.qml` — procedural snow in a fragment shader
+  (`shaders/snow.frag`, baked to `snow.frag.qsb` with `qsb --qt6`, needs `qt6-shadertools`):
+  three layers of hashed cells, every flake falling and wrapping inside its own cell, so density /
+  wind / speed change without rebuilding anything. The output is **premultiplied** — a
+  ShaderEffect returning `vec4(1,1,1,a)` is blended by Qt Quick as solid white (premultiplied
+  alpha), the white has to be scaled by the alpha.
+- `modules/background/BackgroundEffects.qml` — hosts the effects right after `DesktopWidgets`, so
+  the snow falls behind the windows and in front of the desktop cards. It is a background-layer
+  effect: it can’t draw on top of windows, a maximized/fullscreen window simply covers it.
+- `plugins/snow/` — the Snow plugin as its own Rust crate (`mod api` reuses
+  `examples/rust-plugin/src/api.rs`): presets (Light / Even / Blizzard / Custom), sliders for
+  density, wind, fall speed and flake size in a Nexus window, a taskbar widget (`ac_unit`, click
+  toggles) and `run toggle|status|reset`. Presets overwrite the sliders, moving a slider switches
+  the preset to Custom; state lives in `$XDG_STATE_HOME/snow.conf`. `plugins/snow/install.sh`
+  builds it and installs the binary into `~/.config/caelestia/plugins/snow`.
+- `examples/rust-plugin/src/api.rs` — `Capability::Effects`, an `Effect` builder (`.num`, `.bool`,
+  `.text`) and `effects()`; the example README documents the new command.
+
 ## Colour scheme picker
 
 `modules/nexus/pages/wallandstyle/ColourSelect.qml` — the "Colours" sub-page of Wallpaper & style was
@@ -436,7 +462,7 @@ The old "missing packages" warnings for individual libraries are gone — they c
 `utils/SysInfo.qml` reads the mainboard DMI fields (`board_vendor` / `board_name`) first and falls
 back to `sys_vendor` / `product_name`: desktops commonly leave the system fields as "To Be Filled By
 O.E.M.", which `sanitiseDmi()` drops, so the Device row rendered empty. Version string bumped to
-`STORM 1.4` (now `STORM 1.5`).
+`STORM 1.4` (now `STORM 1.6`).
 
 ## Crash: KDE icon engine on the render thread
 
@@ -476,6 +502,11 @@ Learned the hard way — never leave the machine in a half-tested state.
   - no drawers/popouts left open;
   - `hyprctl monitors` → `reserved` matches the bar side;
   - screenshot both orientations when the bar layout changed.
+
+## Version 1.6
+
+Background effects for plugins and the Snow plugin — procedural snowfall on the wallpaper with
+presets, wind and density, controlled from a Nexus window or a taskbar widget.
 
 ## Version 1.5
 

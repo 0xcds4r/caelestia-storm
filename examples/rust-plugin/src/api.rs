@@ -130,6 +130,7 @@ pub enum Capability {
     Widget,
     Window,
     Desktop,
+    Effects,
 }
 
 impl Capability {
@@ -140,6 +141,7 @@ impl Capability {
             Self::Widget => "widget",
             Self::Window => "window",
             Self::Desktop => "desktop",
+            Self::Effects => "effects",
         }
     }
 }
@@ -393,6 +395,58 @@ impl<'a> Desktop<'a> {
 pub fn desktop(widgets: &[Desktop<'_>]) -> String {
     Fields::new()
         .raw("widgets", array(&widgets.iter().map(|widget| widget.json()).collect::<Vec<_>>()))
+        .build()
+}
+
+// --- Background effects -----------------------------------------------------------------------
+
+/// One animated background effect, rendered by the shell behind every window.
+///
+/// The shell understands `snow`; unknown types are ignored, so a plugin can ship a newer effect
+/// and still work on an older shell.
+pub struct Effect<'a> {
+    pub kind: &'a str,
+    params: Vec<(String, String)>,
+}
+
+impl<'a> Effect<'a> {
+    pub fn new(kind: &'a str) -> Self {
+        Self { kind, params: Vec::new() }
+    }
+
+    /// Numeric parameter (e.g. `density`, `wind`, `speed`).
+    pub fn num(mut self, key: &str, value: f64) -> Self {
+        self.params.push((key.to_string(), number(value)));
+        self
+    }
+
+    /// Boolean parameter, sent as `true`/`false`.
+    pub fn bool(mut self, key: &str, value: bool) -> Self {
+        self.params.push((key.to_string(), value.to_string()));
+        self
+    }
+
+    /// String parameter (colours, presets, ...).
+    pub fn text(mut self, key: &str, value: &str) -> Self {
+        self.params.push((key.to_string(), string(value)));
+        self
+    }
+
+    pub fn json(&self) -> String {
+        let mut fields = Fields::new().text("type", self.kind);
+
+        for (key, value) in &self.params {
+            fields = fields.raw(key, value.clone());
+        }
+
+        fields.build()
+    }
+}
+
+/// `effects` output: `{"effects": [{"type": "snow", ...}]}`.
+pub fn effects(effects: &[Effect<'_>]) -> String {
+    Fields::new()
+        .raw("effects", array(&effects.iter().map(|effect| effect.json()).collect::<Vec<_>>()))
         .build()
 }
 
