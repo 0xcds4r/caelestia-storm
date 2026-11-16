@@ -18,6 +18,7 @@ Singleton {
     property var widgets: []
     property var desktopWidgets: []
     property var effects: []
+    property var binds: []
     // Stable key for the set of widget plugins, so the bar's repeater is not rebuilt on every poll
     property string widgetSignature: ""
     property bool scanning: false
@@ -59,6 +60,8 @@ Singleton {
         root.widgetSignature = root.widgets.map(widget => widget.key).join(",");
         root.desktopWidgets = root.desktopWidgets.filter(widget => widget.pluginId !== pluginId);
         root.effects = root.effects.filter(effect => effect.pluginId !== pluginId);
+        root.binds = root.binds.filter(bind => bind.pluginId !== pluginId);
+        root.registerBinds();
         root.pluginDisabled(pluginId);
 
         if (!UiPrefs.appliedPluginScheme.startsWith(`${pluginId}:`))
@@ -124,6 +127,9 @@ Singleton {
 
         if (!effectsPoll.running)
             effectsPoll.running = true;
+
+        if (!bindPoll.running)
+            bindPoll.running = true;
     }
 
     function applyDesktop(text: string): void {
@@ -239,6 +245,87 @@ Singleton {
 
         return monitors.indexOf(screenName) !== -1;
     }
+
+    // Keyboard shortcuts: `binds` capability, registered as Hyprland binds that call
+    // `caelestia:plugin:<plugin>:<bind>` and end up in `run bind <id>` of that plugin.
+    function applyBinds(text: string): void {
+        const list = [];
+
+        for (const line of text.split("\n")) {
+            if (!line.trim())
+                continue;
+
+            const separator = line.indexOf("\t");
+            if (separator < 0)
+                continue;
+
+            const id = line.slice(0, separator);
+            if (!root.isEnabled(id))
+                continue;
+
+            let data;
+            try {
+                data = JSON.parse(line.slice(separator + 1));
+            } catch (error) {
+                continue;
+            }
+
+            for (const bind of Array.isArray(data) ? data : []) {
+                if (!bind?.key || !bind?.id)
+                    continue;
+
+                list.push({
+                    key: `${id}:${bind.id}`,
+                    pluginId: id,
+                    bindId: bind.id,
+                    shortcut: bind.key,
+                    name: `plugin:${id}:${bind.id}`,
+                    description: bind.description ?? bind.id
+                });
+            }
+        }
+
+        root.binds = list;
+        root.registerBinds();
+    }
+
+    function refreshBinds(): void {
+        if (bindPoll.running)
+            return;
+
+        bindPoll.running = true;
+    }
+
+    // Re-creates the Hyprland binds for the current plugin set (unbinding what was registered
+    // before, so a removed plugin or a changed combo does not leave a dead shortcut behind).
+    function registerBinds(): void {
+        if (!Hypr.usingLua)
+            return;
+
+        const commands = [];
+
+        for (const old of root.registeredBinds)
+            commands.push(`eval hl.unbind("${old.shortcut}")`);
+
+        for (const bind of root.binds) {
+            const description = String(bind.description).replace(/"/g, "'");
+            commands.push(`eval hl.bind("${bind.shortcut}", hl.dsp.global("caelestia:${bind.name}"), { description = "Plugin: ${description}" })`);
+        }
+
+        root.registeredBinds = root.binds.slice();
+
+        if (commands.length > 0)
+            Hypr.extras.batchMessage(commands);
+    }
+
+    function runBind(pluginId: string, bindId: string): void {
+        const plugin = root.plugins.find(item => item.id === pluginId);
+
+        if (plugin)
+            root.runAction(plugin, "bind", bindId);
+    }
+
+    property var registeredBinds: []
 
     function refreshEffects(): void {
         if (effectsPoll.running)
@@ -408,6 +495,16 @@ Singleton {
 
     Component.onCompleted: root.refresh()
 
+    // a Hyprland config reload drops every runtime bind, so register the plugin ones again
+    Connections {
+        target: Hypr
+
+        function onConfigReloaded(): void {
+            root.registeredBinds = [];
+            root.registerBinds();
+        }
+    }
+
     Connections {
         function onDisabledPluginsChanged(): void {
             for (const plugin of root.plugins)
@@ -450,6 +547,16 @@ Singleton {
 
         stdout: StdioCollector {
             onStreamFinished: root.applyDesktop(text)
+        }
+    }
+
+    Process {
+        id: bindPoll
+
+        command: ["sh", Quickshell.shellPath("scripts/plugins-binds.sh")]
+
+        stdout: StdioCollector {
+            onStreamFinished: root.applyBinds(text)
         }
     }
 

@@ -13,7 +13,8 @@ background layer, behind the windows); this executable only owns the settings:
 - `effects` — `{"effects": [{"type": "snow", "density": ..., "wind": ...}]}`, empty when off;
 - `window` — the settings page rendered by Nexus (toggle, presets, sliders);
 - `event <control> <json>` — a control changed, persisted to `~/.local/state/snow.conf`;
-- `run toggle` / `run status` / `run reset` — flip, report or reset the snow.
+- `run toggle` / `run status` / `run reset` — flip, report or reset the snow;
+- `binds` — one global shortcut, `CTRL + SUPER + SHIFT + S`, toggles the snow (`run bind toggle`).
 
 ## Install
 

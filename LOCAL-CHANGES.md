@@ -366,6 +366,14 @@ Or drop the fork entirely and go back to the stock config:
 
 ## Background effects (plugins) + StormSnow
 
+- **Keyboard shortcuts:** a plugin that declares `binds` and answers `binds` with
+  `[{"id": "toggle", "key": "CTRL + SUPER + SHIFT + S", "description": "..."}]` gets those keys
+  registered: `scripts/plugins-binds.sh` polls them, `Plugins.binds` keeps the list,
+  `registerBinds()` writes `hl.bind(...)` through `Hypr.extras.batchMessage` (unbinding the old set
+  first) and `modules/Shortcuts.qml` instantiates a `GlobalShortcut` per bind, so a press ends up as
+  `run bind <id>` on the plugin. Binds are dropped when the plugin is disabled/removed and
+  re-registered after a Hyprland config reload (which drops runtime binds). Needs the Lua config;
+  without it the binds are skipped.
 - **Protocol:** a plugin declares the `effects` capability and answers `effects` with
   `{"effects": [{"type": "shader", "fragment": "shaders/snow.frag.qsb", "timeScale": 1,
   "uniforms": {"density": 0.35, "wind": 0.3}}]}`; only `shader` is understood, everything else is

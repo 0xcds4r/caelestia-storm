@@ -132,6 +132,7 @@ pub enum Capability {
     Window,
     Desktop,
     Effects,
+    Binds,
 }
 
 impl Capability {
@@ -143,6 +144,7 @@ impl Capability {
             Self::Window => "window",
             Self::Desktop => "desktop",
             Self::Effects => "effects",
+            Self::Binds => "binds",
         }
     }
 }
@@ -499,6 +501,40 @@ pub fn effects(effects: &[Effect<'_>]) -> String {
     Fields::new()
         .raw("effects", array(&effects.iter().map(|effect| effect.json()).collect::<Vec<_>>()))
         .build()
+}
+
+// --- Keyboard shortcuts -----------------------------------------------------------------------
+
+/// A global shortcut the shell registers for the plugin (Hyprland bind, called as
+/// `run bind <id>` when pressed).
+pub struct Bind<'a> {
+    pub id: &'a str,
+    pub key: &'a str,
+    pub description: &'a str,
+}
+
+impl<'a> Bind<'a> {
+    pub fn new(id: &'a str, key: &'a str) -> Self {
+        Self { id, key, description: "" }
+    }
+
+    pub fn description(mut self, description: &'a str) -> Self {
+        self.description = description;
+        self
+    }
+
+    pub fn json(&self) -> String {
+        Fields::new()
+            .text("id", self.id)
+            .text("key", self.key)
+            .text("description", self.description)
+            .build()
+    }
+}
+
+/// `binds` output: `[{"id": "toggle", "key": "CTRL + SUPER + SHIFT + S", "description": "..."}]`.
+pub fn binds(binds: &[Bind<'_>]) -> String {
+    array(&binds.iter().map(|bind| bind.json()).collect::<Vec<_>>())
 }
 
 // --- Windows ----------------------------------------------------------------------------------
