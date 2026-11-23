@@ -13,6 +13,8 @@ Singleton {
 
     // Open the dashboard (top) / launcher (bottom) by holding and dragging from the screen edge
     property bool panelsDragOpen: true
+    // Hyprland: `general:resize_on_border` — right-drag near a window edge resizes it
+    property bool resizeOnBorder: false
     // Plugin ids that the user turned off
     property var disabledPlugins: []
     // Plugin scheme currently applied ("<plugin id>:<scheme id>"), empty for built-in schemes
@@ -23,6 +25,7 @@ Singleton {
     function save(): void {
         const data = JSON.stringify({
             panelsDragOpen: root.panelsDragOpen,
+            resizeOnBorder: root.resizeOnBorder,
             disabledPlugins: root.disabledPlugins,
             appliedPluginScheme: root.appliedPluginScheme,
             previousScheme: root.previousScheme
@@ -36,6 +39,12 @@ Singleton {
     function setPanelsDragOpen(value: bool): void {
         root.panelsDragOpen = value;
         root.save();
+    }
+
+    function setResizeOnBorder(value: bool): void {
+        root.resizeOnBorder = value;
+        root.save();
+        Hypr.applyWindowOptions();
     }
 
     function setPluginEnabled(pluginId: string, enabled: bool): void {
@@ -54,6 +63,8 @@ Singleton {
                 const data = JSON.parse(text());
                 if (typeof data.panelsDragOpen === "boolean")
                     root.panelsDragOpen = data.panelsDragOpen;
+                if (typeof data.resizeOnBorder === "boolean")
+                    root.resizeOnBorder = data.resizeOnBorder;
                 if (Array.isArray(data.disabledPlugins))
                     root.disabledPlugins = data.disabledPlugins;
                 if (typeof data.appliedPluginScheme === "string")

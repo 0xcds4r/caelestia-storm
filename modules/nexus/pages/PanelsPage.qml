@@ -29,6 +29,13 @@ PageBase {
             onToggled: UiPrefs.setPanelsDragOpen(checked)
         }
 
+        ToggleRow {
+            text: Tr.tr("Resize windows on the border")
+            subtext: Tr.tr("Right-drag the edge of a window to resize it (Hyprland resize_on_border)")
+            checked: UiPrefs.resizeOnBorder
+            onToggled: UiPrefs.setResizeOnBorder(checked)
+        }
+
         // Panels
         SectionHeader {
             text: Tr.tr("Panels")

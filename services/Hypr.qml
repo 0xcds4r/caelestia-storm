@@ -118,6 +118,16 @@ Singleton {
         return ipc.tags?.some(tag => ignoredTags.includes(tag.replace(/\*$/, ""))) ?? false;
     }
 
+    // Window interaction options that live in the (packaged) config but are exposed in the shell.
+    function applyWindowOptions(): void {
+        if (!usingLua)
+            return;
+
+        extras.batchMessage([
+            `eval hl.config({ general = { resize_on_border = ${UiPrefs.resizeOnBorder ? "true" : "false"} } })`
+        ]);
+    }
+
     function reloadDynamicConfs(): void {
         if (usingLua) {
             extras.batchMessage([
@@ -125,7 +135,8 @@ Singleton {
                 'eval hl.bind("Num_Lock", hl.dsp.global("caelestia:refreshDevices"), { locked = true, non_consuming = true, ignore_mods = true, release = true })',
                 // the config usually has a catch-all `layerrule xray`, which blurs every layer
                 // surface; the effect overlay is click-through and must stay sharp
-                'eval hl.layer_rule({ match = { namespace = "caelestia-effect-overlay" }, blur = false, xray = false })'
+                'eval hl.layer_rule({ match = { namespace = "caelestia-effect-overlay" }, blur = false, xray = false })',
+                `eval hl.config({ general = { resize_on_border = ${UiPrefs.resizeOnBorder ? "true" : "false"} } })`
             ]);
         } else {
             extras.batchMessage(["keyword bindlni ,Caps_Lock,global,caelestia:refreshDevices", "keyword bindlni ,Num_Lock,global,caelestia:refreshDevices"]);
@@ -133,7 +144,10 @@ Singleton {
     }
 
     onUsingLuaChanged: reloadDynamicConfs()
-    Component.onCompleted: reloadDynamicConfs()
+    Component.onCompleted: {
+        reloadDynamicConfs();
+        applyWindowOptions();
+    }
 
     Connections {
         function onRawEvent(event: HyprlandEvent): void {

@@ -511,6 +511,14 @@ Closed panels used to leave a `borderThickness` (10 px) strip along their edge f
 browser scrollbar. `Regions.extra(scale)` now returns 0 while a panel is fully hidden, so an open
 panel keeps its 10 px margin and a closed one takes nothing.
 
+## Window resize on the border
+
+`resize_on_border` is off in the Hyprland configs (`config/decorations.lua`,
+`hyprland/general.lua`) and exposed as a toggle in Nexus → Panels ("Resize windows on the border").
+`UiPrefs.resizeOnBorder` (persisted) is applied through `hl.config({ general = { resize_on_border
+= … } })` in `Hypr.applyWindowOptions()` on shell start, on `configreloaded` and when the toggle
+changes, so the setting survives a shell restart even though the packaged config cannot be edited.
+
 ## Drag-to-open switch
 
 `UiPrefs.panelsDragOpen` now gates *every* edge drag in `modules/drawers/Interactions.qml`: the
