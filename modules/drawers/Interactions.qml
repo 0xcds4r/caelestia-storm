@@ -140,7 +140,7 @@ CustomMouseArea {
                 root.panels.osd.hovered = true;
             }
 
-            const showSidebar = pressed && dragStart.x > Math.min(width - Config.border.minThickness, bar.implicitWidth + panels.sidebar.x);
+            const showSidebar = UiPrefs.panelsDragOpen && pressed && dragStart.x > Math.min(width - Config.border.minThickness, bar.implicitWidth + panels.sidebar.x);
 
             // Show sidebar on hover (top-right corner, bounded by notification panel height)
             if (Config.sidebar.showOnHover) {
@@ -150,8 +150,8 @@ CustomMouseArea {
                     screenState.sidebar = true;
             }
 
-            // Show/hide session on drag
-            if (pressed && inRightPanel(panels.sessionWrapper, dragStart.x, dragStart.y) && withinPanelHeight(panels.sessionWrapper, x, y)) {
+            // Show/hide session on drag (only when "open panels by dragging" is on)
+            if (UiPrefs.panelsDragOpen && pressed && inRightPanel(panels.sessionWrapper, dragStart.x, dragStart.y) && withinPanelHeight(panels.sessionWrapper, x, y)) {
                 if (dragX < -Config.session.dragThreshold)
                     screenState.session = true;
                 else if (dragX > Config.session.dragThreshold)
@@ -179,8 +179,8 @@ CustomMouseArea {
                 root.panels.osd.hovered = true;
             }
 
-            // Show/hide session on drag
-            if (pressed && outOfSidebar && inRightPanel(panels.sessionWrapper, dragStart.x, dragStart.y) && withinPanelHeight(panels.sessionWrapper, x, y)) {
+            // Show/hide session on drag (only when "open panels by dragging" is on)
+            if (UiPrefs.panelsDragOpen && pressed && outOfSidebar && inRightPanel(panels.sessionWrapper, dragStart.x, dragStart.y) && withinPanelHeight(panels.sessionWrapper, x, y)) {
                 if (dragX < -Config.session.dragThreshold)
                     screenState.session = true;
                 else if (dragX > Config.session.dragThreshold)
@@ -201,7 +201,7 @@ CustomMouseArea {
             }
 
             // Hide sidebar on drag
-            if (pressed && inRightPanel(panels.sidebar, dragStart.x, 0) && dragX > Config.sidebar.dragThreshold)
+            if (UiPrefs.panelsDragOpen && pressed && inRightPanel(panels.sidebar, dragStart.x, 0) && dragX > Config.sidebar.dragThreshold)
                 screenState.sidebar = false;
         }
 

@@ -24,7 +24,7 @@ PageBase {
         ToggleRow {
             last: true
             text: Tr.tr("Open by dragging")
-            subtext: Tr.tr("Hold and drag from the top or bottom screen edge to reveal the dashboard or launcher")
+            subtext: Tr.tr("Hold and drag from an edge: down from the top for the dashboard, up from the bottom for the launcher, left from the right edge for the session menu and sidebar")
             checked: UiPrefs.panelsDragOpen
             onToggled: UiPrefs.setPanelsDragOpen(checked)
         }
