@@ -22,7 +22,7 @@ PageBase {
         }
 
         ToggleRow {
-            last: true
+            first: true
             text: Tr.tr("Open by dragging")
             subtext: Tr.tr("Hold and drag from an edge: down from the top for the dashboard, up from the bottom for the launcher, left from the right edge for the session menu and sidebar")
             checked: UiPrefs.panelsDragOpen
@@ -30,6 +30,7 @@ PageBase {
         }
 
         ToggleRow {
+            last: true
             text: Tr.tr("Resize windows on the border")
             subtext: Tr.tr("Right-drag the edge of a window to resize it (Hyprland resize_on_border)")
             checked: UiPrefs.resizeOnBorder
