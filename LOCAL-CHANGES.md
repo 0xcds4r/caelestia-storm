@@ -536,7 +536,7 @@ The old "missing packages" warnings for individual libraries are gone — they c
 `utils/SysInfo.qml` reads the mainboard DMI fields (`board_vendor` / `board_name`) first and falls
 back to `sys_vendor` / `product_name`: desktops commonly leave the system fields as "To Be Filled By
 O.E.M.", which `sanitiseDmi()` drops, so the Device row rendered empty. Version string bumped to
-`STORM 1.4` (now `STORM 1.6`).
+`STORM 1.4` (now `STORM 1.7`).
 
 ## Crash: KDE icon engine on the render thread
 
@@ -583,6 +583,12 @@ Learned the hard way — never leave the machine in a half-tested state.
 the whole wallpaper around the clock (13 % of the GPU at 1080p). `shouldBeActive` now also needs
 `audible`, which is driven by `Audio.cava.values` (> 0.01) and released 2 s after the last
 non-zero frame.
+
+## Version 1.7
+
+Overview drag inside a cell, the `effects`/`binds` plugin API with the StormSnow plugin, a real
+Nexus → Updates page, the drag-to-open switch covering every edge, and the GPU work (visualiser
+only while audible, shader effects at half resolution and 30 fps).
 
 ## Version 1.6
 

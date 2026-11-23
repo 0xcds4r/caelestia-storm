@@ -82,7 +82,7 @@ Everything that differs from upstream is documented in [`LOCAL-CHANGES.md`](./LO
 - Nexus → Apps → **System handlers**: pick the default application for links and files (browser,
   mail, Telegram links, torrents, file manager, editor, video, music, images, PDF) — it writes the
   same `~/.config/mimeapps.list` entries `xdg-mime` uses;
-- Nexus → About: “Caelestia Storm”, custom logo, `v2.5.0 | STORM 1.6`;
+- Nexus → About: “Caelestia Storm”, custom logo, `v2.5.0 | STORM 1.7`;
 - Wallpaper & style → **Colours**: pick a colour scheme (`dynamic` from the wallpaper or any bundled
   one), its flavour and palette variant, or roll a random scheme;
 - the bar logo is the Arch mark, wallpaper is drawn by the shell.
