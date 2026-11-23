@@ -36,16 +36,22 @@ Region {
     height: win.height - topInset - bottomInset
     intersection: Intersection.Xor
 
+    // A closed panel must not leave a clickable strip along its edge: the extra
+    // `borderThickness` is only there to make an open panel easier to hit.
+    function extra(scale: real): real {
+        return scale === 1 ? 0 : root.borderThickness;
+    }
+
     R {
         panel: root.panels.dashboard
         y: 0
-        height: panel.height * (1 - root.panels.dashboard.offsetScale) + root.borderThickness
+        height: panel.height * (1 - root.panels.dashboard.offsetScale) + root.extra(root.panels.dashboard.offsetScale)
     }
 
     R {
         panel: root.panels.launcher
         y: root.win.height - height
-        height: panel.height * (1 - root.panels.launcher.offsetScale) + root.borderThickness
+        height: panel.height * (1 - root.panels.launcher.offsetScale) + root.extra(root.panels.launcher.offsetScale)
     }
 
     R {
@@ -53,7 +59,7 @@ Region {
 
         panel: root.panels.sessionWrapper
         x: root.win.width - width
-        width: panel.width * (1 - root.panels.session.offsetScale) + root.borderThickness + sidebarRegion.width
+        width: panel.width * (1 - root.panels.session.offsetScale) + root.extra(root.panels.session.offsetScale) + sidebarRegion.width
     }
 
     R {
@@ -61,25 +67,25 @@ Region {
 
         panel: root.panels.sidebar
         x: root.win.width - width
-        width: panel.width * (1 - root.panels.sidebar.offsetScale) + root.borderThickness
+        width: panel.width * (1 - root.panels.sidebar.offsetScale) + root.extra(root.panels.sidebar.offsetScale)
     }
 
     R {
         panel: root.panels.osdWrapper
         x: root.win.width - width
-        width: panel.width * (1 - root.panels.osd.offsetScale) + root.borderThickness + sessionRegion.width
+        width: panel.width * (1 - root.panels.osd.offsetScale) + root.extra(root.panels.osd.offsetScale) + sessionRegion.width
     }
 
     R {
         panel: root.panels.notifications
         y: 0
-        height: panel.height + root.borderThickness
+        height: panel.height + (panel.height > 0 ? root.borderThickness : 0)
     }
 
     R {
         panel: root.panels.utilities
         y: root.win.height - height
-        height: panel.height * (1 - root.panels.utilities.offsetScale) + root.borderThickness
+        height: panel.height * (1 - root.panels.utilities.offsetScale) + root.extra(root.panels.utilities.offsetScale)
     }
 
     R {

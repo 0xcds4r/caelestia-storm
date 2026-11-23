@@ -506,6 +506,10 @@ Desktop-entry ids from mimeapps keep a `.desktop` suffix while Quickshell stores
 belonged to the shell. A browser's scrollbar sits exactly there and could not be grabbed. The insets
 are now `pad` only (`dragMaskPadding`, which is 0 whenever the workspace has windows or drag-to-open
 is off) plus the bar's own width; the decorative border no longer takes input.
+Closed panels used to leave a `borderThickness` (10 px) strip along their edge for an easier grab —
+`session`, `sidebar` and `osd` stacked three of those on the right edge, which still swallowed a
+browser scrollbar. `Regions.extra(scale)` now returns 0 while a panel is fully hidden, so an open
+panel keeps its 10 px margin and a closed one takes nothing.
 
 ## Drag-to-open switch
 
