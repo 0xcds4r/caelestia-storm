@@ -43,6 +43,11 @@ Singleton {
 
     function setResizeOnBorder(value: bool): void {
         root.resizeOnBorder = value;
+
+        // Both gestures start with a drag at a window edge, so they cannot be on at the same time
+        if (value)
+            root.panelsDragOpen = false;
+
         root.save();
         Hypr.applyWindowOptions();
     }

@@ -45,17 +45,23 @@ StyledWindow {
     property color surfaceColour: Colours.tPalette.m3surface
 
     readonly property int dragMaskPadding: {
-        if (focusGrab.active || panels.popouts.isDetached || !UiPrefs.panelsDragOpen)
+        // No strip at all while the gesture is disabled: the screen edges stay click-through so
+        // windows (and their scrollbars) keep working there.
+        if (focusGrab.active || panels.popouts.isDetached || !UiPrefs.panelsDragOpen || UiPrefs.resizeOnBorder)
             return 0;
 
-        if (monitor?.lastIpcObject.specialWorkspace?.name || monitor?.activeWorkspace?.lastIpcObject.windows > 0)
-            return 0;
-
+        // Only a thin strip at the edge is reserved for the gesture; the drag *distance* the config
+        // asks for stays the same, but 80 px of captured edge would swallow scrollbars and window
+        // edges (and looked like the whole screen stopped responding).
         const thresholds = [];
         for (const panel of ["dashboard", "launcher", "session", "sidebar"])
             if (contentItem.Config[panel].enabled)
                 thresholds.push(contentItem.Config[panel].dragThreshold);
-        return Math.max(...thresholds);
+
+        if (thresholds.length === 0)
+            return 0;
+
+        return Math.min(12, Math.max(...thresholds));
     }
 
     onHasFullscreenChanged: {

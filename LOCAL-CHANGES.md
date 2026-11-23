@@ -511,6 +511,15 @@ Closed panels used to leave a `borderThickness` (10 px) strip along their edge f
 browser scrollbar. `Regions.extra(scale)` now returns 0 while a panel is fully hidden, so an open
 panel keeps its 10 px margin and a closed one takes nothing.
 
+## Drag-to-open strip
+
+`ContentWindow.dragMaskPadding` reserves only a thin strip at the screen edge
+(`min(12, max(dragThreshold))`) while the gesture is enabled — the config thresholds are 30–80 px,
+which used to leave the whole border unclickable when it applied to a workspace with windows. With
+the switch off (or `resize_on_border` on) the strip is 0 and the edges stay click-through, so
+scrollbars and window borders work. Enabling "Resize windows on the border" also switches
+drag-to-open off (`UiPrefs.setResizeOnBorder`); the drag toggle is disabled while it is on.
+
 ## Window resize on the border
 
 `resize_on_border` is off in the Hyprland configs (`config/decorations.lua`,

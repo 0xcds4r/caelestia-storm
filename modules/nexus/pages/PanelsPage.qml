@@ -23,6 +23,7 @@ PageBase {
 
         ToggleRow {
             first: true
+            enabled: !UiPrefs.resizeOnBorder
             text: Tr.tr("Open by dragging")
             subtext: Tr.tr("Hold and drag from an edge: down from the top for the dashboard, up from the bottom for the launcher, left from the right edge for the session menu and sidebar")
             checked: UiPrefs.panelsDragOpen
