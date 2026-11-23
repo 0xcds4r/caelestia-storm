@@ -393,7 +393,10 @@ Or drop the fork entirely and go back to the stock config:
   (default) keeps it on the wallpaper. `"monitors": ["HDMI-A-1"]` restricts an effect to some
   connectors — `EffectLayer` filters by `screenName` (`Plugins.effectOnScreen`).
   Hyprland's catch-all `layerrule = xray` blurs every layer surface, so the overlay namespace needs
-  `blur = false, xray = false` in the compositor config, otherwise the desktop looks smeared.
+  `blur = false, xray = false`. The shell applies that rule itself on startup and after every
+  `configreloaded` (`services/Hypr.qml:reloadDynamicConfs()`), because a rule in the compositor
+  config alone did not always win over the `.*` one; keeping the same line in
+  `~/.config/hypr/hyprland/rules.lua` as well is harmless.
 - **Shaders:** the shell binds `time`, `resolution` and `qt_Opacity` and maps the descriptor's
   uniforms (number → `float`, `true/false` → `bool`, `#rrggbb` → `vec4`, 2–4 numbers → `vecN`).
   `modules/background/PluginShader.qml` builds the `ShaderEffect` for the descriptor (rebuilding

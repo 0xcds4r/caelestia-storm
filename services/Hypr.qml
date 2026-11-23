@@ -120,7 +120,13 @@ Singleton {
 
     function reloadDynamicConfs(): void {
         if (usingLua) {
-            extras.batchMessage(['eval hl.bind("Caps_Lock", hl.dsp.global("caelestia:refreshDevices"), { locked = true, non_consuming = true, ignore_mods = true, release = true })', 'eval hl.bind("Num_Lock", hl.dsp.global("caelestia:refreshDevices"), { locked = true, non_consuming = true, ignore_mods = true, release = true })']);
+            extras.batchMessage([
+                'eval hl.bind("Caps_Lock", hl.dsp.global("caelestia:refreshDevices"), { locked = true, non_consuming = true, ignore_mods = true, release = true })',
+                'eval hl.bind("Num_Lock", hl.dsp.global("caelestia:refreshDevices"), { locked = true, non_consuming = true, ignore_mods = true, release = true })',
+                // the config usually has a catch-all `layerrule xray`, which blurs every layer
+                // surface; the effect overlay is click-through and must stay sharp
+                'eval hl.layer_rule({ match = { namespace = "caelestia-effect-overlay" }, blur = false, xray = false })'
+            ]);
         } else {
             extras.batchMessage(["keyword bindlni ,Caps_Lock,global,caelestia:refreshDevices", "keyword bindlni ,Num_Lock,global,caelestia:refreshDevices"]);
         }
