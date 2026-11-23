@@ -504,7 +504,9 @@ Desktop-entry ids from mimeapps keep a `.desktop` suffix while Quickshell stores
 `UiPrefs.panelsDragOpen` now gates *every* edge drag in `modules/drawers/Interactions.qml`: the
 dashboard (top), the launcher (bottom), the session menu and the sidebar (right). Before, only the
 top and bottom panels checked the switch, so the right edge kept opening panels with the option off.
-The Panels page subtext lists the three edges.
+The Panels page subtext lists the three edges. The right side is also suppressed while the
+launcher or dashboard is visible (`rightAllowed`), and opening either of them closes an already
+open session menu / sidebar instead of leaving it on screen behind the panel.
 
 `services/UiPrefs.qml` (new) — small persisted preferences (`~/.local/state/caelestia/ui-prefs.json`),
 currently `panelsDragOpen` (default `true`).

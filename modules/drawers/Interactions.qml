@@ -108,6 +108,9 @@ CustomMouseArea {
         const y = event.y;
         const dragX = x - dragStart.x;
         const dragY = y - dragStart.y;
+        // the launcher (bottom) and the dashboard (top) own the screen while they are open, so a
+        // right-edge drag or hover must not slide the session menu / sidebar in on top of them
+        const rightAllowed = !(screenState.launcher || screenState.dashboard);
 
         if (fullscreen) {
             root.panels.osd.hovered = inRightPanel(panels.osdWrapper, x, y);
@@ -140,10 +143,10 @@ CustomMouseArea {
                 root.panels.osd.hovered = true;
             }
 
-            const showSidebar = UiPrefs.panelsDragOpen && pressed && dragStart.x > Math.min(width - Config.border.minThickness, bar.implicitWidth + panels.sidebar.x);
+            const showSidebar = rightAllowed && UiPrefs.panelsDragOpen && pressed && dragStart.x > Math.min(width - Config.border.minThickness, bar.implicitWidth + panels.sidebar.x);
 
             // Show sidebar on hover (top-right corner, bounded by notification panel height)
-            if (Config.sidebar.showOnHover) {
+            if (Config.sidebar.showOnHover && rightAllowed) {
                 const sidebarTriggerY = Math.max(Config.sidebar.minHoverThreshold, panels.notifications.y + panels.notifications.height + borderThickness);
                 const showSidebarHover = x > Math.min(width - Config.border.minThickness, bar.implicitWidth + panels.sidebar.x) && y <= sidebarTriggerY;
                 if (showSidebarHover && !screenState.sidebar)
@@ -151,7 +154,7 @@ CustomMouseArea {
             }
 
             // Show/hide session on drag (only when "open panels by dragging" is on)
-            if (UiPrefs.panelsDragOpen && pressed && inRightPanel(panels.sessionWrapper, dragStart.x, dragStart.y) && withinPanelHeight(panels.sessionWrapper, x, y)) {
+            if (rightAllowed && UiPrefs.panelsDragOpen && pressed && inRightPanel(panels.sessionWrapper, dragStart.x, dragStart.y) && withinPanelHeight(panels.sessionWrapper, x, y)) {
                 if (dragX < -Config.session.dragThreshold)
                     screenState.session = true;
                 else if (dragX > Config.session.dragThreshold)
@@ -180,7 +183,7 @@ CustomMouseArea {
             }
 
             // Show/hide session on drag (only when "open panels by dragging" is on)
-            if (UiPrefs.panelsDragOpen && pressed && outOfSidebar && inRightPanel(panels.sessionWrapper, dragStart.x, dragStart.y) && withinPanelHeight(panels.sessionWrapper, x, y)) {
+            if (rightAllowed && UiPrefs.panelsDragOpen && pressed && outOfSidebar && inRightPanel(panels.sessionWrapper, dragStart.x, dragStart.y) && withinPanelHeight(panels.sessionWrapper, x, y)) {
                 if (dragX < -Config.session.dragThreshold)
                     screenState.session = true;
                 else if (dragX > Config.session.dragThreshold)
@@ -188,7 +191,7 @@ CustomMouseArea {
             }
 
             // Show/hide sidebar on hover
-            if (Config.sidebar.showOnHover && !pressed) {
+            if (Config.sidebar.showOnHover && rightAllowed && !pressed) {
                 const sidebarTriggerY = Math.max(Config.sidebar.minHoverThreshold, panels.notifications.y + panels.notifications.height + borderThickness);
                 const showSidebarHover = x > Math.min(width - Config.border.minThickness, bar.implicitWidth + panels.sidebar.x) && y <= sidebarTriggerY;
                 if (showSidebarHover && !screenState.sidebar) {
@@ -254,6 +257,12 @@ CustomMouseArea {
     // Monitor individual visibility changes
     Connections {
         function onLauncherChanged() {
+            // The bottom panel owns the screen: hide the right side immediately
+            if (root.screenState.launcher) {
+                root.screenState.session = false;
+                root.screenState.sidebar = false;
+            }
+
             // If launcher is hidden, clear shortcut flags for dashboard and OSD
             if (!root.screenState.launcher) {
                 root.dashboardShortcutActive = false;
@@ -276,6 +285,10 @@ CustomMouseArea {
 
         function onDashboardChanged() {
             if (root.screenState.dashboard) {
+                // The top panel owns the screen: hide the right side immediately
+                root.screenState.session = false;
+                root.screenState.sidebar = false;
+
                 // Dashboard became visible, immediately check if this should be shortcut mode
                 const inDashboardArea = root.inTopPanel(root.panels.dashboard, root.mouseX, root.mouseY);
                 if (!inDashboardArea) {
