@@ -364,6 +364,25 @@ Or drop the fork entirely and go back to the stock config:
   dependency-free helper module: JSON `Fields` builder, `Plugin`/`Scheme`/`Action`/`Widget`/
   `Desktop`/`Window`+`Page`+`Row` builders, `Event` parsing and a `key=value` `State` store.
 
+## Settings → Updates
+
+`modules/nexus/pages/UpdatesPage.qml` (the page was a placeholder) — the Nexus "Updates" page now:
+
+- shows the Storm checkout: installed commit (`git rev-parse` in the shell directory) and the current
+  `main` commit (`git ls-remote`, no API limits), with **Update Storm** (`git pull --ff-only`, stderr
+  included in the message) or **Install Storm** (runs `install.sh` in the terminal) when the config
+  is missing, plus **Restart shell**;
+- lists `caelestia-shell`, `caelestia-cli` and `quickshell-git` with their installed version and the
+  pending `old → new` when there is one (`checkupdates`, falling back to `pacman -Qu`, plus
+  `paru -Qua` for the AUR);
+- counts the remaining pending updates and previews the first dozen of them as "system libraries",
+  with **Update packages** opening `paru -Syu --needed …` in the configured terminal;
+- **Check for updates** re-runs the whole chain (installed commit → remote → versions → repo
+  updates → AUR updates).
+
+The page state and the `Process` objects live in an invisible `Item` (a `PageBase` is an `Item`, so
+`Process` cannot be its direct child) and the visual root only mirrors it with readonly properties.
+
 ## Background effects (plugins) + StormSnow
 
 - **Keyboard shortcuts:** a plugin that declares `binds` and answers `binds` with
