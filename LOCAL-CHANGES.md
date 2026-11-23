@@ -499,6 +499,14 @@ shows the current handler and opens a list of the registered apps (checkmark on 
 Desktop-entry ids from mimeapps keep a `.desktop` suffix while Quickshell stores them without, so
 `entryFor()` tries both before falling back to the raw id.
 
+## Edge clicks are click-through
+
+`modules/drawers/Regions.qml` — the input region of the drawers surface was inset by
+`border.clampedThickness` (10 px) on every side without a bar, so the outermost 10 px of the screen
+belonged to the shell. A browser's scrollbar sits exactly there and could not be grabbed. The insets
+are now `pad` only (`dragMaskPadding`, which is 0 whenever the workspace has windows or drag-to-open
+is off) plus the bar's own width; the decorative border no longer takes input.
+
 ## Drag-to-open switch
 
 `UiPrefs.panelsDragOpen` now gates *every* edge drag in `modules/drawers/Interactions.qml`: the

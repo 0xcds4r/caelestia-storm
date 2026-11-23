@@ -21,12 +21,14 @@ Region {
     // bar becomes click-through (very noticeable on an empty workspace, where dragMaskPadding
     // is at its largest).
     readonly property real pad: win.dragMaskPadding
-    readonly property real edge: clampedThickness
     readonly property real barSide: bar.clampedWidth
-    readonly property real leftInset: bar.vertical && !BarPos.onRight ? barSide + pad : edge + pad
-    readonly property real topInset: !bar.vertical && !BarPos.onBottom ? barSide + pad : edge + pad
-    readonly property real rightInset: bar.vertical && BarPos.onRight ? barSide + pad : edge + pad
-    readonly property real bottomInset: !bar.vertical && BarPos.onBottom ? barSide + pad : edge + pad
+    // The border is only decoration: it must not take input, otherwise the outermost pixels of
+    // the screen (a browser's scrollbar, a window edge) become impossible to click. Only the bar
+    // side and the drag-to-open strip stay interactive.
+    readonly property real leftInset: bar.vertical && !BarPos.onRight ? barSide + pad : pad
+    readonly property real topInset: !bar.vertical && !BarPos.onBottom ? barSide + pad : pad
+    readonly property real rightInset: bar.vertical && BarPos.onRight ? barSide + pad : pad
+    readonly property real bottomInset: !bar.vertical && BarPos.onBottom ? barSide + pad : pad
 
     x: leftInset
     y: topInset
