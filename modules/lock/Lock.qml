@@ -7,12 +7,41 @@ import Quickshell.Wayland
 import qs.components.misc
 
 Scope {
+    id: lockScope
+
     property alias lock: lock
+
+    // Timestamp of the last successful unlock; logind/hypridle can repeat the Lock signal right
+    // after it, which re-opened the lock screen the moment it was dismissed.
+    property double unlockedAt: 0
+
+    // Single entry point for every lock request (shortcut, IPC, logind, session menu). A request
+    // that arrives right after an unlock is a repeat and is dropped.
+    function requestLock(debounceMs: int): void {
+        if (lock.locked)
+            return;
+
+        const since = Date.now() - lockScope.unlockedAt;
+        if (debounceMs > 0 && lockScope.unlockedAt > 0 && since < debounceMs)
+            return;
+
+        lock.locked = true;
+    }
 
     WlSessionLock {
         id: lock
 
         signal unlock
+
+        onLockedChanged: {
+            if (locked)
+                return;
+
+            lockScope.unlockedAt = Date.now();
+            // Clear logind's LockedHint as well, otherwise the session stays "locked" there and a
+            // repeated Lock signal re-opens the screen the moment it was dismissed.
+            unlockHint.running = true;
+        }
 
         LockSurface {
             lock: lock
@@ -24,6 +53,35 @@ Scope {
         id: pam
 
         lock: lock
+    }
+
+    Process {
+        id: unlockHint
+
+        command: ["sh", "-c", "loginctl unlock-session 2>/dev/null || true"]
+    }
+
+    // The unlock is animated, and the animation flips `locked` to false at the very end. If it is
+    // interrupted (a monitor changes, a surface is re-created) the lock stayed up forever, so a
+    // fallback forces the state after the animation had every chance to finish.
+    Timer {
+        id: unlockFallback
+
+        interval: 900
+        repeat: false
+
+        onTriggered: {
+            if (lock.locked)
+                lock.locked = false;
+        }
+    }
+
+    Connections {
+        function onUnlock(): void {
+            unlockFallback.restart();
+        }
+
+        target: lock
     }
 
     Loader {
@@ -45,7 +103,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "lock"
         description: "Lock the current session"
-        onPressed: lock.locked = true
+        onPressed: lockScope.requestLock(0)
     }
 
     // qmllint disable unresolved-type
@@ -58,7 +116,7 @@ Scope {
 
     IpcHandler {
         function lock(): void {
-            lock.locked = true;
+            lockScope.requestLock(0);
         }
 
         function unlock(): void {

@@ -28,7 +28,7 @@ Scope {
             return;
 
         if (action === "lock")
-            lock.lock.locked = true;
+            lock.requestLock(0);
         else if (action === "unlock")
             lock.lock.locked = false;
         else if (typeof action === "string")
@@ -40,11 +40,13 @@ Scope {
     Connections {
         function onAboutToSleep(): void {
             if (GlobalConfig.general.idle.lockBeforeSleep)
-                root.lock.lock.locked = true;
+                root.lock.requestLock(0);
         }
 
         function onLockRequested(): void {
-            root.lock.lock.locked = true;
+            // logind/hypridle can repeat the Lock signal for a while after an unlock, so an
+            // explicit logind lock is ignored for a short grace period after unlocking.
+            root.lock.requestLock(15000);
         }
 
         function onUnlockRequested(): void {

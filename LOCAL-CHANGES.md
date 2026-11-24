@@ -613,6 +613,22 @@ the whole wallpaper around the clock (13 % of the GPU at 1080p). `shouldBeActive
 `audible`, which is driven by `Audio.cava.values` (> 0.01) and released 2 s after the last
 non-zero frame.
 
+## Lock: no more "unlock, prompt again"
+
+`modules/lock/Lock.qml` — the unlock used to happen only at the end of the unlock animation; if the
+animation was interrupted, or when the lock came from `loginctl lock-session` (hypridle) instead of
+PAM, `locked` stayed true and the screen came back. Now:
+
+- `requestLock(debounceMs)` is the single entry point for every lock request (shortcut, IPC,
+  `lockRequested`, `aboutToSleep`); a logind request within 15 s of an unlock is a repeat and is
+  ignored;
+- `unlockFallback` forces `locked = false` 900 ms after an unlock if the animation did not finish;
+- after unlocking the shell runs `loginctl unlock-session`, clearing logind's `LockedHint` (while it
+  stayed `yes`, logind kept re-sending `Lock` in a tight loop — ~900 requests/s were being
+  suppressed);
+- `hypridle.conf` now calls `caelestia shell lock lock` instead of `loginctl lock-session`, so the
+  idle lock never goes through logind in the first place.
+
 ## Version 1.7
 
 Overview drag inside a cell, the `effects`/`binds` plugin API with the StormSnow plugin, a real
