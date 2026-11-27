@@ -515,7 +515,18 @@ Singleton {
         root.rebuildSchemes();
     }
 
-    Component.onCompleted: root.refresh()
+    // Defer the first scan a little: it spawns a process per plugin and there is no reason to
+    // compete with the first frame.
+    Component.onCompleted: startupScan.restart()
+
+    Timer {
+        id: startupScan
+
+        interval: 400
+        repeat: false
+
+        onTriggered: root.refresh()
+    }
 
     // a Hyprland config reload drops every runtime bind, so register the plugin ones again
     Connections {
@@ -556,7 +567,9 @@ Singleton {
     Process {
         id: applyProc
 
-        onExited: root.refresh()
+        // Applying a scheme does not change any plugin metadata: rebuild the chips instead of
+        // re-running the whole plugin scan (three processes per plugin).
+        onExited: root.rebuildSchemes()
     }
 
     Process {
