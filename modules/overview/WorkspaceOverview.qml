@@ -142,6 +142,23 @@ Item {
         restoreWarps.restart();
     }
 
+    // When another window leaves (or joins) a workspace Hyprland retiles it, and the toplevel export
+    // of the remaining windows can freeze on a black frame that never recovers on its own. Their
+    // captures are rebuilt once the new layout has settled.
+    function refreshWorkspaceCaptures(wsId: int, delay: int): void {
+        const container = previewLoader.item;
+
+        if (!container)
+            return;
+
+        for (let i = 0; i < container.count; ++i) {
+            const child = container.itemAt(i);
+
+            if (child && typeof child.rebuildCapture === "function" && (child.hypr?.workspace?.id ?? -1) === wsId)
+                child.rebuildCapture(delay);
+        }
+    }
+
     // Finds the preview of another window in the same workspace under the given scene point
     function previewUnder(px: real, py: real, wsId: int, except: Item): Item {
         const container = previewLoader.item;
@@ -149,8 +166,8 @@ Item {
         if (!container)
             return null;
 
-        for (let i = 0; i < container.children.length; i++) {
-            const child = container.children[i];
+        for (let i = 0; i < container.count; i++) {
+            const child = container.itemAt(i);
             if (!child || child === except || !child.visible || typeof child.homeX !== "number")
                 continue;
             if ((child.hypr?.workspace?.id ?? -1) !== wsId)
@@ -428,6 +445,24 @@ Item {
                 // Set right after a drop: the preview jumps to its new tile instead of gliding through
                 // the stale geometry Hyprland reports for a moment
                 property bool landing: false
+                property bool captureOn: true
+                property int captureDelay: 0
+
+                function rebuildCapture(delay: int): void {
+                    preview.captureOn = false;
+                    preview.captureDelay = delay;
+                    captureRebuildTimer.restart();
+                }
+
+                Timer {
+                    id: captureRebuildTimer
+
+                    interval: preview.captureDelay
+                    repeat: false
+
+                    onTriggered: preview.captureOn = true
+                }
+
                 Timer {
                     id: landTimer
 
@@ -498,7 +533,7 @@ Item {
                         id: capture
 
                         anchors.fill: parent
-                        active: root.live
+                        active: root.live && preview.captureOn
                         sourceComponent: captureComponent
                     }
 
@@ -600,6 +635,10 @@ Item {
                                 root.moveWithinCell(preview, dropX, dropY);
                             }
                         }
+
+                        // Hyprland retiles the workspace on any drop, and the remaining previews can
+                        // freeze on a black frame; rebuild them once the layout has settled
+                        root.refreshWorkspaceCaptures(currentWs, 200);
 
                         preview.landing = true;
                         landTimer.restart();
