@@ -77,11 +77,19 @@ Item {
     // otherwise emit a row move, and the Repeater recreates the moved delegates (a fresh capture of
     // a window on a workspace that is not rendered is black). Sorting by address keeps every
     // preview attached to its window, so its capture survives the move.
-    readonly property var windows: ToplevelManager.toplevels.values.filter(t => {
-        const h = hyprFor(t);
-        const ws = h?.workspace?.id ?? -1;
-        return ws > group * cellCount && ws <= (group + 1) * cellCount;
-    }).sort((a, b) => (hyprFor(a)?.address ?? "") < (hyprFor(b)?.address ?? "") ? -1 : 1)
+    readonly property var windows: {
+        const list = ToplevelManager.toplevels.values.filter(t => {
+            const h = root.hyprFor(t);
+            const ws = h?.workspace?.id ?? -1;
+            return ws > root.group * root.cellCount && ws <= (root.group + 1) * root.cellCount;
+        });
+
+        return [...list].sort((a, b) => {
+            const ka = root.hyprFor(a)?.address ?? "";
+            const kb = root.hyprFor(b)?.address ?? "";
+            return ka < kb ? -1 : 1;
+        });
+    }
 
     readonly property string activeWindowAddress: {
         const candidates = hyprToplevels.filter(t => t.workspace?.id === root.activeWs);
