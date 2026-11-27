@@ -21,6 +21,8 @@ Singleton {
     property string appliedPluginScheme: ""
     // Scheme to restore when the plugin owning the current scheme is disabled (JSON)
     property string previousScheme: ""
+    // Hyprland shortcuts registered for plugins, so a restart can unbind the previous set
+    property var registeredBinds: []
 
     function save(): void {
         const data = JSON.stringify({
@@ -28,7 +30,8 @@ Singleton {
             resizeOnBorder: root.resizeOnBorder,
             disabledPlugins: root.disabledPlugins,
             appliedPluginScheme: root.appliedPluginScheme,
-            previousScheme: root.previousScheme
+            previousScheme: root.previousScheme,
+            registeredBinds: root.registeredBinds
         });
         // The plugin scripts read this file so they do not even execute disabled plugins.
         const disabled = root.disabledPlugins.join("\n");
@@ -70,6 +73,8 @@ Singleton {
                     root.panelsDragOpen = data.panelsDragOpen;
                 if (typeof data.resizeOnBorder === "boolean")
                     root.resizeOnBorder = data.resizeOnBorder;
+                if (Array.isArray(data.registeredBinds))
+                    root.registeredBinds = data.registeredBinds;
                 if (Array.isArray(data.disabledPlugins))
                     root.disabledPlugins = data.disabledPlugins;
                 if (typeof data.appliedPluginScheme === "string")
@@ -79,6 +84,10 @@ Singleton {
             } catch (error) {
                 console.warn("Unable to parse ui-prefs.json:", error);
             }
+
+            // The plugin scripts read the plain `<id>` list, so rewrite it from the JSON: the two
+            // files could drift apart when one of them is edited by hand.
+            root.save();
         }
     }
 

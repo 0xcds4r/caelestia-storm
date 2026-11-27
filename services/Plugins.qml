@@ -328,15 +328,18 @@ Singleton {
 
         const commands = [];
 
-        for (const old of root.registeredBinds)
-            commands.push(`eval hl.unbind("${old.shortcut}")`);
+        // Unbind what an earlier shell run registered: the in-memory list is empty after a restart,
+        // so a plugin that is now disabled used to keep its shortcut.
+        for (const shortcut of UiPrefs.registeredBinds)
+            commands.push(`eval hl.unbind("${shortcut}")`);
 
         for (const bind of root.binds) {
             const description = String(bind.description).replace(/"/g, "'");
             commands.push(`eval hl.bind("${bind.shortcut}", hl.dsp.global("caelestia:${bind.name}"), { description = "Plugin: ${description}" })`);
         }
 
-        root.registeredBinds = root.binds.slice();
+        UiPrefs.registeredBinds = root.binds.map(bind => bind.shortcut);
+        UiPrefs.save();
 
         if (commands.length > 0)
             Hypr.extras.batchMessage(commands);
@@ -348,8 +351,6 @@ Singleton {
         if (plugin)
             root.runAction(plugin, "bind", bindId);
     }
-
-    property var registeredBinds: []
 
     function refreshEffects(): void {
         root.refreshPoll();
@@ -521,7 +522,8 @@ Singleton {
         target: Hypr
 
         function onConfigReloaded(): void {
-            root.registeredBinds = [];
+            // a reload drops every runtime bind; clear the record so they are simply re-created
+            UiPrefs.registeredBinds = [];
             root.registerBinds();
         }
     }
