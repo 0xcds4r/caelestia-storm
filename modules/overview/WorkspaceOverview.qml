@@ -18,6 +18,9 @@ Item {
 
     required property ShellScreen screen
     property bool live: true
+    // Captures are torn down and rebuilt by refreshCaptures(): a live view that was frozen while
+    // its workspace was hidden never recovers on its own, while a fresh one shows the window again.
+    property bool capturesOn: true
     property double widthScale: 0.72
     property real cellSpacing: 10
 
@@ -97,22 +100,18 @@ Item {
         return wsWindows[0];
     }
 
-    // After a swap the live captures keep painting the frame they held before the windows were
-    // retiled. Reopening the overview always cleared that up, so every preview restarts its capture
-    // a moment after a drop. The restart is done with a second, hidden view so nothing goes black.
-    property int recaptureRev: 0
-
     Timer {
-        id: recaptureTimer
+        id: refreshCapturesTimer
 
-        interval: 180
+        interval: 300
         repeat: false
 
-        onTriggered: root.recaptureRev++
+        onTriggered: root.capturesOn = true
     }
 
-    function recapturePreviews(): void {
-        recaptureTimer.restart();
+    function refreshCaptures(): void {
+        root.capturesOn = false;
+        refreshCapturesTimer.restart();
     }
 
     // Swapping or moving a window refocuses it, and Hyprland then yanks the cursor to the centre of
@@ -443,8 +442,15 @@ Item {
                 Connections {
                     target: root
 
-                    function onRecaptureRevChanged(): void {
-                        preview.restartCapture();
+                    function onCapturesOnChanged(): void {
+                        if (root.capturesOn)
+                            return;
+
+                        // back to the first view so the rebuilt capture is the visible one
+                        preview.captureAOn = true;
+                        preview.captureBOn = false;
+                        preview.captureShowB = false;
+                        preview.captureSwapping = false;
                     }
                 }
 
@@ -578,7 +584,7 @@ Item {
                         id: captureA
 
                         anchors.fill: parent
-                        active: root.live && preview.captureAOn
+                        active: root.live && root.capturesOn && preview.captureAOn
                         visible: !preview.captureShowB
                         sourceComponent: captureComponent
                     }
@@ -587,7 +593,7 @@ Item {
                         id: captureB
 
                         anchors.fill: parent
-                        active: root.live && preview.captureBOn
+                        active: root.live && root.capturesOn && preview.captureBOn
                         visible: preview.captureShowB
                         sourceComponent: captureComponent
                     }
@@ -676,6 +682,10 @@ Item {
                             if (Hypr.usingLua) {
                                 root.beginNoWarp();
                                 Hypr.dispatch(`hl.dsp.window.move({ workspace = ${targetWs}, window = "address:${addr}", follow = false })`);
+                                // Moving the focused window drags the focus to the target workspace;
+                                // a drag-and-drop must leave the user where they were, or the whole
+                                // source cell turns black (its workspace is not rendered anymore).
+                                Hypr.dispatch(`hl.dsp.focus({ workspace = ${currentWs} })`);
                             } else
                                 Hypr.dispatch(`movetoworkspacesilent ${targetWs},address:${addr}`);
                         } else if (targetWs === currentWs) {
@@ -689,7 +699,9 @@ Item {
                             }
                         }
 
-                        root.recapturePreviews();
+                        // the captures were running against the old layout; rebuild them instead of
+                        // letting a frozen one paint a black tile
+                        root.refreshCaptures();
                         preview.landing = true;
                         landTimer.restart();
                         preview.x = preview.homeX;
