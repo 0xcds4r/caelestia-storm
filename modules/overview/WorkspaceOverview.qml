@@ -470,6 +470,19 @@ Item {
                 }
 
                 function finishCaptureSwap(): void {
+                    // The spare view never produced a frame (the compositor refused the export for
+                    // that window, e.g. right after a swap). Keep showing the view that still has
+                    // content instead of flipping to a black tile; the next restart tries again.
+                    if (!preview.captureReady()) {
+                        if (preview.captureShowB)
+                            preview.captureAOn = false;
+                        else
+                            preview.captureBOn = false;
+
+                        preview.captureSwapping = false;
+                        return;
+                    }
+
                     preview.captureShowB = !preview.captureShowB;
 
                     if (preview.captureShowB)
@@ -584,9 +597,7 @@ Item {
 
                         ScreencopyView {
                             captureSource: preview.modelData
-                            // While a preview is dragged it repaints every frame; each live capture would
-                            // request a new frame for nothing. The last frame stays on screen.
-                            live: !preview.dragging
+                            live: true
                             paintCursor: false
 
                             onStopped: preview.restartCapture()
