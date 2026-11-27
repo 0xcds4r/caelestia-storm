@@ -136,6 +136,9 @@ Singleton {
                 // the config usually has a catch-all `layerrule xray`, which blurs every layer
                 // surface; the effect overlay is click-through and must stay sharp
                 'eval hl.layer_rule({ match = { namespace = "caelestia-effect-overlay" }, blur = false, xray = false })',
+                // the catch-all `namespace = ".*"` xray rule makes Hyprland blur the wallpaper layer
+                // every frame; it costs ~8 % of the GPU on a 1080p screen and only smears the image
+                'eval hl.layer_rule({ match = { namespace = "caelestia-background" }, blur = false, xray = false })',
                 `eval hl.config({ general = { resize_on_border = ${UiPrefs.resizeOnBorder ? "true" : "false"} } })`
             ]);
         } else {
