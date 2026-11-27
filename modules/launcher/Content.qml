@@ -94,7 +94,9 @@ Item {
                 id: overview
 
                 anchors.top: parent.top
-                live: root.screenState.launcher
+                // captures are the expensive part of opening; the timer above starts them once the
+                // panel is on screen
+                live: root.previewsLive
                 widthScale: 0.72
                 screen: root.panels.screen
 
