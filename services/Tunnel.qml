@@ -25,12 +25,22 @@ Singleton {
         }
     }
 
+    // Polling `ip route` used to run every 5 s (720 processes an hour). The connection change
+    // from NetworkManager is a much better trigger; the timer is only a slow fallback.
     Timer {
-        interval: 5000
+        interval: 15000
         running: true
         repeat: true
         triggeredOnStart: true
 
         onTriggered: probe.running = true
+    }
+
+    Connections {
+        function onActiveConnectionChanged(): void {
+            probe.running = true;
+        }
+
+        target: Nmcli
     }
 }
