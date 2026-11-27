@@ -116,20 +116,46 @@ Singleton {
         return root.widgets.find(widget => widget.key === key) ?? null;
     }
 
-    function refreshWidgets(): void {
-        if (widgetPoll.running)
+    // Everything a plugin can contribute is collected by a single script pass: one process per
+    // minute instead of four, and `info` is asked once per plugin instead of four times.
+    function refreshPoll(): void {
+        if (pollProc.running)
             return;
 
-        widgetPoll.running = true;
+        pollProc.running = true;
+    }
 
-        if (!desktopPoll.running)
-            desktopPoll.running = true;
+    function refreshWidgets(): void {
+        root.refreshPoll();
+    }
 
-        if (!effectsPoll.running)
-            effectsPoll.running = true;
+    function applyPoll(text: string): void {
+        let widgets = "";
+        let desktop = "";
+        let effects = "";
+        let binds = "";
 
-        if (!bindPoll.running)
-            bindPoll.running = true;
+        for (const line of text.split("\n")) {
+            const match = line.match(/^(widgets|desktop|effects|binds)\t(.*)$/);
+            if (!match)
+                continue;
+
+            const [, kind, payload] = match;
+
+            if (kind === "widgets")
+                widgets += `${payload}\n`;
+            else if (kind === "desktop")
+                desktop += `${payload}\n`;
+            else if (kind === "effects")
+                effects += `${payload}\n`;
+            else
+                binds += `${payload}\n`;
+        }
+
+        root.applyWidgets(widgets);
+        root.applyDesktop(desktop);
+        root.applyEffects(effects);
+        root.applyBinds(binds);
     }
 
     function applyDesktop(text: string): void {
@@ -291,10 +317,7 @@ Singleton {
     }
 
     function refreshBinds(): void {
-        if (bindPoll.running)
-            return;
-
-        bindPoll.running = true;
+        root.refreshPoll();
     }
 
     // Re-creates the Hyprland binds for the current plugin set (unbinding what was registered
@@ -329,10 +352,7 @@ Singleton {
     property var registeredBinds: []
 
     function refreshEffects(): void {
-        if (effectsPoll.running)
-            return;
-
-        effectsPoll.running = true;
+        root.refreshPoll();
     }
 
     function applyWidgets(text: string): void {
@@ -542,42 +562,12 @@ Singleton {
     }
 
     Process {
-        id: desktopPoll
+        id: pollProc
 
-        command: ["sh", Quickshell.shellPath("scripts/plugins-desktop.sh")]
-
-        stdout: StdioCollector {
-            onStreamFinished: root.applyDesktop(text)
-        }
-    }
-
-    Process {
-        id: bindPoll
-
-        command: ["sh", Quickshell.shellPath("scripts/plugins-binds.sh")]
+        command: ["sh", Quickshell.shellPath("scripts/plugins-poll.sh")]
 
         stdout: StdioCollector {
-            onStreamFinished: root.applyBinds(text)
-        }
-    }
-
-    Process {
-        id: effectsPoll
-
-        command: ["sh", Quickshell.shellPath("scripts/plugins-effects.sh")]
-
-        stdout: StdioCollector {
-            onStreamFinished: root.applyEffects(text)
-        }
-    }
-
-    Process {
-        id: widgetPoll
-
-        command: ["sh", Quickshell.shellPath("scripts/plugins-widgets.sh")]
-
-        stdout: StdioCollector {
-            onStreamFinished: root.applyWidgets(text)
+            onStreamFinished: root.applyPoll(text)
         }
     }
 

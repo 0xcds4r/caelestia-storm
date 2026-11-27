@@ -385,6 +385,10 @@ The page state and the `Process` objects live in an invisible `Item` (a `PageBas
 
 ## Background effects (plugins) + StormSnow
 
+- **One poll:** `scripts/plugins-poll.sh` walks the plugin directories once and prints
+  `kind <TAB> id <TAB> json` for widgets, desktop cards, effects and binds; `Plugins.applyPoll()`
+  splits that back into the four lists. Before, four separate scripts each re-ran `info` for every
+  plugin — five process spawns per plugin per minute instead of one.
 - **Keyboard shortcuts:** a plugin that declares `binds` and answers `binds` with
   `[{"id": "toggle", "key": "CTRL + SUPER + SHIFT + S", "description": "..."}]` gets those keys
   registered: `scripts/plugins-binds.sh` polls them, `Plugins.binds` keeps the list,
