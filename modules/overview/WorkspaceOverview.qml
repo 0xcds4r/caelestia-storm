@@ -73,23 +73,11 @@ Item {
     readonly property real cellHeight: Math.round(cellWidth * (screen.height / screen.width))
 
     readonly property var hyprToplevels: Hypr.toplevels.values
-    // A stable order matters: when a window moves to another workspace the ScriptModel would
-    // otherwise emit a row move, and the Repeater recreates the moved delegates (a fresh capture of
-    // a window on a workspace that is not rendered is black). Sorting by address keeps every
-    // preview attached to its window, so its capture survives the move.
-    readonly property var windows: {
-        const list = ToplevelManager.toplevels.values.filter(t => {
-            const h = root.hyprFor(t);
-            const ws = h?.workspace?.id ?? -1;
-            return ws > root.group * root.cellCount && ws <= (root.group + 1) * root.cellCount;
-        });
-
-        return [...list].sort((a, b) => {
-            const ka = root.hyprFor(a)?.address ?? "";
-            const kb = root.hyprFor(b)?.address ?? "";
-            return ka < kb ? -1 : 1;
-        });
-    }
+    readonly property var windows: ToplevelManager.toplevels.values.filter(t => {
+        const h = hyprFor(t);
+        const ws = h?.workspace?.id ?? -1;
+        return ws > group * cellCount && ws <= (group + 1) * cellCount;
+    })
 
     readonly property string activeWindowAddress: {
         const candidates = hyprToplevels.filter(t => t.workspace?.id === root.activeWs);
@@ -107,6 +95,24 @@ Item {
             return null;
         wsWindows.sort((a, b) => (hyprFor(a)?.lastIpcObject?.focusHistoryID ?? 999) - (hyprFor(b)?.lastIpcObject?.focusHistoryID ?? 999));
         return wsWindows[0];
+    }
+
+    // After a swap the live captures keep painting the frame they held before the windows were
+    // retiled. Reopening the overview always cleared that up, so every preview restarts its capture
+    // a moment after a drop. The restart is done with a second, hidden view so nothing goes black.
+    property int recaptureRev: 0
+
+    Timer {
+        id: recaptureTimer
+
+        interval: 180
+        repeat: false
+
+        onTriggered: root.recaptureRev++
+    }
+
+    function recapturePreviews(): void {
+        recaptureTimer.restart();
     }
 
     // Swapping or moving a window refocuses it, and Hyprland then yanks the cursor to the centre of
@@ -142,23 +148,6 @@ Item {
         restoreWarps.restart();
     }
 
-    // When another window leaves (or joins) a workspace Hyprland retiles it, and the toplevel export
-    // of the remaining windows can freeze on a black frame that never recovers on its own. Their
-    // captures are rebuilt once the new layout has settled.
-    function refreshWorkspaceCaptures(wsId: int, delay: int): void {
-        const container = previewLoader.item;
-
-        if (!container)
-            return;
-
-        for (let i = 0; i < container.count; ++i) {
-            const child = container.itemAt(i);
-
-            if (child && typeof child.rebuildCapture === "function" && (child.hypr?.workspace?.id ?? -1) === wsId)
-                child.rebuildCapture(delay);
-        }
-    }
-
     // Finds the preview of another window in the same workspace under the given scene point
     function previewUnder(px: real, py: real, wsId: int, except: Item): Item {
         const container = previewLoader.item;
@@ -166,8 +155,8 @@ Item {
         if (!container)
             return null;
 
-        for (let i = 0; i < container.count; i++) {
-            const child = container.itemAt(i);
+        for (let i = 0; i < container.children.length; i++) {
+            const child = container.children[i];
             if (!child || child === except || !child.visible || typeof child.homeX !== "number")
                 continue;
             if ((child.hypr?.workspace?.id ?? -1) !== wsId)
@@ -434,7 +423,6 @@ Item {
                     }) ?? null;
                 }
                 readonly property bool covered: preview.coveringWindow !== null && preview.coveringWindow !== preview.modelData
-                readonly property bool isActiveWindow: (preview.ipc?.address ?? "") !== "" && preview.ipc?.address === root.activeWindowAddress
 
                 readonly property real homeX: preview.fillsCell ? cellX : cellX + innerX
                 readonly property real homeY: preview.fillsCell ? cellY : cellY + innerY
@@ -445,22 +433,66 @@ Item {
                 // Set right after a drop: the preview jumps to its new tile instead of gliding through
                 // the stale geometry Hyprland reports for a moment
                 property bool landing: false
-                property bool captureOn: true
-                property int captureDelay: 0
+                // Two capture views are kept so a restart can warm the spare one before showing it
+                property bool captureAOn: true
+                property bool captureBOn: false
+                property bool captureShowB: false
+                property bool captureSwapping: false
+                property int captureTries: 0
 
-                function rebuildCapture(delay: int): void {
-                    preview.captureOn = false;
-                    preview.captureDelay = delay;
-                    captureRebuildTimer.restart();
+                Connections {
+                    target: root
+
+                    function onRecaptureRevChanged(): void {
+                        preview.restartCapture();
+                    }
+                }
+
+                function restartCapture(): void {
+                    if (preview.captureSwapping)
+                        return;
+
+                    preview.captureSwapping = true;
+                    preview.captureTries = 0;
+
+                    if (preview.captureShowB)
+                        preview.captureAOn = true;
+                    else
+                        preview.captureBOn = true;
+
+                    captureSwapTimer.restart();
+                }
+
+                function captureReady(): bool {
+                    const loader = preview.captureShowB ? captureA : captureB;
+
+                    return !loader.item || loader.item.hasContent;
+                }
+
+                function finishCaptureSwap(): void {
+                    preview.captureShowB = !preview.captureShowB;
+
+                    if (preview.captureShowB)
+                        preview.captureAOn = false;
+                    else
+                        preview.captureBOn = false;
+
+                    preview.captureSwapping = false;
                 }
 
                 Timer {
-                    id: captureRebuildTimer
+                    id: captureSwapTimer
 
-                    interval: preview.captureDelay
-                    repeat: false
+                    interval: 60
+                    repeat: true
 
-                    onTriggered: preview.captureOn = true
+                    onTriggered: {
+                        if (!preview.captureReady() && ++preview.captureTries < 15)
+                            return;
+
+                        stop();
+                        preview.finishCaptureSwap();
+                    }
                 }
 
                 Timer {
@@ -496,7 +528,7 @@ Item {
                 y: homeY
                 width: homeWidth
                 height: homeHeight
-                z: dragging ? 1000 : (preview.isActiveWindow ? 20 : 10)
+                z: dragging ? 1000 : 10
                 visible: !preview.covered
 
                 onHomeXChanged: if (!dragging)
@@ -530,10 +562,20 @@ Item {
                     }
 
                     Loader {
-                        id: capture
+                        id: captureA
 
                         anchors.fill: parent
-                        active: root.live && preview.captureOn
+                        active: root.live && preview.captureAOn
+                        visible: !preview.captureShowB
+                        sourceComponent: captureComponent
+                    }
+
+                    Loader {
+                        id: captureB
+
+                        anchors.fill: parent
+                        active: root.live && preview.captureBOn
+                        visible: preview.captureShowB
                         sourceComponent: captureComponent
                     }
 
@@ -544,6 +586,8 @@ Item {
                             captureSource: preview.modelData
                             live: true
                             paintCursor: false
+
+                            onStopped: preview.restartCapture()
                         }
                     }
 
@@ -619,10 +663,6 @@ Item {
                             if (Hypr.usingLua) {
                                 root.beginNoWarp();
                                 Hypr.dispatch(`hl.dsp.window.move({ workspace = ${targetWs}, window = "address:${addr}", follow = false })`);
-                                // Moving the focused window drags the focus to the target workspace;
-                                // a drag-and-drop must leave the user where they were, or the whole
-                                // source cell turns black (its workspace is not rendered anymore).
-                                Hypr.dispatch(`hl.dsp.focus({ workspace = ${currentWs} })`);
                             } else
                                 Hypr.dispatch(`movetoworkspacesilent ${targetWs},address:${addr}`);
                         } else if (targetWs === currentWs) {
@@ -636,10 +676,7 @@ Item {
                             }
                         }
 
-                        // Hyprland retiles the workspace on any drop, and the remaining previews can
-                        // freeze on a black frame; rebuild them once the layout has settled
-                        root.refreshWorkspaceCaptures(currentWs, 200);
-
+                        root.recapturePreviews();
                         preview.landing = true;
                         landTimer.restart();
                         preview.x = preview.homeX;
