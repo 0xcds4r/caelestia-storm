@@ -584,7 +584,9 @@ Item {
 
                         ScreencopyView {
                             captureSource: preview.modelData
-                            live: true
+                            // While a preview is dragged it repaints every frame; each live capture would
+                            // request a new frame for nothing. The last frame stays on screen.
+                            live: !preview.dragging
                             paintCursor: false
 
                             onStopped: preview.restartCapture()
