@@ -73,11 +73,15 @@ Item {
     readonly property real cellHeight: Math.round(cellWidth * (screen.height / screen.width))
 
     readonly property var hyprToplevels: Hypr.toplevels.values
+    // A stable order matters: when a window moves to another workspace the ScriptModel would
+    // otherwise emit a row move, and the Repeater recreates the moved delegates (a fresh capture of
+    // a window on a workspace that is not rendered is black). Sorting by address keeps every
+    // preview attached to its window, so its capture survives the move.
     readonly property var windows: ToplevelManager.toplevels.values.filter(t => {
         const h = hyprFor(t);
         const ws = h?.workspace?.id ?? -1;
         return ws > group * cellCount && ws <= (group + 1) * cellCount;
-    })
+    }).sort((a, b) => (hyprFor(a)?.address ?? "") < (hyprFor(b)?.address ?? "") ? -1 : 1)
 
     readonly property string activeWindowAddress: {
         const candidates = hyprToplevels.filter(t => t.workspace?.id === root.activeWs);
@@ -128,23 +132,6 @@ Item {
 
         Hypr.extras.batchMessage(['eval hl.config({ cursor = { no_warps = true } })']);
         restoreWarps.restart();
-    }
-
-    // Windows on a workspace that Hyprland stops rendering (it was not the active one while a drop
-    // moved a window away) keep a frozen, black capture. Only those previews are rebuilt, after the
-    // workspace is rendered again.
-    function rebuildWorkspaceCaptures(wsId: int): void {
-        const container = previewLoader.item;
-
-        if (!container)
-            return;
-
-        for (let i = 0; i < container.children.length; ++i) {
-            const child = container.children[i];
-
-            if (child && typeof child.rebuildCapture === "function" && (child.hypr?.workspace?.id ?? -1) === wsId)
-                child.rebuildCapture();
-        }
     }
 
     // Finds the preview of another window in the same workspace under the given scene point
@@ -422,6 +409,7 @@ Item {
                     }) ?? null;
                 }
                 readonly property bool covered: preview.coveringWindow !== null && preview.coveringWindow !== preview.modelData
+                readonly property bool isActiveWindow: (preview.ipc?.address ?? "") !== "" && preview.ipc?.address === root.activeWindowAddress
 
                 readonly property real homeX: preview.fillsCell ? cellX : cellX + innerX
                 readonly property real homeY: preview.fillsCell ? cellY : cellY + innerY
@@ -432,73 +420,6 @@ Item {
                 // Set right after a drop: the preview jumps to its new tile instead of gliding through
                 // the stale geometry Hyprland reports for a moment
                 property bool landing: false
-                // Two capture views are kept so a restart can warm the spare one before showing it
-                property bool captureAOn: true
-                property bool captureBOn: false
-                property bool captureShowB: false
-                property bool captureSwapping: false
-                property int captureTries: 0
-
-                function restartCapture(): void {
-                    if (preview.captureSwapping)
-                        return;
-
-                    preview.captureSwapping = true;
-                    preview.captureTries = 0;
-
-                    if (preview.captureShowB)
-                        preview.captureAOn = true;
-                    else
-                        preview.captureBOn = true;
-
-                    captureSwapTimer.restart();
-                }
-
-                function captureReady(): bool {
-                    const loader = preview.captureShowB ? captureA : captureB;
-
-                    return !loader.item || loader.item.hasContent;
-                }
-
-                function finishCaptureSwap(): void {
-                    // The spare view never produced a frame (the compositor refused the export for
-                    // that window, e.g. right after a swap). Keep showing the view that still has
-                    // content instead of flipping to a black tile; the next restart tries again.
-                    if (!preview.captureReady()) {
-                        if (preview.captureShowB)
-                            preview.captureAOn = false;
-                        else
-                            preview.captureBOn = false;
-
-                        preview.captureSwapping = false;
-                        return;
-                    }
-
-                    preview.captureShowB = !preview.captureShowB;
-
-                    if (preview.captureShowB)
-                        preview.captureAOn = false;
-                    else
-                        preview.captureBOn = false;
-
-                    preview.captureSwapping = false;
-                }
-
-                Timer {
-                    id: captureSwapTimer
-
-                    interval: 60
-                    repeat: true
-
-                    onTriggered: {
-                        if (!preview.captureReady() && ++preview.captureTries < 15)
-                            return;
-
-                        stop();
-                        preview.finishCaptureSwap();
-                    }
-                }
-
                 Timer {
                     id: landTimer
 
@@ -532,7 +453,7 @@ Item {
                 y: homeY
                 width: homeWidth
                 height: homeHeight
-                z: dragging ? 1000 : 10
+                z: dragging ? 1000 : (preview.isActiveWindow ? 20 : 10)
                 visible: !preview.covered
 
                 onHomeXChanged: if (!dragging)
@@ -566,20 +487,10 @@ Item {
                     }
 
                     Loader {
-                        id: captureA
+                        id: capture
 
                         anchors.fill: parent
-                        active: root.live && preview.captureAOn
-                        visible: !preview.captureShowB
-                        sourceComponent: captureComponent
-                    }
-
-                    Loader {
-                        id: captureB
-
-                        anchors.fill: parent
-                        active: root.live && preview.captureBOn
-                        visible: preview.captureShowB
+                        active: root.live
                         sourceComponent: captureComponent
                     }
 
@@ -590,8 +501,6 @@ Item {
                             captureSource: preview.modelData
                             live: true
                             paintCursor: false
-
-                            onStopped: preview.restartCapture()
                         }
                     }
 
@@ -683,11 +592,6 @@ Item {
                                 root.moveWithinCell(preview, dropX, dropY);
                             }
                         }
-
-                        // Only the source workspace lost its captures; rebuilding every cell would
-                        // blank the whole overview for half a second.
-                        if (targetWs !== currentWs)
-                            root.rebuildWorkspaceCaptures(currentWs);
 
                         preview.landing = true;
                         landTimer.restart();
