@@ -34,6 +34,46 @@ Singleton {
 
     readonly property var cachedCities: new Map()
 
+    // The IP lookup is the only slow part of the first weather fetch, so the last known place is
+    // kept on disk and restored instantly on the next start (open-meteo then only needs the
+    // forecast).
+    readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/caelestia"
+    readonly property string locationPath: root.stateDir + "/weather-location"
+
+    FileView {
+        id: locationCache
+
+        path: root.locationPath
+
+        onLoaded: {
+            if (root.loc || GlobalConfig.services.weatherLocation)
+                return;
+
+            const lines = text().trim().split("\n");
+            if (!lines[0])
+                return;
+
+            root.loc = lines[0].trim();
+            root.city = (lines[1] ?? "").trim();
+        }
+    }
+
+    Connections {
+        function onLocChanged(): void {
+            if (!root.loc)
+                return;
+
+            locationWriter.command = ["sh", "-c", `mkdir -p '${root.stateDir}' && printf '%s\\n%s\\n' '${root.loc}' '${root.city ?? ""}' > '${root.locationPath}'`];
+            locationWriter.running = true;
+        }
+
+        target: root
+    }
+
+    Process {
+        id: locationWriter
+    }
+
     function formatTemp(temp: var, compact = false): string {
         const unit = GlobalConfig.services.weatherUnits;
         const value = temp !== undefined ? Math.round(Units.toTemperature(temp, unit)) : "--";
