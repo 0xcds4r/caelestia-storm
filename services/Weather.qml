@@ -67,6 +67,7 @@ Singleton {
                     response = JSON.parse(text);
                 } catch (error) {
                     console.warn(lc, `Unable to parse response from ip-api: ${error}`);
+                    root.requestIpFallback();
                     return;
                 }
 
@@ -75,6 +76,7 @@ Singleton {
 
                 if (response.status !== "success" || !Number.isFinite(lat) || !Number.isFinite(lon)) {
                     console.warn(lc, `ip-api lookup failed: ${response.message ?? "invalid response"}`);
+                    root.requestIpFallback();
                     return;
                 }
 
@@ -84,10 +86,40 @@ Singleton {
             }, (error, metadata) => {
                 ipApiRequestPending = false;
 
-                if (!recordIpApiRateLimit(metadata))
-                    console.warn(lc, `ip-api request failed: ${error}`);
+                if (!recordIpApiRateLimit(metadata)) {
+                    console.warn(lc, `ip-api request failed: ${error} (trying ipwho.is)`);
+                    root.requestIpFallback();
+                }
             });
         }
+    }
+
+    // ip-api.com is plain HTTP and is blocked or slow on some networks; ipwho.is answers over
+    // HTTPS with the same information (no API key), so a failed lookup falls back to it instead of
+    // leaving the bar without weather until the next retry.
+    function requestIpFallback(): void {
+        Requests.get("https://ipwho.is/", text => {
+            if (GlobalConfig.services.weatherLocation)
+                return;
+
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (error) {
+                console.warn(lc, `Unable to parse response from ipwho.is: ${error}`);
+                return;
+            }
+
+            const lat = Number(data.latitude);
+            const lon = Number(data.longitude);
+
+            if (data.success === false || !Number.isFinite(lat) || !Number.isFinite(lon))
+                return;
+
+            city = fixCityName(data.city ?? "");
+            timer.restart();
+            loc = `${lat},${lon}`;
+        }, error => console.warn(lc, `ipwho.is request failed: ${error}`));
     }
 
     function recordIpApiRateLimit(metadata: var): bool {
