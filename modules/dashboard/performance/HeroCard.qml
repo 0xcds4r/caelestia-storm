@@ -38,10 +38,6 @@ StyledRect {
         implicitSize: Math.max(icon.implicitWidth, icon.implicitHeight) + Tokens.padding.medium * 2
         value: root.usage
 
-        Behavior on clampedVal {
-            Anim {}
-        }
-
         MaterialIcon {
             id: icon
 

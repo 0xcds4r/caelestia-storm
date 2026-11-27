@@ -47,10 +47,6 @@ StyledRect {
                 startAngle: -225
                 sweepAngle: 270
 
-                Behavior on clampedVal {
-                    Anim {}
-                }
-
                 ColumnLayout {
                     id: usageColumn
 

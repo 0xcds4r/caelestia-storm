@@ -56,10 +56,6 @@ StyledRect {
             fgColour: root.accent
             value: Memory.percentage
 
-            Behavior on clampedVal {
-                Anim {}
-            }
-
             ColumnLayout {
                 id: usageColumn
 
