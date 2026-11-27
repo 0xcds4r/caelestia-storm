@@ -9,7 +9,6 @@ import qs.components.controls
 import qs.services
 import qs.modules.launcher.services
 import qs.modules.overview
-import qs.modules.bar.popouts as BarPopouts
 
 Item {
     id: root
@@ -106,7 +105,6 @@ Item {
             UtilitiesPanel {
                 anchors.top: parent.top
                 screenState: root.screenState
-                popouts: root.panels.popoutsWrapper
                 keepAwakeHeight: Math.round(overview.cellHeight * 0.6)
                 contentBottom: overview.cellHeight * 2 + overview.cellSpacing
             }

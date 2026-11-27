@@ -17,7 +17,7 @@ StyledRect {
     id: root
 
     required property ScreenState screenState
-    required property BarPopouts.Wrapper popouts
+    property BarPopouts.Wrapper popouts: null
 
     readonly property var quickToggles: {
         const seenIds = new Set();
