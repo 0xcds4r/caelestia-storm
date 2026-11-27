@@ -18,9 +18,6 @@ Item {
 
     required property ShellScreen screen
     property bool live: true
-    // Captures are torn down and rebuilt by refreshCaptures(): a live view that was frozen while
-    // its workspace was hidden never recovers on its own, while a fresh one shows the window again.
-    property bool capturesOn: true
     property double widthScale: 0.72
     property real cellSpacing: 10
 
@@ -100,20 +97,6 @@ Item {
         return wsWindows[0];
     }
 
-    Timer {
-        id: refreshCapturesTimer
-
-        interval: 300
-        repeat: false
-
-        onTriggered: root.capturesOn = true
-    }
-
-    function refreshCaptures(): void {
-        root.capturesOn = false;
-        refreshCapturesTimer.restart();
-    }
-
     // Swapping or moving a window refocuses it, and Hyprland then yanks the cursor to the centre of
     // the new layout. Warping is switched off for the duration of the drop and restored afterwards.
     property bool noWarpsDefault: false
@@ -145,6 +128,23 @@ Item {
 
         Hypr.extras.batchMessage(['eval hl.config({ cursor = { no_warps = true } })']);
         restoreWarps.restart();
+    }
+
+    // Windows on a workspace that Hyprland stops rendering (it was not the active one while a drop
+    // moved a window away) keep a frozen, black capture. Only those previews are rebuilt, after the
+    // workspace is rendered again.
+    function rebuildWorkspaceCaptures(wsId: int): void {
+        const container = previewLoader.item;
+
+        if (!container)
+            return;
+
+        for (let i = 0; i < container.children.length; ++i) {
+            const child = container.children[i];
+
+            if (child && typeof child.rebuildCapture === "function" && (child.hypr?.workspace?.id ?? -1) === wsId)
+                child.rebuildCapture();
+        }
     }
 
     // Finds the preview of another window in the same workspace under the given scene point
@@ -439,21 +439,6 @@ Item {
                 property bool captureSwapping: false
                 property int captureTries: 0
 
-                Connections {
-                    target: root
-
-                    function onCapturesOnChanged(): void {
-                        if (root.capturesOn)
-                            return;
-
-                        // back to the first view so the rebuilt capture is the visible one
-                        preview.captureAOn = true;
-                        preview.captureBOn = false;
-                        preview.captureShowB = false;
-                        preview.captureSwapping = false;
-                    }
-                }
-
                 function restartCapture(): void {
                     if (preview.captureSwapping)
                         return;
@@ -584,7 +569,7 @@ Item {
                         id: captureA
 
                         anchors.fill: parent
-                        active: root.live && root.capturesOn && preview.captureAOn
+                        active: root.live && preview.captureAOn
                         visible: !preview.captureShowB
                         sourceComponent: captureComponent
                     }
@@ -593,7 +578,7 @@ Item {
                         id: captureB
 
                         anchors.fill: parent
-                        active: root.live && root.capturesOn && preview.captureBOn
+                        active: root.live && preview.captureBOn
                         visible: preview.captureShowB
                         sourceComponent: captureComponent
                     }
@@ -699,9 +684,11 @@ Item {
                             }
                         }
 
-                        // the captures were running against the old layout; rebuild them instead of
-                        // letting a frozen one paint a black tile
-                        root.refreshCaptures();
+                        // Only the source workspace lost its captures; rebuilding every cell would
+                        // blank the whole overview for half a second.
+                        if (targetWs !== currentWs)
+                            root.rebuildWorkspaceCaptures(currentWs);
+
                         preview.landing = true;
                         landTimer.restart();
                         preview.x = preview.homeX;
